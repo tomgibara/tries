@@ -1,9 +1,11 @@
 package com.tomgibara.tries;
 
+import java.security.cert.PKIXRevocationChecker.Option;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import com.tomgibara.tries.Tries.Serialization;
 
@@ -131,6 +133,17 @@ public class Trie<E> implements Iterable<E> {
 		s.set(root);
 		if (!s.startsWith(prefix)) throw new IllegalArgumentException("new sub root not in sub-trie");
 		return newTrie(s);
+	}
+	
+	public Optional<E> first() {
+		if (isEmpty()) return Optional.empty();
+		serialization.set(prefix);
+		TrieNode node = root();
+		while (!node.isTerminal()) {
+			node = node.getChild();
+			serialization.push(node.getValue());
+		}
+		return Optional.ofNullable(serialization.get());
 	}
 	
 	// iterable methods

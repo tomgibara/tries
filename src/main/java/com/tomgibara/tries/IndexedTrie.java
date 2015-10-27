@@ -1,7 +1,6 @@
 package com.tomgibara.tries;
 
 import java.util.AbstractList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -61,7 +60,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		return indexOf(serialization.buffer(), serialization.length());
 	}
 	
-	List<E> asList() {
+	public List<E> asList() {
 		return new TrieList();
 	}
 
