@@ -163,6 +163,12 @@ public class Trie<E> implements Iterable<E> {
 		}
 		return Optional.ofNullable(serialization.get());
 	}
+
+	// a comparator consistent with the trie ordering
+	// each call creates a new comparator, comparator is not threadsafe
+	public Comparator<E> comparator() {
+		return serialization.comparator(nodes.byteOrder());
+	}
 	
 	// iterable methods
 	
@@ -200,12 +206,6 @@ public class Trie<E> implements Iterable<E> {
 	
 	// private helper methods
 	
-	//TODO eliminate
-	private int compare(byte a, byte b) {
-		Comparator<Byte> byteOrder = nodes.byteOrder();
-		return byteOrder == null ? Integer.compare(a & 0xff, b & 0xff) : byteOrder.compare(a, b);
-	}
-
 	private boolean add(byte[] bytes, int length) {
 		nodes.ensureExtraCapacity(length);
 		//TODO could optimize by maintaining stack, not just root?

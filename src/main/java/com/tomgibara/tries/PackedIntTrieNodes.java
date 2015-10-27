@@ -58,7 +58,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 
 	// fields
 
-	private final Comparator<Byte> byteOrder;
+	private final ByteOrder byteOrder;
 	private final boolean counting;
 	private final int nodeSize;
 	private final Node root;
@@ -72,7 +72,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 	
 	// constructor
 	
-	PackedIntTrieNodes(Comparator<Byte> byteOrder, int capacity, boolean counting) {
+	PackedIntTrieNodes(ByteOrder byteOrder, int capacity, boolean counting) {
 		this.byteOrder = byteOrder;
 		this.counting = counting;
 		this.capacity = capacity;
@@ -92,7 +92,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 	}
 	
 	@Override
-	public Comparator<Byte> byteOrder() {
+	public ByteOrder byteOrder() {
 		return byteOrder;
 	}
 	
@@ -333,7 +333,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 	}
 
 	private int compare(byte a, byte b) {
-		return byteOrder == null ? Integer.compare(a & 0xff, b & 0xff) : byteOrder.compare(a, b);
+		return byteOrder.compare(a, b);
 	}
 
 	// inner classes

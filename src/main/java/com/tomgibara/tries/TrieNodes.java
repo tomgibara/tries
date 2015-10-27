@@ -1,10 +1,9 @@
 package com.tomgibara.tries;
 
-import java.util.Comparator;
 
 interface TrieNodes {
 
-	Comparator<Byte> byteOrder();
+	ByteOrder byteOrder();
 	
 	boolean isCounting();
 	

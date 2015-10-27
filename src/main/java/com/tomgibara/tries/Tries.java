@@ -71,6 +71,26 @@ public class Tries<E> {
 		void set(E e);
 
 		E get();
+		
+		default Comparator<E> comparator(ByteOrder byteOrder) {
+			if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
+			Serialization<E> as = resetCopy();
+			Serialization<E> bs = resetCopy();
+			return (a,b) -> {
+				as.set(a);
+				bs.set(b);
+				int al = as.length();
+				int bl = bs.length();
+				int limit = Math.min(al, bl);
+				byte[] ab = as.buffer();
+				byte[] bb = bs.buffer();
+				for (int i = 0; i < limit; i++) {
+					int c = byteOrder.compare(ab[i], bb[i]);
+					if (c != 0) return c;
+				}
+				return al - bl;
+			};
+		}
 	}
 
 	private static abstract class BaseSerialization<E> implements Serialization<E> {
@@ -267,8 +287,8 @@ public class Tries<E> {
 	// fields
 
 	final Producer<Serialization<E>> serialProducer;
-	int capacity = DEFAULT_CAPACITY;
-	Comparator<Byte> byteOrder = null;
+	private int capacity = DEFAULT_CAPACITY;
+	private ByteOrder byteOrder = ByteOrder.UNSIGNED;
 
 	// constructors
 
@@ -278,7 +298,13 @@ public class Tries<E> {
 	
 	// methods
 	
-	public Tries<E> byteOrder(Comparator<Byte> byteOrder) {
+	public Tries<E> byteOrder(Comparator<Byte> comparator) {
+		this.byteOrder = ByteOrder.from(comparator);
+		return this;
+	}
+	
+	public Tries<E> byteOrder(ByteOrder byteOrder) {
+		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
 		this.byteOrder = byteOrder;
 		return this;
 	}

@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -251,6 +252,8 @@ public class TrieTest {
 			assertTrue(trie.contains(value));
 		}
 
+		checkTrieOrder(trie);
+
 		for (int i = 0; i < 10000; i++) {
 			long value = r.nextLong();
 			boolean contained = Arrays.binarySearch(values, value) >= 0;
@@ -367,6 +370,7 @@ public class TrieTest {
 		assertFalse(i.hasNext());
 		assertEquals("Cartwheel", trie.first().get());
 		assertEquals("Ape", trie.last().get());
+		checkTrieOrder(trie);
 	}
 
 	@Test
@@ -389,6 +393,8 @@ public class TrieTest {
 		assertTrue   (trie.remove("Three"));
 		assertEquals ("Two", i.next());
 		assertFalse  (i.hasNext());
+
+		checkTrieOrder(trie);
 	}
 	
 	@Test
@@ -489,6 +495,8 @@ public class TrieTest {
 		} catch (IllegalArgumentException e) {
 			/* expected */
 		}
+
+		checkTrieOrder(trie);
 	}
 
 	@Test
@@ -536,4 +544,17 @@ public class TrieTest {
 		assertFalse(it.hasPrevious());
 	}
 	
+	private <E> void checkTrieOrder(Trie<E> trie) {
+		Comparator<E> c = trie.comparator();
+		E previous = null;
+		for (E element : trie) {
+			if (previous != null) {
+				assertTrue(c.compare(element, previous) > 0);
+				assertTrue(c.compare(previous, element) < 0);
+				assertEquals(0, c.compare(element, element));
+			}
+			previous = element;
+		}
+	}
+
 }
