@@ -1,10 +1,13 @@
 package com.tomgibara.tries;
 
+import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
 
 import com.tomgibara.tries.Tries.Serialization;
 
@@ -142,7 +145,7 @@ public class Trie<E> implements Iterable<E> {
 			node = node.getChild();
 			serialization.push(node.getValue());
 		}
-		return Optional.ofNullable(serialization.get());
+		return Optional.of(serialization.get());
 	}
 	
 	public Optional<E> last() {
@@ -161,13 +164,17 @@ public class Trie<E> implements Iterable<E> {
 				break;
 			}
 		}
-		return Optional.ofNullable(serialization.get());
+		return Optional.of(serialization.get());
 	}
 
 	// a comparator consistent with the trie ordering
 	// each call creates a new comparator, comparator is not threadsafe
 	public Comparator<E> comparator() {
 		return serialization.comparator(nodes.byteOrder());
+	}
+	
+	public Set<E> asSet() {
+		return new TrieSet();
 	}
 	
 	// iterable methods
@@ -202,6 +209,17 @@ public class Trie<E> implements Iterable<E> {
 	
 	void checkSerializable(E e) {
 		if (!serialization.isSerializable(e)) throw new IllegalArgumentException("invalid e");
+	}
+
+	void dump() { ((PackedIntTrieNodes) nodes).dumpAsAscii(); }
+	
+	void check() {
+		try {
+			((PackedIntTrieNodes) nodes).check(root().getCount());
+		} catch (IllegalStateException e) {
+			System.err.println(e.getMessage());
+			throw e;
+		}
 	}
 	
 	// private helper methods
@@ -417,15 +435,45 @@ public class Trie<E> implements Iterable<E> {
 		
 	}
 
-	void dump() { ((PackedIntTrieNodes) nodes).dumpAsAscii(); }
-	
-	void check() {
-		try {
-			((PackedIntTrieNodes) nodes).check(root().getCount());
-		} catch (IllegalStateException e) {
-			System.err.println(e.getMessage());
-			throw e;
+	private class TrieSet extends AbstractSet<E> {
+		
+		@Override
+		public boolean contains(Object o) {
+			return serialization.isSerializable(o) && Trie.this.contains((E) o);
 		}
-	}
+		
+		@Override
+		public boolean remove(Object o) {
+			return serialization.isSerializable(o) && Trie.this.remove((E) o);
+		}
 
+		@Override
+		public int size() {
+			return Trie.this.size();
+		}
+
+		@Override
+		public void clear() {
+			Trie.this.clear();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return Trie.this.isEmpty();
+		}
+
+		@Override
+		public boolean add(E e) {
+			if (!serialization.isSerializable(e)) return false;
+			serialization.set(e);
+			if (!serialization.startsWith(prefix)) return false;
+			return Trie.this.add(serialization.buffer(), serialization.length());
+		}
+
+		@Override
+		public Iterator<E> iterator() {
+			return Trie.this.iterator();
+		}
+
+	}
 }

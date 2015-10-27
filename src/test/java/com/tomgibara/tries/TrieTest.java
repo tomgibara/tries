@@ -544,6 +544,33 @@ public class TrieTest {
 		assertFalse(it.hasPrevious());
 	}
 	
+	@Test
+	public void testAsSet() {
+		Trie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		Set<String> set = trie.asSet();
+		assertTrue(set.isEmpty());
+		set.add("Scott");
+		assertFalse(set.isEmpty());
+		assertEquals(1, set.size());
+		assertTrue(trie.contains("Scott"));
+		trie.add("Ramona");
+		assertTrue(set.contains("Ramona"));
+		Set<String> subset = trie.subTrie("Scott").asSet();
+		assertEquals(1, subset.size());
+		assertFalse(subset.contains("Ramona"));
+		assertTrue(subset.add("Scott Pilgrim"));
+		assertFalse(subset.add("Ramona Flowers"));
+		Iterator<String> it = subset.iterator();
+		assertTrue(it.hasNext());
+		assertEquals("Scott", it.next());
+		it.remove();
+		assertTrue(it.hasNext());
+		assertEquals("Scott Pilgrim", it.next());
+		it.remove();
+		assertFalse(it.hasNext());
+		assertTrue(subset.isEmpty());
+	}
+	
 	private <E> void checkTrieOrder(Trie<E> trie) {
 		Comparator<E> c = trie.comparator();
 		E previous = null;
