@@ -24,10 +24,11 @@ public class Tries<E> {
 	
 	private static final int DEFAULT_CAPACITY = 16;
 	
-	public static <E> Tries<E> builder(StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
+	public static <E> Tries<E> builder(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
+		if (type == null) throw new IllegalArgumentException("null type");
 		if (serializer == null) throw new IllegalArgumentException("null serializer");
 		if (deserializer == null) throw new IllegalArgumentException("null deserializer");
-		return new Tries<>(() -> new StreamSerialization<E>(serializer, deserializer));
+		return new Tries<>(() -> new StreamSerialization<E>(type, serializer, deserializer));
 	}
 	
 	public static <E> Tries<E> builder(Producer<Serialization<E>> serializationProducer) {
@@ -44,6 +45,8 @@ public class Tries<E> {
 	
 	public interface Serialization<E> {
 
+		boolean isSerializable(Object obj);
+		
 		byte[] buffer();
 
 		void push(byte b);
@@ -154,20 +157,28 @@ public class Tries<E> {
 		
 	private static class StreamSerialization<E> extends BaseSerialization<E> {
 
+		private final Class<E> type;
 		private final StreamSerializer<E> serializer;
 		private final StreamDeserializer<E> deserializer;
 		
-		private StreamSerialization(StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
+		private StreamSerialization(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
+			this.type = type;
 			this.serializer = serializer;
 			this.deserializer = deserializer;
 		}
 
 		private StreamSerialization(StreamSerialization<E> that) {
 			super(that);
+			this.type = that.type;
 			this.serializer = that.serializer;
 			this.deserializer = that.deserializer;
 		}
 		
+		@Override
+		public boolean isSerializable(Object obj) {
+			return type.isInstance(obj);
+		}
+
 		@Override
 		public E get() {
 			try(ByteReadStream s = new ByteReadStream(buffer, 0, length)) {
@@ -201,6 +212,11 @@ public class Tries<E> {
 		private  StringSerialization(StringSerialization that) {
 			super(that);
 			this.encoder = that.encoder;
+		}
+
+		@Override
+		public boolean isSerializable(Object obj) {
+			return obj instanceof String;
 		}
 
 		@Override

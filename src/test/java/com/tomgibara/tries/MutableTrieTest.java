@@ -195,7 +195,7 @@ public class MutableTrieTest {
 			} while (value < 0);
 			values[i] = value;
 		}
-		Trie<Long> trie = Tries.builder((v,s) -> s.writeLong(v), s -> s.readLong()).indexed(indexed).newTrie();
+		Trie<Long> trie = Tries.builder(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong()).indexed(indexed).newTrie();
 		// handy debug version
 //		Stores.longs(values).asList().forEach(value -> {
 //			System.out.println("ADDING " + Long.toHexString(value) + " " + value);
