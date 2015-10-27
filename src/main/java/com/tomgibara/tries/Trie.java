@@ -1,6 +1,5 @@
 package com.tomgibara.tries;
 
-import java.security.cert.PKIXRevocationChecker.Option;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -142,6 +141,25 @@ public class Trie<E> implements Iterable<E> {
 		while (!node.isTerminal()) {
 			node = node.getChild();
 			serialization.push(node.getValue());
+		}
+		return Optional.ofNullable(serialization.get());
+	}
+	
+	public Optional<E> last() {
+		if (isEmpty()) return Optional.empty();
+		serialization.set(prefix);
+		TrieNode node = root();
+		while (true) {
+			if (node.hasSibling()) {
+				node = node.getSibling();
+				serialization.replace(node.getValue());
+			} else if (node.hasChild()) {
+				node = node.getChild();
+				serialization.push(node.getValue());
+			} else {
+				if (!node.isTerminal()) throw new IllegalStateException();
+				break;
+			}
 		}
 		return Optional.ofNullable(serialization.get());
 	}

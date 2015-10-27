@@ -346,6 +346,7 @@ public class TrieTest {
 	public void testByteOrder() {
 		Trie<String> trie = Tries.builderForStrings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).newTrie();
 		assertFalse(trie.first().isPresent());
+		assertFalse(trie.last().isPresent());
 		trie.add("Apple");
 		System.out.println("ADDED APPLE");
 		dump(trie);
@@ -365,6 +366,7 @@ public class TrieTest {
 		assertEquals("Ape", i.next());
 		assertFalse(i.hasNext());
 		assertEquals("Cartwheel", trie.first().get());
+		assertEquals("Ape", trie.last().get());
 	}
 
 	@Test
@@ -442,7 +444,9 @@ public class TrieTest {
 		assertTrue(sub.add("Hotdog"));
 		assertTrue(sub.add("Hotrod"));
 		assertEquals("Cat", trie.first().get());
+		assertEquals("Puppy", trie.last().get());
 		assertEquals("Hot", sub.first().get());
+		assertEquals("Hotrod", sub.last().get());
 		assertEquals(3, sub.size());
 		assertEquals(1, sub.subTrie("Hotd").size());
 		assertTrue(sub.contains("Hot"));
