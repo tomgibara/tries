@@ -45,6 +45,9 @@ interface TrieNode {
 	boolean remove(TrieNode childOrSibling);
 	
 	int getCount();
+
+	// to is the node's child or one of its siblings, but not including the value supplied
+	int countTo(byte value);
 	
 	void delete();
 }

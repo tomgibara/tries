@@ -18,6 +18,7 @@ import com.tomgibara.streams.ByteWriteStream;
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamSerializer;
 
+//TODO rename builder methods
 public class Tries<E> {
 
 	// statics
@@ -268,9 +269,6 @@ public class Tries<E> {
 	final Producer<Serialization<E>> serialProducer;
 	int capacity = DEFAULT_CAPACITY;
 	Comparator<Byte> byteOrder = null;
-	boolean indexed = true;
-	//final Producer<TrieNodes> nodesProducer = () -> new IntTrieNodes(capacity, indexed);
-	final Producer<TrieNodes> nodesProducer = () -> new PackedIntTrieNodes(byteOrder, capacity, indexed);
 
 	// constructors
 
@@ -280,18 +278,26 @@ public class Tries<E> {
 	
 	// methods
 	
-	public Tries<E> indexed(boolean indexed) {
-		this.indexed = indexed;
-		return this;
-	}
-	
 	public Tries<E> byteOrder(Comparator<Byte> byteOrder) {
 		this.byteOrder = byteOrder;
 		return this;
 	}
 	
 	public Trie<E> newTrie() {
-		return new Trie<>(this);
+		return new Trie<>(this, newNodes());
+	}
+	
+	public IndexedTrie<E> newIndexedTrie() {
+		return new IndexedTrie<>(this, newIndexedNodes());
 	}
 
+	// package scoped methods
+	
+	TrieNodes newNodes() {
+		return new PackedIntTrieNodes(byteOrder, capacity, false);
+	}
+	
+	TrieNodes newIndexedNodes() {
+		return new PackedIntTrieNodes(byteOrder, capacity, true);
+	}
 }

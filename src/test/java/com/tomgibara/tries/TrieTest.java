@@ -39,7 +39,7 @@ public class TrieTest {
 
 	@Test
 	public void testIndexes() {
-		Trie<String> trie = Tries.builderForStrings(UTF8).indexed(true).newTrie();
+		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
 		String s = "abcdedfgh";
 		for (int i = s.length(); i >= 0; i--) {
 			String t = s.substring(0,  i);
@@ -56,7 +56,7 @@ public class TrieTest {
 
 	@Test
 	public void testDoubleInsertion() {
-		Trie<String> trie = Tries.builderForStrings(UTF8).indexed(true).newTrie();
+		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
 		trie.add("acxxx");
 		dump("ADDED acxxx", trie);
 		trie.add("abc");
@@ -74,7 +74,16 @@ public class TrieTest {
 	}
 
 	private void testStrings(boolean indexed) {
-		Trie<String> trie = Tries.builderForStrings(UTF8).indexed(indexed).newTrie();
+		Tries<String> tries = Tries.builderForStrings(UTF8);
+		Trie<String> trie;
+		IndexedTrie<String> itrie;
+		if (indexed) {
+			itrie = tries.newIndexedTrie();
+			trie = itrie;
+		} else {
+			itrie = null;
+			trie = tries.newTrie();
+		}
 		assertFalse(trie.contains("Moon"));
 		System.out.println("ADDING MOON");
 		assertTrue(trie.add("Moon"));
@@ -195,7 +204,18 @@ public class TrieTest {
 			} while (value < 0);
 			values[i] = value;
 		}
-		Trie<Long> trie = Tries.builder(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong()).indexed(indexed).newTrie();
+		Tries<Long> tries = Tries.builder(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong());
+		Trie<Long> trie;
+		IndexedTrie<Long> itrie;
+		if (indexed) {
+			itrie = tries.newIndexedTrie();
+			trie = itrie;
+		} else {
+			itrie = null;
+			trie = tries.newTrie();
+		}
+
+		
 		// handy debug version
 //		Stores.longs(values).asList().forEach(value -> {
 //			System.out.println("ADDING " + Long.toHexString(value) + " " + value);
@@ -243,8 +263,10 @@ public class TrieTest {
 		}
 		assertFalse(it.hasNext());
 
-		for (int i = 0; i < 1000; i++) {
-			assertEquals(values[i], trie.get(i).longValue());
+		if (itrie != null) {
+			for (int i = 0; i < 1000; i++) {
+				assertEquals(values[i], itrie.get(i).longValue());
+			}
 		}
 
 		{
@@ -342,7 +364,7 @@ public class TrieTest {
 
 	@Test
 	public void testLiveIterator() {
-		Trie<String> trie = Tries.builderForStrings(UTF8).indexed(true).newTrie();
+		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
 		assertTrue(trie.add("One"));
 		Iterator<String> i = trie.iterator();
 		assertEquals ("One", i.next());
@@ -371,7 +393,7 @@ public class TrieTest {
 				strs[j] = randStr(r, 8);
 			}
 			System.out.println(":::::::::::: " + i + ":" + Arrays.asList(strs));
-			Trie<String> trie = Tries.builderForStrings(UTF8).indexed(true).newTrie();
+			IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
 			trie.addAll(Arrays.asList(strs));
 			for (String str : strs) {
 				System.out.println(":::::::::::: " + str);
@@ -397,7 +419,16 @@ public class TrieTest {
 	}
 
 	private void testSubTries(boolean indexed) {
-		Trie<String> trie = Tries.builderForStrings(UTF8).indexed(indexed).newTrie();
+		Tries<String> tries = Tries.builderForStrings(UTF8);
+		Trie<String> trie;
+		IndexedTrie<String> itrie;
+		if (indexed) {
+			itrie = tries.newIndexedTrie();
+			trie = itrie;
+		} else {
+			itrie = null;
+			trie = tries.newTrie();
+		}
 		trie.add("Cat");
 		trie.add("Hot");
 		trie.add("Puppy");
@@ -430,8 +461,11 @@ public class TrieTest {
 		assertFalse(sub.isEmpty());
 		assertEquals(3, trie.size());
 		trie.add("Hot mess");
-		assertEquals("Hot diggity!", sub.get(0));
-		assertEquals("Hot mess", sub.get(1));
+		if (itrie != null) {
+			IndexedTrie<String> isub = (IndexedTrie<String>) sub;
+			assertEquals("Hot diggity!", isub.get(0));
+			assertEquals("Hot mess", isub.get(1));
+		}
 
 		try {
 			sub.add("Got");

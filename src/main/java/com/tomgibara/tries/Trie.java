@@ -19,25 +19,23 @@ public class Trie<E> implements Iterable<E> {
 
 	// fields
 
-	private final TrieNodes nodes;
-	private final Serialization<E> serialization;
-	private final byte[] prefix;
+	final TrieNodes nodes;
+	final Serialization<E> serialization;
+	final byte[] prefix;
 	private TrieNode root;
-	private int rootIndex;
 	private long invalidations;
 	
 	// constructors
 	
-	Trie(Tries<E> tries) {
+	Trie(Tries<E> tries, TrieNodes nodes) {
 		serialization = tries.serialProducer.produce();
-		nodes = tries.nodesProducer.produce();
+		this.nodes = nodes;
 		prefix = NO_PREFIX;
 		root = nodes.root();
-		rootIndex = 0;
 		invalidations = nodes.invalidations();
 	}
 	
-	private Trie(Serialization<E> serialization, TrieNodes nodes) {
+	Trie(Serialization<E> serialization, TrieNodes nodes) {
 		this.serialization = serialization;
 		this.nodes = nodes;
 		prefix = toPrefix(serialization);
@@ -46,7 +44,6 @@ public class Trie<E> implements Iterable<E> {
 	
 	// trie methods
 
-	//TODO move
 	public int size() {
 		TrieNode root = root();
 		return root == null ? 0 : root.getCount();
@@ -99,36 +96,6 @@ public class Trie<E> implements Iterable<E> {
 		return remove(serialization.buffer(), serialization.length());
 	}
 	
-	public E get(int index) {
-		if (index < 0) throw new IllegalArgumentException("negative index");
-		if (!nodes.isCounting()) {
-			for (E e : this) {
-				if (index-- == 0) return e;
-			}
-			throw new IllegalArgumentException("index too large");
-		} else {
-			TrieNode node = root();
-			index += rootIndex;
-			if (node == null || index >= node.getCount()) throw new IllegalArgumentException("index too large");
-			int count = node.getCount();
-			serialization.set(prefix);
-			while (!node.isTerminal() || index != 0) {
-				//System.out.println(index + " AT " + node + " WITH COUNT " + count);
-				if (index < count) {
-					if (node.isTerminal()) index--;
-					node = node.getChild();
-					serialization.push(node.getValue());
-				} else {
-					index -= count;
-					node = node.getSibling();
-					serialization.replace(node.getValue());
-				}
-				count = node.getCount();
-			}
-			return serialization.get();
-		}
-	}
-
 	public boolean addAll(Iterator<E> iterator) {
 		if (iterator == null) throw new IllegalArgumentException("null iterator");
 		boolean mutated = false;
@@ -163,7 +130,7 @@ public class Trie<E> implements Iterable<E> {
 		Serialization<E> s = serialization.resetCopy();
 		s.set(root);
 		if (!s.startsWith(prefix)) throw new IllegalArgumentException("new sub root not in sub-trie");
-		return new Trie<>(s, nodes);
+		return newTrie(s);
 	}
 	
 	// iterable methods
@@ -179,22 +146,29 @@ public class Trie<E> implements Iterable<E> {
 	
 	// package scoped methods
 	
+	TrieNode root() {
+		long latest = nodes.invalidations();
+		if (prefix.length == 0 || invalidations == latest) return root;
+		invalidations = latest;
+		root = findRoot(prefix, prefix.length);
+		return root;
+	}
+
+	// overridden to allow indexed try to compute root index
+	TrieNode findRoot(byte[] bytes, int length) {
+		return find(bytes, length);
+	}
+
+	Trie<E> newTrie(Serialization<E> s) {
+		return new Trie<E>(s, nodes);
+	}
+	
 	// private helper methods
 	
 	private void checkNonNullElement(E e) {
 		if (e == null) throw new IllegalArgumentException("null e");
 	}
 	
-	private TrieNode root() {
-		long latest = nodes.invalidations();
-		if (prefix.length == 0 || invalidations == latest) return root;
-		invalidations = latest;
-		root = find(prefix, prefix.length);
-		//TODO how to compute this
-		rootIndex = 0;
-		return root;
-	}
-
 	//TODO eliminate
 	private int compare(byte a, byte b) {
 		Comparator<Byte> byteOrder = nodes.byteOrder();
@@ -224,7 +198,7 @@ public class Trie<E> implements Iterable<E> {
 		}
 		return node;
 	}
-	
+
 	private boolean contains(byte[] bytes, int length) {
 		TrieNode node  = find(bytes, length);
 		return node == null ? false : node.isTerminal();

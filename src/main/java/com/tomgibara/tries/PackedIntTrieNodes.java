@@ -541,6 +541,17 @@ public class PackedIntTrieNodes implements TrieNodes {
 			return counting ? getCountX() + extraCount() : count(this);
 		}
 		
+		@Override
+		public int countTo(byte value) {
+			int count = isTerminal() ? 1 : 0;
+			Node child = getChild();
+			while (child != null && child.getValue() != value) {
+				count += child.getCount();
+				child = child.getSibling();
+			}
+			return count;
+		}
+		
 		public void delete() {
 			if (ordinal > 0) {
 				int childCount = getValueCount() - 1;
