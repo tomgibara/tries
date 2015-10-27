@@ -291,7 +291,7 @@ public class Tries<E> {
 	}
 	
 	public Trie<E> newTrie() {
-		return new MutableTrie<>(this);
+		return new Trie<>(this);
 	}
 
 }

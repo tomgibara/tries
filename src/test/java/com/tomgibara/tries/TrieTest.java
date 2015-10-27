@@ -19,13 +19,13 @@ import org.junit.Test;
 
 import com.tomgibara.storage.Stores;
 
-public class MutableTrieTest {
+public class TrieTest {
 
 	static final Charset UTF8 = Charset.forName("UTF8");
 	static final Charset ASCII = Charset.forName("ASCII");
 
 	private static void dump(Trie<?> trie) {
-		((MutableTrie<?>) trie).dump();
+		((Trie<?>) trie).dump();
 	}
 
 	private static void dump(String title, Trie<?> trie) {
@@ -34,7 +34,7 @@ public class MutableTrieTest {
 	}
 
 	private static void check(Trie<?> trie) {
-		((MutableTrie<?>) trie).check();
+		((Trie<?>) trie).check();
 	}
 
 	@Test
