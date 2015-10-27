@@ -76,21 +76,21 @@ public class Trie<E> implements Iterable<E> {
 	}
 	
 	public boolean add(E e) {
-		checkNonNullElement(e);
+		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) throw new IllegalArgumentException("element not in sub-trie");
 		return add(serialization.buffer(), serialization.length());
 	}
 	
 	public boolean contains(E e) {
-		checkNonNullElement(e);
+		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) return false;
 		return contains(serialization.buffer(), serialization.length());
 	}
 	
 	public boolean remove(E e) {
-		checkNonNullElement(e);
+		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) return false;
 		return remove(serialization.buffer(), serialization.length());
@@ -163,11 +163,11 @@ public class Trie<E> implements Iterable<E> {
 		return new Trie<E>(s, nodes);
 	}
 	
-	// private helper methods
-	
-	private void checkNonNullElement(E e) {
-		if (e == null) throw new IllegalArgumentException("null e");
+	void checkSerializable(E e) {
+		if (!serialization.isSerializable(e)) throw new IllegalArgumentException("invalid e");
 	}
+	
+	// private helper methods
 	
 	//TODO eliminate
 	private int compare(byte a, byte b) {
@@ -263,11 +263,11 @@ public class Trie<E> implements Iterable<E> {
 
 	// inner classes
 	
-	private class NodeIterator implements Iterator<E> {
+	class NodeIterator implements Iterator<E> {
 
-		private final Serialization<E> serial = serialization.resetCopy();
-		private TrieNode[] stack = new TrieNode[serial.buffer().length];
-		private TrieNode next;
+		final Serialization<E> serial = serialization.resetCopy();
+		TrieNode[] stack = new TrieNode[serial.buffer().length];
+		TrieNode next;
 		private E previous = null;
 		private boolean removed = false;
 		private long invalidations = nodes.invalidations();
@@ -277,7 +277,6 @@ public class Trie<E> implements Iterable<E> {
 				next = null;
 			} else {
 				if (e == null) {
-					next = nodes.root();
 					serial.set(prefix);
 				} else {
 					serial.set(e);
@@ -287,7 +286,9 @@ public class Trie<E> implements Iterable<E> {
 				if (next != null && !next.isTerminal()) advance();
 			}
 		}
-		
+
+		NodeIterator() { }
+
 		@Override
 		public boolean hasNext() {
 			checkInvalidations();
@@ -310,6 +311,16 @@ public class Trie<E> implements Iterable<E> {
 			if (previous == null) throw new IllegalStateException("no previous element");
 			Trie.this.remove(previous);
 			removed = true;
+		}
+
+		void refresh() {
+			if (previous == null) {
+				serial.reset();
+			} else {
+				serial.set(previous);
+			}
+			sync();
+			if (next != null) advance();
 		}
 		
 		private void advance() {
@@ -342,13 +353,7 @@ public class Trie<E> implements Iterable<E> {
 		private void checkInvalidations() {
 			long latest = nodes.invalidations();
 			if (invalidations == latest) return;
-			if (previous == null) {
-				serial.reset();
-			} else {
-				serial.set(previous);
-			}
-			sync();
-			if (next != null) advance();
+			refresh();
 			invalidations = latest;
 		}
 		

@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 import java.util.Set;
 
@@ -266,6 +268,7 @@ public class TrieTest {
 		if (itrie != null) {
 			for (int i = 0; i < 1000; i++) {
 				assertEquals(values[i], itrie.get(i).longValue());
+				assertEquals(i, itrie.indexOf(values[i]));
 			}
 		}
 
@@ -465,6 +468,11 @@ public class TrieTest {
 			IndexedTrie<String> isub = (IndexedTrie<String>) sub;
 			assertEquals("Hot diggity!", isub.get(0));
 			assertEquals("Hot mess", isub.get(1));
+			assertEquals(0, isub.indexOf("Hot diggity!"));
+			assertEquals(1, isub.indexOf("Hot mess"));
+			assertEquals(-1, isub.indexOf("Hot apple pie"));
+			assertEquals(-2, isub.indexOf("Hot grits"));
+			assertEquals(-3, isub.indexOf("Hot potato"));
 		}
 
 		try {
@@ -475,4 +483,49 @@ public class TrieTest {
 		}
 	}
 
+	@Test
+	public void testAsList() {
+		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		List<String> list = trie.asList();
+		assertEquals(0, list.size());
+		assertTrue(list.isEmpty());
+		assertFalse(list.iterator().hasNext());
+		trie.add("Adult");
+		assertEquals(1, list.size());
+		assertFalse(list.isEmpty());
+		assertTrue(list.iterator().hasNext());
+		trie.add("Baby");
+		trie.add("Child");
+		assertEquals(3, list.size());
+		assertEquals(0, list.indexOf("Adult"));
+		assertEquals(1, list.indexOf("Baby"));
+		assertEquals(2, list.indexOf("Child"));
+		assertEquals("Adult", list.get(0));
+		assertEquals("Baby", list.get(1));
+		assertEquals("Child", list.get(2));
+		assertFalse(list.listIterator(3).hasNext());
+		ListIterator<String> it = list.listIterator(2);
+		assertTrue(it.hasNext());
+		assertEquals("Child", it.next());
+		assertFalse(it.hasNext());
+		assertTrue(it.hasPrevious());
+		assertEquals("Child", it.previous());
+		assertEquals("Child", it.next());
+		assertEquals(3, it.nextIndex());
+		assertEquals("Child", it.previous());
+		assertEquals("Baby", it.previous());
+		assertEquals("Adult", it.previous());
+		assertFalse(it.hasPrevious());
+		assertEquals(-1, it.previousIndex());
+		assertEquals("Adult", it.next());
+		assertEquals("Baby", it.next());
+		it.remove();
+		assertEquals("Child", it.next());
+		it.remove();
+		assertEquals("Adult", it.previous());
+		trie.clear();
+		assertFalse(it.hasNext());
+		assertFalse(it.hasPrevious());
+	}
+	
 }
