@@ -592,6 +592,12 @@ public class TrieTest {
 		assertTrue(trie.subTrie("ABER").first().get().equalsIgnoreCase("Aberdeen"));
 		assertTrue(trie.subTrie("ABER").last().get().equalsIgnoreCase("Abergavenny"));
 	}
+
+	@Test
+	public void testLongPrefix() {
+		Trie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		trie.subTrie("Some very long prefix which is almost certain to exceed the default capacity").iterator();
+	}
 	
 	private <E> void checkTrieOrder(Trie<E> trie) {
 		Comparator<E> c = trie.comparator();

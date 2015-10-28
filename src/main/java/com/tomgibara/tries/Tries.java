@@ -79,20 +79,13 @@ public class Tries<E> {
 		}
 
 		@Override
-		public void length(int length) {
-			if (length < 0) throw new IllegalArgumentException("negative length");
-			if (length > buffer.length) throw new IllegalArgumentException("length too great");
-			this.length = length;
-		}
-		
-		@Override
 		public void reset() {
 			length = 0;
 		}
 		
 		@Override
 		public boolean startsWith(byte[] prefix) {
-			if (prefix.length > buffer.length) return false;
+			if (prefix.length > length) return false;
 			for (int i = 0; i < prefix.length; i++) {
 				if (buffer[i] != prefix[i]) return false;
 			}
@@ -210,7 +203,7 @@ public class Tries<E> {
 					if (result.isMalformed()) {
 						throw new IllegalStateException("malformed input");
 					}
-					
+
 				}
 			} finally {
 				encoder.reset();
