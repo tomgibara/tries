@@ -5,7 +5,6 @@ import static java.lang.Math.max;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
@@ -122,7 +121,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 	@Override
 	public Node newNode(byte value) {
 		Node n = newNode();
-		n.setValue(value);
+		n.setChildValue(0, value);
 		n.setValueCount(1);
 		return n;
 	}
@@ -339,6 +338,8 @@ public class PackedIntTrieNodes implements TrieNodes {
 	// inner classes
 	
 	class Node implements TrieNode {
+
+		// statics
 		
 		private static final int MAX_VALUES = 6;
 		
@@ -349,11 +350,15 @@ public class PackedIntTrieNodes implements TrieNodes {
 		private static final int COUNT_MASK      = 0x00070000;
 		private static final int COUNT_SHIFT     = 16;
 		
+		// fields
+		
 		private int index;
 		private int offset;
 		// points to packed child - 0 is start node, always < valueCount
 		private int ordinal;
 
+		// constructors
+		
 		private Node(int index) {
 			this(index, 0);
 		}
@@ -363,24 +368,25 @@ public class PackedIntTrieNodes implements TrieNodes {
 			this.ordinal = ordinal;
 			this.offset = index * nodeSize;
 		}
+
+		// attributes
 		
+		@Override
 		public byte getValue() {
 			return getChildValue(ordinal);
 		}
 		
-		public void setValue(byte value) {
-			setChildValue(ordinal, value);
-		}
-
 		@Override
 		public boolean isDangling() {
 			return !isTerminal() && !hasChild();
 		}
 		
+		@Override
 		public boolean isTerminal() {
 			return (getTerminals() & (1 << ordinal)) != 0;
 		}
 		
+		@Override
 		public void setTerminal(boolean terminal) {
 			if (terminal == isTerminal()) return;
 			int terminals = getTerminals();
@@ -388,34 +394,19 @@ public class PackedIntTrieNodes implements TrieNodes {
 			setTerminals(terminals);
 		}
 
+		// sibling
+		
+		@Override
 		public boolean hasSibling() {
 			return getSiblingFlag();
 		}
 		
 		@Override
-		public boolean isSibling(TrieNode node) {
-			return getSiblingFlag() && getSiblingIndex() == ((Node) node).index;
-		}
-		
 		public Node getSibling() {
 			int siblingIndex = getSiblingIndex();
 			return siblingIndex == 0 ? null : new Node(siblingIndex);
 		}
 		
-		public void setSibling(TrieNode sibling) {
-			if (sibling == null) {
-				setSiblingFlag(false);
-			} else {
-				// to have a sibling, we mustn't be packed ...
-				separate();
-				// ... and we mustn't have packed children ...
-				separateChild();
-				// ... now we are safe to set a sibling
-				setSiblingIndex(((Node) sibling).index);
-				setSiblingFlag(true);
-			}
-		}
-
 		@Override
 		public Node insertSibling(byte value) {
 			Node sibling = newNode(value);
@@ -423,6 +414,13 @@ public class PackedIntTrieNodes implements TrieNodes {
 			setSibling(sibling);
 			return sibling;
 		}
+		
+		@Override
+		public boolean isSibling(TrieNode node) {
+			return getSiblingFlag() && getSiblingIndex() == ((Node) node).index;
+		}
+		
+		// child
 		
 		public Node getChild() {
 			int childOrd = ordinal + 1;
@@ -438,19 +436,9 @@ public class PackedIntTrieNodes implements TrieNodes {
 			return child;
 		}
 		
+		@Override
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
-		}
-		
-		public void setChild(TrieNode child) {
-			if (child == null) {
-				if (!hasChild()) return;
-				separateChild();
-				setChildIndex(0);
-			} else {
-				separateChild();
-				setChildIndex(((Node) child).index);
-			}
 		}
 		
 		@Override
@@ -496,18 +484,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 			return child;
 		}
 		
-		private TrieNode findChildOrPrevious(byte value) {
-			Node previous = null;
-			Node child = getChild();
-			while (child != null) {
-				int c = compare(child.getValue(), value);
-				if (c <= 0) previous = child;
-				if (c >= 0) break;
-				child = child.getSibling();
-			}
-			return previous;
-		}
-		
 		@Override
 		//TODO use findChildOrPrevious ?
 		public TrieNode findOrInsertChild(byte value) {
@@ -549,7 +525,7 @@ public class PackedIntTrieNodes implements TrieNodes {
 		}
 		
 		@Override
-		public int countTo(byte value) {
+		public int countToChild(byte value) {
 			int count = isTerminal() ? 1 : 0;
 			Node child = getChild();
 			while (child != null && compare(child.getValue(), value) < 0) {
@@ -600,6 +576,32 @@ public class PackedIntTrieNodes implements TrieNodes {
 				index = parent.getChildIndex();
 				ordinal = 0;
 				offset = index * nodeSize;
+			}
+		}
+		
+		private void setSibling(TrieNode sibling) {
+			if (sibling == null) {
+				setSiblingFlag(false);
+			} else {
+				// to have a sibling, we mustn't be packed ...
+				separate();
+				// ... and we mustn't have packed children ...
+				separateChild();
+				// ... now we are safe to set a sibling
+				setSiblingIndex(((Node) sibling).index);
+				setSiblingFlag(true);
+			}
+		}
+
+		//TODO currently only called with null - consider changing to clearChild
+		private void setChild(TrieNode child) {
+			if (child == null) {
+				if (!hasChild()) return;
+				separateChild();
+				setChildIndex(0);
+			} else {
+				separateChild();
+				setChildIndex(((Node) child).index);
 			}
 		}
 		

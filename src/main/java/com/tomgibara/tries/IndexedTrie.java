@@ -71,7 +71,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		int index = 0;
 		for (int i = 0; i < length; i++) {
 			byte value = bytes[i];
-			index += node.countTo(value);
+			index += node.countToChild(value);
 			node = node.findChild(value);
 			if (node == null) break;
 		}
@@ -93,7 +93,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		int index = 0;
 		for (int i = prefix.length; i < length; i++) {
 			byte value = bytes[i];
-			index += node.countTo(value);
+			index += node.countToChild(value);
 			node = node.findChild(value);
 			if (node == null) return -1 - index;
 		}

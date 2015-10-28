@@ -2,10 +2,9 @@ package com.tomgibara.tries;
 
 interface TrieNode {
 
-	byte getValue();
+	// attributes
 	
-	//TODO currently unused
-	void setValue(byte value);
+	byte getValue();
 	
 	boolean isTerminal();
 	
@@ -13,30 +12,30 @@ interface TrieNode {
 	boolean isDangling();
 	
 	void setTerminal(boolean terminal);
-	
-	TrieNode getSibling();
+
+	// sibling
 	
 	boolean hasSibling();
 	
-	//TODO currently unused
-	void setSibling(TrieNode sibling);
+	TrieNode getSibling();
 	
 	// any current sibling becomes sibling of new sibling
 	TrieNode insertSibling(byte value);
 
 	boolean isSibling(TrieNode node);
 	
+	// child
+	
 	boolean hasChild();
 	
 	TrieNode getChild();
 	
-	TrieNode getLastChild();
-	
-	//TODO currently unused
-	void setChild(TrieNode child);
-	
 	// any current child becomes sibling of new child
 	TrieNode insertChild(byte value);
+
+	// child navigation
+	
+	TrieNode getLastChild();
 	
 	TrieNode findChild(byte value);
 
@@ -44,12 +43,15 @@ interface TrieNode {
 	
 	TrieNode findOrInsertChild(byte value);
 	
+	// to is the node's child or one of its siblings, but not including the value supplied
+	int countToChild(byte value);
+
+	// miscellaneous
+	
 	boolean remove(TrieNode childOrSibling);
 	
 	int getCount();
 
-	// to is the node's child or one of its siblings, but not including the value supplied
-	int countTo(byte value);
-	
 	void delete();
+
 }
