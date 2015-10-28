@@ -27,13 +27,17 @@ public class TrieTest {
 	static final Charset UTF8 = Charset.forName("UTF8");
 	static final Charset ASCII = Charset.forName("ASCII");
 
-	private static void dump(Trie<?> trie) {
-		((Trie<?>) trie).dump();
-	}
-
+	private static final boolean DESCRIBE = false;
+	
 	private static void dump(String title, Trie<?> trie) {
-		System.out.println(title);
-		dump(trie);
+		if (DESCRIBE) {
+			System.out.println(title);
+			((Trie<?>) trie).dump();
+		}
+	}
+	
+	private static void describe(String str) {
+		if (DESCRIBE) System.out.println(str);
 	}
 
 	private static void check(Trie<?> trie) {
@@ -52,7 +56,7 @@ public class TrieTest {
 		assertEquals(s.length() + 1, trie.size());
 		for (int i = 0; i <= s.length(); i++) {
 			String t = s.substring(0, i);
-			System.out.println("GETTING " + i + " AND EXPECTING " + t);
+			describe("GETTING " + i + " AND EXPECTING " + t);
 			assertEquals(t, trie.get(i));
 		}
 	}
@@ -88,18 +92,18 @@ public class TrieTest {
 			trie = tries.newTrie();
 		}
 		assertFalse(trie.contains("Moon"));
-		System.out.println("ADDING MOON");
+		describe("ADDING MOON");
 		assertTrue(trie.add("Moon"));
-		System.out.println("MOON ADDED");
+		describe("MOON ADDED");
 		assertTrue(trie.contains("Moon"));
 		assertFalse(trie.contains("Moo"));
-		System.out.println("ADDING MOO");
+		describe("ADDING MOO");
 		assertTrue(trie.add("Moo"));
-		System.out.println("MOO ADDED");
+		describe("MOO ADDED");
 		assertTrue(trie.contains("Moo"));
-		System.out.println("ADDING MOODY");
+		describe("ADDING MOODY");
 		assertTrue(trie.add("Moody"));
-		System.out.println("MOODY ADDED");
+		describe("MOODY ADDED");
 		assertTrue(trie.contains("Moody"));
 
 		// plain iterator
@@ -150,30 +154,30 @@ public class TrieTest {
 		assertTrue(i.hasNext());
 		assertEquals("Moody", i.next());
 		
-		System.out.println("REMOVING MOODY");
+		describe("REMOVING MOODY");
 		assertTrue(trie.remove("Moody"));
-		System.out.println("MOODY REMOVED");
+		describe("MOODY REMOVED");
 		assertFalse(trie.contains("Moody"));
 		assertTrue(trie.contains("Moo"));
 		assertTrue(trie.contains("Moon"));
 		assertEquals(2, trie.size());
 
-		System.out.println("REMOVING MOO");
+		describe("REMOVING MOO");
 		assertTrue(trie.remove("Moo"));
-		System.out.println("MOO REMOVED");
+		describe("MOO REMOVED");
 		assertFalse(trie.contains("Moo"));
 		assertTrue(trie.contains("Moon"));
 		assertEquals(1, trie.size());
 
 		dump("BEFORE", trie);
-		System.out.println("REMOVING MOON");
+		describe("REMOVING MOON");
 		assertTrue(trie.remove("Moon"));
-		System.out.println("MOON REMOVED");
+		describe("MOON REMOVED");
 		dump("AFTER", trie);
 		assertFalse(trie.contains("Moon"));
 		assertEquals(0, trie.size());
 		
-		System.out.println("EXPECTED EMPTY");
+		describe("EXPECTED EMPTY");
 		
 		Trie<String> asciiTrie = Tries.builderForStrings(ASCII).newTrie();
 		try {
@@ -221,7 +225,7 @@ public class TrieTest {
 		
 		// handy debug version
 //		Stores.longs(values).asList().forEach(value -> {
-//			System.out.println("ADDING " + Long.toHexString(value) + " " + value);
+//			describe("ADDING " + Long.toHexString(value) + " " + value);
 //			trie.add(value);
 //			check(trie);
 //		});
@@ -231,9 +235,9 @@ public class TrieTest {
 		// advanced checking of indexing
 //		for (int i = 0; i < values.length; i++) {
 //			long value = values[i];
-//			System.out.println("ADDING " + Long.toHexString(value) + " " + value + " (" + i + ")");
+//			describe("ADDING " + Long.toHexString(value) + " " + value + " (" + i + ")");
 //			trie.add(value);
-//			System.out.println("ADDING COMPLETE");
+//			describe("ADDING COMPLETE");
 //			assertEquals(i + 1, trie.size());
 //			long[] vs = Arrays.copyOf(values, i + 1);
 //			Arrays.sort(vs);
@@ -290,7 +294,7 @@ public class TrieTest {
 		for (int i = 0; i < 10000; i++) {
 			long value = values[i];
 			boolean unseen = watch.add(value);
-			if (!unseen) System.out.println("DUPLICATE VALUE : " + watch);
+			if (!unseen) describe("DUPLICATE VALUE : " + watch);
 			boolean contained = trie.contains(value);
 			if (!contained) {
 				int count = 0;
@@ -298,7 +302,7 @@ public class TrieTest {
 					if (v == value) throw new IllegalStateException();
 					count++;
 				}
-				System.out.println(count);
+				describe("COUNT: " + count);
 			}
 			assertEquals("Trie containing " + value, unseen, contained);
 			assertEquals(contained, trie.remove(value) );
@@ -315,7 +319,7 @@ public class TrieTest {
 		long previous = -1L;
 		for (Iterator<Long> i = trie.iterator(); i.hasNext(); ) {
 			long value = i.next();
-//			System.out.println("COUNT " + count + " HEX: " + Long.toHexString(value));
+//			describe("COUNT " + count + " HEX: " + Long.toHexString(value));
 //			if (!trie.contains(value)) {
 //				long sub = 0L;
 //				long sup = -1L;
@@ -326,7 +330,7 @@ public class TrieTest {
 //						sup = v; break;
 //					}
 //				}
-//				System.out.println("SUB: " + Long.toHexString(sub) + " < " + value + " < " + Long.toHexString(sup));
+//				describe("SUB: " + Long.toHexString(sub) + " < " + value + " < " + Long.toHexString(sup));
 //			}
 			assertTrue(trie.contains(value));
 			count ++;
@@ -351,17 +355,13 @@ public class TrieTest {
 		assertFalse(trie.first().isPresent());
 		assertFalse(trie.last().isPresent());
 		trie.add("Apple");
-		System.out.println("ADDED APPLE");
-		dump(trie);
+		dump("ADDED APPLE", trie);
 		trie.add("Ape");
-		System.out.println("ADDED APE");
-		dump(trie);
+		dump("ADDED APE", trie);
 		trie.add("Baboon");
-		System.out.println("ADDED BABOON");
-		dump(trie);
-		System.out.println("ADDED CARTWHEEL");
+		dump("ADDED BABOON", trie);
 		trie.add("Cartwheel");
-		dump(trie);
+		dump("ADDED CARTWHEEL", trie);
 		Iterator<String> i = trie.iterator();
 		assertEquals("Cartwheel", i.next());
 		assertEquals("Baboon", i.next());
@@ -405,12 +405,11 @@ public class TrieTest {
 			for (int j = 0; j < strs.length; j++) {
 				strs[j] = randStr(r, 8);
 			}
-			System.out.println(":::::::::::: " + i + ":" + Arrays.asList(strs));
+			describe("STRINGS: " + i + ":" + Arrays.asList(strs));
 			IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
 			trie.addAll(Arrays.asList(strs));
 			for (String str : strs) {
-				System.out.println(":::::::::::: " + str);
-				dump(trie);
+				dump("REMOVING " + str, trie);
 				trie.remove(str);
 			}
 		}
