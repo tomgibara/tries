@@ -431,6 +431,13 @@ public class PackedIntTrieNodes implements TrieNodes {
 			return childIndex == 0 ? null : new Node(childIndex);
 		}
 		
+		@Override
+		public TrieNode getLastChild() {
+			Node child = getChild();
+			if (child != null) while (child.hasSibling()) child = child.getSibling();
+			return child;
+		}
+		
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
 		}

@@ -151,17 +151,12 @@ public class Trie<E> implements Iterable<E> {
 		serialization.set(prefix);
 		TrieNode node = root();
 		while (true) {
-			if (node.hasSibling()) {
-				node = node.getSibling();
-				serialization.replace(node.getValue());
-			} else if (node.hasChild()) {
-				node = node.getChild();
-				serialization.push(node.getValue());
-			} else {
-				if (!node.isTerminal()) throw new IllegalStateException();
-				break;
-			}
+			TrieNode child = node.getLastChild();
+			if (child == null) break; // node should be terminal
+			node = child;
+			serialization.push(node.getValue());
 		}
+		if (!node.isTerminal()) throw new IllegalStateException();
 		return Optional.of(serialization.get());
 	}
 

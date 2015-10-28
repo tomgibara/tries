@@ -26,9 +26,11 @@ interface TrieNode {
 
 	boolean isSibling(TrieNode node);
 	
+	boolean hasChild();
+	
 	TrieNode getChild();
 	
-	boolean hasChild();
+	TrieNode getLastChild();
 	
 	//TODO currently unused
 	void setChild(TrieNode child);
