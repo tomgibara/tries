@@ -206,6 +206,30 @@ public class PackedIntTrieNodes implements TrieNodes {
 		return invalidations;
 	}
 
+	// mutability
+	
+	@Override
+	public boolean isMutable() {
+		return true;
+	}
+	
+	public TrieNodes immutableView() {
+		return new ImmutableNodes(this);
+	}
+
+	//TODO want a specialized node implementation for this
+	@Override
+	public TrieNodes immutableCopy() {
+		return mutableCopy().immutableView();
+	}
+	
+	@Override
+	public TrieNodes mutableCopy() {
+		PackedIntTrieNodes copy = new PackedIntTrieNodes(byteOrder, nodeCount, counting);
+		copy.adopt(copy.root, root);
+		return copy;
+	}
+	
 	// package scoped methods
 	
 	void dumpAsAscii() {

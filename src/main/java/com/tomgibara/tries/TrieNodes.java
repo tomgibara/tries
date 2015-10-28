@@ -1,7 +1,9 @@
 package com.tomgibara.tries;
 
+import com.tomgibara.fundament.Mutability;
 
-interface TrieNodes {
+
+interface TrieNodes extends Mutability<TrieNodes> {
 
 	ByteOrder byteOrder();
 	

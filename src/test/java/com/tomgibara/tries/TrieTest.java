@@ -599,6 +599,41 @@ public class TrieTest {
 		trie.subTrie("Some very long prefix which is almost certain to exceed the default capacity").iterator();
 	}
 	
+	@Test
+	public void testMutability() {
+		Trie<String> trie = Tries.strings(UTF8).newTrie();
+		trie.add("Moo");
+
+		Trie<String> iv = trie.immutableView();
+		assertTrue(iv.contains("Moo"));
+		imm(() -> iv.remove("Moo"));
+		assertTrue(trie.remove("Moo"));
+		assertTrue(trie.isEmpty());
+		assertFalse(iv.contains("Moo"));
+		imm(() -> iv.add("Moo"));
+
+		Trie<String> mc = trie.mutableCopy();
+		System.out.println(trie);
+		assertTrue(trie.add("Moo"));
+		assertFalse(mc.contains("Moo"));
+		mc.add("Quack");
+		assertFalse(trie.contains("Quack"));
+		
+		Trie<String> ic = trie.immutableCopy();
+		assertTrue(ic.contains("Moo"));
+		assertFalse(ic.contains("Quack"));
+		imm(() -> ic.add("Quack"));
+	}
+	
+	private void imm(Runnable r) {
+		try {
+			r.run();
+			fail("expected immutable");
+		} catch (IllegalStateException e) {
+			/* expected */
+		}
+	}
+	
 	private <E> void checkTrieOrder(Trie<E> trie) {
 		Comparator<E> c = trie.comparator();
 		E previous = null;

@@ -7,9 +7,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 
-public class Trie<E> implements Iterable<E> {
+import com.tomgibara.fundament.Mutability;
+
+public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	// statics
 	
@@ -44,6 +45,13 @@ public class Trie<E> implements Iterable<E> {
 		invalidations = -1L; // to force computation of root
 	}
 	
+	Trie(Trie<E> trie, TrieNodes nodes) {
+		this.nodes = nodes;
+		this.serialization = trie.serialization.resetCopy();
+		this.prefix = trie.prefix;
+		invalidations = -1L; // to force computation of root
+	}
+	
 	// trie methods
 
 	public int size() {
@@ -56,7 +64,6 @@ public class Trie<E> implements Iterable<E> {
 		return root == null ? true : root.isDangling();
 	}
 	
-	//TODO implement
 	public void clear() {
 		if (prefix.length == 0) {
 			nodes.clear();
@@ -179,6 +186,34 @@ public class Trie<E> implements Iterable<E> {
 	public Iterator<E> iterator(E from) {
 		if (from == null) throw new IllegalArgumentException("null from");
 		return new NodeIterator(from);
+	}
+
+	// mutability methods
+	
+	@Override
+	public boolean isMutable() {
+		return nodes.isMutable();
+	}
+
+	@Override
+	public Trie<E> immutableView() {
+		return new Trie<E>(this, nodes.immutableView());
+	}
+	
+	@Override
+	public Trie<E> immutableCopy() {
+		return new Trie<E>(this, nodes.immutableCopy());
+	}
+	
+	@Override
+	public Trie<E> mutableCopy() {
+		return new Trie<E>(this, nodes.mutableCopy());
+	}
+	
+	// object methods
+	
+	public String toString() {
+		return asSet().toString();
 	}
 	
 	// package scoped methods

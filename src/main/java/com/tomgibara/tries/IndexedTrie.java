@@ -22,6 +22,10 @@ public class IndexedTrie<E> extends Trie<E> {
 	IndexedTrie(TrieSerialization<E> serialization, TrieNodes nodes) {
 		super(serialization, nodes);
 	}
+	
+	IndexedTrie(IndexedTrie<E> trie, TrieNodes nodes) {
+		super(trie, nodes);
+	}
 
 	@Override
 	public IndexedTrie<E> subTrie(E root) {
@@ -85,6 +89,33 @@ public class IndexedTrie<E> extends Trie<E> {
 		return new IndexedTrie<E>(s, nodes);
 	}
 
+	// mutability methods
+	
+	@Override
+	public IndexedTrie<E> immutableView() {
+		return new IndexedTrie<E>(this, nodes.immutableView());
+	}
+	
+	@Override
+	public IndexedTrie<E> immutableCopy() {
+		return new IndexedTrie<E>(this, nodes.immutableCopy());
+	}
+	
+	@Override
+	public IndexedTrie<E> mutableCopy() {
+		return new IndexedTrie<E>(this, nodes.mutableCopy());
+	}
+
+	@Override
+	public IndexedTrie<E> mutable() {
+		return isMutable() ? this : mutableCopy();
+	}
+	
+	@Override
+	public IndexedTrie<E> immutable() {
+		return isMutable() ? immutableCopy() : this;
+	}
+	
 	// private utility methods
 	
 	private int indexOf(byte[] bytes, int length) {
