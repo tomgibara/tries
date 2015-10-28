@@ -570,6 +570,29 @@ public class TrieTest {
 		assertTrue(subset.isEmpty());
 	}
 	
+	@Test
+	public void testCaseInsensitive() {
+		IndexedTrie<String> trie = Tries.builderForStrings(ASCII).byteOrder((a, b) -> {
+			int ca = Character.toUpperCase(a & 0xff);
+			int cb = Character.toUpperCase(b & 0xff);
+			return ca - cb;
+		}).newIndexedTrie();
+		trie.add("Aberdeen");
+		assertTrue(trie.contains("Aberdeen"));
+		assertTrue(trie.contains("ABERDEEN"));
+		assertTrue(trie.contains("aberdeen"));
+		trie.add("abergavenny");
+		assertTrue(trie.contains("Aberdeen"));
+		assertTrue(trie.contains("Abergavenny"));
+		trie.add("Birmingham");
+		Iterator<String> it = trie.iterator();
+		assertTrue(it.next().equalsIgnoreCase("Aberdeen"));
+		assertTrue(it.next().equalsIgnoreCase("Abergavenny"));
+		assertTrue(it.next().equalsIgnoreCase("Birmingham"));
+		assertTrue(trie.subTrie("ABER").first().get().equalsIgnoreCase("Aberdeen"));
+		assertTrue(trie.subTrie("ABER").last().get().equalsIgnoreCase("Abergavenny"));
+	}
+	
 	private <E> void checkTrieOrder(Trie<E> trie) {
 		Comparator<E> c = trie.comparator();
 		E previous = null;
