@@ -9,22 +9,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
-import com.tomgibara.tries.Tries.Serialization;
-
 public class Trie<E> implements Iterable<E> {
 
 	// statics
 	
 	private final byte[] NO_PREFIX = {};
 	
-	private static byte[] toPrefix(Serialization<?> s) {
+	private static byte[] toPrefix(TrieSerialization<?> s) {
 		return Arrays.copyOf(s.buffer(), s.length());
 	}
 
 	// fields
 
 	final TrieNodes nodes;
-	final Serialization<E> serialization;
+	final TrieSerialization<E> serialization;
 	final byte[] prefix;
 	private TrieNode root;
 	private long invalidations;
@@ -39,7 +37,7 @@ public class Trie<E> implements Iterable<E> {
 		invalidations = nodes.invalidations();
 	}
 	
-	Trie(Serialization<E> serialization, TrieNodes nodes) {
+	Trie(TrieSerialization<E> serialization, TrieNodes nodes) {
 		this.serialization = serialization;
 		this.nodes = nodes;
 		prefix = toPrefix(serialization);
@@ -131,7 +129,7 @@ public class Trie<E> implements Iterable<E> {
 
 	public Trie<E> subTrie(E root) {
 		if (root == null) throw new IllegalArgumentException("null root");
-		Serialization<E> s = serialization.resetCopy();
+		TrieSerialization<E> s = serialization.resetCopy();
 		s.set(root);
 		if (!s.startsWith(prefix)) throw new IllegalArgumentException("new sub root not in sub-trie");
 		return newTrie(s);
@@ -203,7 +201,7 @@ public class Trie<E> implements Iterable<E> {
 		return find(bytes, length);
 	}
 
-	Trie<E> newTrie(Serialization<E> s) {
+	Trie<E> newTrie(TrieSerialization<E> s) {
 		return new Trie<E>(s, nodes);
 	}
 	
@@ -314,7 +312,7 @@ public class Trie<E> implements Iterable<E> {
 	
 	class NodeIterator implements Iterator<E> {
 
-		final Serialization<E> serial = serialization.resetCopy();
+		final TrieSerialization<E> serial = serialization.resetCopy();
 		TrieNode[] stack = new TrieNode[serial.buffer().length];
 		TrieNode next;
 		private E previous = null;

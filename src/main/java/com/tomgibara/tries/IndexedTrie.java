@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import com.tomgibara.tries.Tries.Serialization;
-
 public class IndexedTrie<E> extends Trie<E> {
 
 	// fields
@@ -21,7 +19,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		super(tries, nodes);
 	}
 	
-	IndexedTrie(Serialization<E> serialization, TrieNodes nodes) {
+	IndexedTrie(TrieSerialization<E> serialization, TrieNodes nodes) {
 		super(serialization, nodes);
 	}
 
@@ -83,7 +81,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	}
 
 	@Override
-	IndexedTrie<E> newTrie(Serialization<E> s) {
+	IndexedTrie<E> newTrie(TrieSerialization<E> s) {
 		return new IndexedTrie<E>(s, nodes);
 	}
 

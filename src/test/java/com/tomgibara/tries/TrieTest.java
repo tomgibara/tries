@@ -46,7 +46,7 @@ public class TrieTest {
 
 	@Test
 	public void testIndexes() {
-		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 		String s = "abcdedfgh";
 		for (int i = s.length(); i >= 0; i--) {
 			String t = s.substring(0,  i);
@@ -63,7 +63,7 @@ public class TrieTest {
 
 	@Test
 	public void testDoubleInsertion() {
-		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 		trie.add("acxxx");
 		dump("ADDED acxxx", trie);
 		trie.add("abc");
@@ -81,7 +81,7 @@ public class TrieTest {
 	}
 
 	private void testStrings(boolean indexed) {
-		Tries<String> tries = Tries.builderForStrings(UTF8);
+		Tries<String> tries = Tries.strings(UTF8);
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -179,7 +179,7 @@ public class TrieTest {
 		
 		describe("EXPECTED EMPTY");
 		
-		Trie<String> asciiTrie = Tries.builderForStrings(ASCII).newTrie();
+		Trie<String> asciiTrie = Tries.strings(ASCII).newTrie();
 		try {
 			asciiTrie.add("\u00a9");
 			fail();
@@ -211,7 +211,7 @@ public class TrieTest {
 			} while (value < 0);
 			values[i] = value;
 		}
-		Tries<Long> tries = Tries.builder(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong());
+		Tries<Long> tries = Tries.serial(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong());
 		Trie<Long> trie;
 		IndexedTrie<Long> itrie;
 		if (indexed) {
@@ -351,7 +351,7 @@ public class TrieTest {
 	
 	@Test
 	public void testByteOrder() {
-		Trie<String> trie = Tries.builderForStrings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).newTrie();
+		Trie<String> trie = Tries.strings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).newTrie();
 		assertFalse(trie.first().isPresent());
 		assertFalse(trie.last().isPresent());
 		trie.add("Apple");
@@ -375,7 +375,7 @@ public class TrieTest {
 
 	@Test
 	public void testLiveIterator() {
-		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 		assertTrue(trie.add("One"));
 		Iterator<String> i = trie.iterator();
 		assertEquals ("One", i.next());
@@ -406,7 +406,7 @@ public class TrieTest {
 				strs[j] = randStr(r, 8);
 			}
 			describe("STRINGS: " + i + ":" + Arrays.asList(strs));
-			IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+			IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 			trie.addAll(Arrays.asList(strs));
 			for (String str : strs) {
 				dump("REMOVING " + str, trie);
@@ -431,7 +431,7 @@ public class TrieTest {
 	}
 
 	private void testSubTries(boolean indexed) {
-		Tries<String> tries = Tries.builderForStrings(UTF8);
+		Tries<String> tries = Tries.strings(UTF8);
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -500,7 +500,7 @@ public class TrieTest {
 
 	@Test
 	public void testAsList() {
-		IndexedTrie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 		List<String> list = trie.asList();
 		assertEquals(0, list.size());
 		assertTrue(list.isEmpty());
@@ -545,7 +545,7 @@ public class TrieTest {
 	
 	@Test
 	public void testAsSet() {
-		Trie<String> trie = Tries.builderForStrings(UTF8).newIndexedTrie();
+		Trie<String> trie = Tries.strings(UTF8).newIndexedTrie();
 		Set<String> set = trie.asSet();
 		assertTrue(set.isEmpty());
 		set.add("Scott");
@@ -572,7 +572,7 @@ public class TrieTest {
 	
 	@Test
 	public void testCaseInsensitive() {
-		IndexedTrie<String> trie = Tries.builderForStrings(ASCII).byteOrder((a, b) -> {
+		IndexedTrie<String> trie = Tries.strings(ASCII).byteOrder((a, b) -> {
 			int ca = Character.toUpperCase(a & 0xff);
 			int cb = Character.toUpperCase(b & 0xff);
 			return ca - cb;

@@ -18,82 +18,27 @@ import com.tomgibara.streams.ByteWriteStream;
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamSerializer;
 
-//TODO rename builder methods
 public class Tries<E> {
 
 	// statics
 	
 	private static final int DEFAULT_CAPACITY = 16;
 	
-	public static <E> Tries<E> builder(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
+	public static <E> Tries<E> serial(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
 		if (type == null) throw new IllegalArgumentException("null type");
 		if (serializer == null) throw new IllegalArgumentException("null serializer");
 		if (deserializer == null) throw new IllegalArgumentException("null deserializer");
 		return new Tries<>(() -> new StreamSerialization<E>(type, serializer, deserializer));
 	}
 	
-	public static <E> Tries<E> builder(Producer<Serialization<E>> serializationProducer) {
-		if (serializationProducer == null) throw new IllegalArgumentException("null serializationProducer");
-		return new Tries<>(serializationProducer);
-	}
-	
-	public static Tries<String> builderForStrings(Charset charset) {
+	public static Tries<String> strings(Charset charset) {
 		if (charset == null) throw new IllegalArgumentException("null charset");
 		return new Tries<>(() -> new StringSerialization(charset));
 	}
 	
 	// inner classes
 	
-	public interface Serialization<E> {
-
-		boolean isSerializable(Object obj);
-		
-		byte[] buffer();
-
-		void push(byte b);
-		
-		void replace(byte b);
-		
-		void pop();
-		
-		int length();
-		
-		void length(int newLength);
-		
-		void reset();
-
-		Serialization<E> resetCopy();
-
-		boolean startsWith(byte[] prefix);
-		
-		void set(byte[] prefix);
-		
-		void set(E e);
-
-		E get();
-		
-		default Comparator<E> comparator(ByteOrder byteOrder) {
-			if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
-			Serialization<E> as = resetCopy();
-			Serialization<E> bs = resetCopy();
-			return (a,b) -> {
-				as.set(a);
-				bs.set(b);
-				int al = as.length();
-				int bl = bs.length();
-				int limit = Math.min(al, bl);
-				byte[] ab = as.buffer();
-				byte[] bb = bs.buffer();
-				for (int i = 0; i < limit; i++) {
-					int c = byteOrder.compare(ab[i], bb[i]);
-					if (c != 0) return c;
-				}
-				return al - bl;
-			};
-		}
-	}
-
-	private static abstract class BaseSerialization<E> implements Serialization<E> {
+	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {
 
 		byte[] buffer = new byte[16];
 		int length = 0;
@@ -278,7 +223,7 @@ public class Tries<E> {
 		}
 		
 		@Override
-		public Serialization<String> resetCopy() {
+		public TrieSerialization<String> resetCopy() {
 			return new StringSerialization(this);
 		}
 		
@@ -286,13 +231,13 @@ public class Tries<E> {
 
 	// fields
 
-	final Producer<Serialization<E>> serialProducer;
+	final Producer<TrieSerialization<E>> serialProducer;
 	private int capacity = DEFAULT_CAPACITY;
 	private ByteOrder byteOrder = ByteOrder.UNSIGNED;
 
 	// constructors
 
-	private Tries(Producer<Serialization<E>> serialProducer) {
+	Tries(Producer<TrieSerialization<E>> serialProducer) {
 		this.serialProducer = serialProducer;
 	}
 	
