@@ -40,7 +40,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 
 	@Override
 	public int nodeCount() {
-		return root.getCount();
+		return root.countNodes();
 	}
 
 	@Override
@@ -102,7 +102,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		ours.count = theirs.getCount();
 		return ours;
 	}
-
 
 	private class BasicNode implements TrieNode {
 
@@ -208,6 +207,15 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			this.child = child;
 			invalidations ++;
 		}
-		
+
+		int countNodes() {
+			int count = 1;
+			if (child != null) count += child.countNodes();
+			if (sibling != null) count += sibling.countNodes();
+			return count;
+		}
+
+
+
 	}
 }

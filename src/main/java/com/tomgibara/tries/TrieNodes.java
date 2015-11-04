@@ -9,8 +9,10 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	
 	boolean isCounting();
 	
+	//NOTE may be a very slow operation
 	int nodeCount();
 	
+	//NOTE may be a very slow operation
 	long storageSize();
 	
 	TrieNode root();
