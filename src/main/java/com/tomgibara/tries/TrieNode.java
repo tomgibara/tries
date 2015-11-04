@@ -1,15 +1,20 @@
 package com.tomgibara.tries;
 
+
 interface TrieNode {
 
 	// attributes
+	
+	TrieNodes nodes();
 	
 	byte getValue();
 	
 	boolean isTerminal();
 	
 	// has dangling - non terminal and has no child
-	boolean isDangling();
+	default boolean isDangling() {
+		return !isTerminal() && !hasChild();
+	}
 	
 	void setTerminal(boolean terminal);
 
@@ -26,7 +31,9 @@ interface TrieNode {
 	
 	// child
 	
-	boolean hasChild();
+	default boolean hasChild() {
+		return getChild() != null;
+	}
 	
 	TrieNode getChild();
 	
@@ -35,16 +42,62 @@ interface TrieNode {
 
 	// child navigation
 	
-	TrieNode getLastChild();
+	default TrieNode getLastChild() {
+		TrieNode child = getChild();
+		if (child != null) while (child.hasSibling()) child = child.getSibling();
+		return child;
+	}
 	
-	TrieNode findChild(byte value);
+	default TrieNode findChild(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		TrieNode child = getChild();
+		if (child == null) return null;
+		while (true) {
+			int c = order.compare(child.getValue(), value);
+			if (c == 0) return child;
+			if (c > 0) return null;
+			if (!child.hasSibling()) return null;
+			child = child.getSibling();
+		}
+	}
 
-	TrieNode findChildOrNext(byte value);
+	default TrieNode findChildOrNext(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		TrieNode child = getChild();
+		while (child != null) {
+			int c = order.compare(child.getValue(), value);
+			if (c >= 0) break;
+			child = child.getSibling();
+		}
+		return child;
+	}
 	
-	TrieNode findOrInsertChild(byte value);
+	default TrieNode findOrInsertChild(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		TrieNode child = getChild();
+		if (child == null) return insertChild(value);
+		TrieNode previous = null;
+		while (true) {
+			int c = order.compare(child.getValue(), value);
+			if (c == 0) return child;
+			if (c > 0) return previous == null ? insertChild(value) : previous.insertSibling(value);
+			if (!child.hasSibling()) return child.insertSibling(value);
+			previous = child;
+			child = child.getSibling();
+		}
+	}
 	
 	// to is the node's child or one of its siblings, but not including the value supplied
-	int countToChild(byte value);
+	default int countToChild(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		int count = isTerminal() ? 1 : 0;
+		TrieNode child = getChild();
+		while (child != null && order.compare(child.getValue(), value) < 0) {
+			count += child.getCount();
+			child = child.getSibling();
+		}
+		return count;
+	}
 
 	// miscellaneous
 	
@@ -52,6 +105,8 @@ interface TrieNode {
 	
 	int getCount();
 
-	void delete();
+	default void delete() {
+		/* often a no-op */
+	}
 
 }

@@ -127,6 +127,11 @@ class ImmutableNodes implements TrieNodes {
 		}
 
 		@Override
+		public TrieNodes nodes() {
+			return ImmutableNodes.this;
+		}
+		
+		@Override
 		public byte getValue() {
 			return node.getValue();
 		}

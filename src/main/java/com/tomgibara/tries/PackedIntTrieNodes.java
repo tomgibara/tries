@@ -53,7 +53,7 @@ import java.util.Collections;
  *  |<-XVL5->|<-XVL4->|<-XVL3->|<-XVL2->|
  */
 
-public class PackedIntTrieNodes implements TrieNodes {
+public class PackedIntTrieNodes extends AbstractTrieNodes {
 
 	// fields
 
@@ -127,31 +127,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 	}
 	
 	@Override
-	public int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
-		Node node = (Node) root;
-		Node referrer = null;
-		outer: for (int i = 0; i < length; i++) {
-			byte b = values[i];
-			Node child = node.getChild();
-			if (child == null) return i;
-			referrer = node;
-			while (true) {
-				int c = compare(child.getValue(), b);
-				if (c == 0) {
-					node = child;
-					stack[i] = node;
-					referrers[i] = referrer;
-					continue outer;
-				}
-				if (c > 0 || !child.hasSibling()) return i;
-				referrer = child;
-				child = child.getSibling();
-			}
-		}
-		return length;
-	}
-	
-	@Override
 	public void incCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
@@ -213,16 +188,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 		return true;
 	}
 	
-	public TrieNodes immutableView() {
-		return new ImmutableNodes(this);
-	}
-
-	//TODO want a specialized node implementation for this
-	@Override
-	public TrieNodes immutableCopy() {
-		return mutableCopy().immutableView();
-	}
-	
 	@Override
 	public TrieNodes mutableCopy() {
 		PackedIntTrieNodes copy = new PackedIntTrieNodes(byteOrder, nodeCount, counting);
@@ -231,8 +196,9 @@ public class PackedIntTrieNodes implements TrieNodes {
 	}
 	
 	// package scoped methods
-	
-	void dumpAsAscii() {
+
+	@Override
+	void dump() {
 		dump(System.out, 0, root);
 	}
 	
@@ -396,13 +362,13 @@ public class PackedIntTrieNodes implements TrieNodes {
 		// attributes
 		
 		@Override
-		public byte getValue() {
-			return getChildValue(ordinal);
+		public PackedIntTrieNodes nodes() {
+			return PackedIntTrieNodes.this;
 		}
 		
 		@Override
-		public boolean isDangling() {
-			return !isTerminal() && !hasChild();
+		public byte getValue() {
+			return getChildValue(ordinal);
 		}
 		
 		@Override
@@ -454,13 +420,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 		}
 		
 		@Override
-		public TrieNode getLastChild() {
-			Node child = getChild();
-			if (child != null) while (child.hasSibling()) child = child.getSibling();
-			return child;
-		}
-		
-		@Override
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
 		}
@@ -485,46 +444,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 		}
 
 		@Override
-		public TrieNode findChild(byte value) {
-			Node child = getChild();
-			if (child == null) return null;
-			while (true) {
-				int c = compare(child.getValue(), value);
-				if (c == 0) return child;
-				if (c > 0) return null;
-				if (!child.hasSibling()) return null;
-				child = child.getSibling();
-			}
-		}
-		
-		@Override
-		public TrieNode findChildOrNext(byte value) {
-			Node child = getChild();
-			while (child != null) {
-				int c = compare(child.getValue(), value);
-				if (c >= 0) break;
-				child = child.getSibling();
-			}
-			return child;
-		}
-		
-		@Override
-		//TODO use findChildOrPrevious ?
-		public TrieNode findOrInsertChild(byte value) {
-			Node child = getChild();
-			if (child == null) return insertChild(value);
-			Node previous = null;
-			while (true) {
-				int c = compare(child.getValue(), value);
-				if (c == 0) return child;
-				if (c > 0) return previous == null ? insertChild(value) : previous.insertSibling(value);
-				if (!child.hasSibling()) return child.insertSibling(value);
-				previous = child;
-				child = child.getSibling();
-			}
-		}
-
-		@Override
 		public boolean remove(TrieNode childOrSibling) {
 			Node n = (Node) childOrSibling;
 			if (index == n.index && n.ordinal == ordinal + 1) {
@@ -546,17 +465,6 @@ public class PackedIntTrieNodes implements TrieNodes {
 		
 		public int getCount() {
 			return counting ? getCountX() + extraCount() : count(this);
-		}
-		
-		@Override
-		public int countToChild(byte value) {
-			int count = isTerminal() ? 1 : 0;
-			Node child = getChild();
-			while (child != null && compare(child.getValue(), value) < 0) {
-				count += child.getCount();
-				child = child.getSibling();
-			}
-			return count;
 		}
 		
 		public void delete() {

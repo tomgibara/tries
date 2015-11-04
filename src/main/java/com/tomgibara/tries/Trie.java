@@ -239,7 +239,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		if (!serialization.isSerializable(e)) throw new IllegalArgumentException("invalid e");
 	}
 
-	void dump() { ((PackedIntTrieNodes) nodes).dumpAsAscii(); }
+	void dump() { ((AbstractTrieNodes) nodes).dump(); }
 	
 	void check() {
 		try {
@@ -287,7 +287,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		TrieNode[] stack = new TrieNode[length];
 		TrieNode root = nodes.root();
 		// locate the target node, recording intermediate nodes (stack) and the nodes that refer to them (referrers)
-		if (nodes.populate(nodes.root(), bytes, length, stack, ancestors) < length) return false;
+		if (nodes.populate(root, bytes, length, stack, ancestors) < length) return false;
 		if (length == 0) { // treat the root node as a special case
 			if (!root.isTerminal()) return false;
 			nodes.decCounts(stack, length);
