@@ -5,11 +5,11 @@ import java.util.Objects;
 
 public final class ByteOrder {
 
-	private static final int UNS = 0;
-	private static final int SGN = 1;
-	private static final int RUN = 2;
-	private static final int RSN = 3;
-	private static final int CMP = 4;
+	private static final int CMP = 0;
+	private static final int UNS = 1;
+	private static final int SGN = 2;
+	private static final int RUN = 3;
+	private static final int RSN = 4;
 	
 	
 	private static int unsCmp(byte a, byte b) {
