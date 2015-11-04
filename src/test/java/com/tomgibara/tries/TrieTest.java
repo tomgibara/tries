@@ -613,7 +613,6 @@ public class TrieTest {
 		imm(() -> iv.add("Moo"));
 
 		Trie<String> mc = trie.mutableCopy();
-		System.out.println(trie);
 		assertTrue(trie.add("Moo"));
 		assertFalse(mc.contains("Moo"));
 		mc.add("Quack");
