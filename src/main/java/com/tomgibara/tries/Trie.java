@@ -243,7 +243,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	
 	void check() {
 		try {
-			((PackedIntTrieNodes) nodes).check(root().getCount());
+			((PackedTrieNodes) nodes).check(root().getCount());
 		} catch (IllegalStateException e) {
 			System.err.println(e.getMessage());
 			throw e;

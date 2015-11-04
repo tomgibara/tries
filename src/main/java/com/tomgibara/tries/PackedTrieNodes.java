@@ -53,14 +53,14 @@ import java.util.Collections;
  *  |<-XVL5->|<-XVL4->|<-XVL3->|<-XVL2->|
  */
 
-public class PackedIntTrieNodes extends AbstractTrieNodes {
+public class PackedTrieNodes extends AbstractTrieNodes {
 
 	// fields
 
 	private final ByteOrder byteOrder;
 	private final boolean counting;
 	private final int nodeSize;
-	private final Node root;
+	private final PackedNode root;
 	private int capacity;
 	private int[] data;
 	private int freeIndex;
@@ -71,7 +71,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	
 	// constructor
 	
-	PackedIntTrieNodes(ByteOrder byteOrder, int capacity, boolean counting) {
+	PackedTrieNodes(ByteOrder byteOrder, int capacity, boolean counting) {
 		this.byteOrder = byteOrder;
 		this.counting = counting;
 		this.capacity = capacity;
@@ -106,7 +106,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public Node root() {
+	public PackedNode root() {
 		return root;
 	}
 
@@ -119,8 +119,8 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public Node newNode(byte value) {
-		Node n = newNode();
+	public PackedNode newNode(byte value) {
+		PackedNode n = newNode();
 		n.setChildValue(0, value);
 		n.setValueCount(1);
 		return n;
@@ -130,10 +130,10 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	public void incCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
-		int last = ((Node) stack[length - 1]).index;
+		int last = ((PackedNode) stack[length - 1]).index;
 		int previous = last;
 		for (int i = length - 1; i >= 0; i--) {
-			Node node = (Node) stack[i];
+			PackedNode node = (PackedNode) stack[i];
 			int index = node.index;
 			if (index == previous) continue;
 			node.adjustCount(1);
@@ -146,11 +146,11 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	public void decCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
-		Node lastNode = (Node) stack[length - 1];
+		PackedNode lastNode = (PackedNode) stack[length - 1];
 		int last = lastNode.index;
 		int previous = last;
 		for (int i = length - 1; i >= 0; i--) {
-			Node node = (Node) stack[i];
+			PackedNode node = (PackedNode) stack[i];
 			int index = node.index;
 			if (index == previous) continue;
 			if (index != 0) node.adjustCount(-1);
@@ -190,7 +190,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	
 	@Override
 	public TrieNodes mutableCopy() {
-		PackedIntTrieNodes copy = new PackedIntTrieNodes(byteOrder, nodeCount, counting);
+		PackedTrieNodes copy = new PackedTrieNodes(byteOrder, nodeCount, counting);
 		copy.adopt(copy.root, root);
 		return copy;
 	}
@@ -208,7 +208,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	
 	// private helper methods
 	
-	private void dump(PrintStream out, int indent, Node node) {
+	private void dump(PrintStream out, int indent, PackedNode node) {
 		if (node == null) return;
 		out.print(String.format("% 6d:", node.index));
 		for (int i = 0; i < indent; i++) {
@@ -223,7 +223,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		dump(out, indent, node.getSibling());
 	}
 	
-	private void check(Node node, int count) {
+	private void check(PackedNode node, int count) {
 		//TODO if counted, check count is zero?
 		if (node == null) return;
 		
@@ -251,7 +251,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		}
 	}
 
-	private Node newNode() {
+	private PackedNode newNode() {
 		int index;
 		if (nodeLimit < capacity) {
 			index = nodeLimit++;
@@ -264,22 +264,22 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		}
 		nodeCount++;
 		Arrays.fill(data, index * nodeSize, index * nodeSize + nodeSize, 0);
-		Node node = new Node(index);
+		PackedNode node = new PackedNode(index);
 		node.setValueCount(1);
 		return node;
 	}
 
-	private Node adopt(Node ours, Node theirs) {
+	private PackedNode adopt(PackedNode ours, PackedNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
-		Node sibling = theirs.getSibling();
+		PackedNode sibling = theirs.getSibling();
 		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
-		Node child = theirs.getChild();
+		PackedNode child = theirs.getChild();
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
 		if (counting && ours.ordinal == 0) ours.setCount(theirs.getCount() - ours.extraCount());
 		return ours;
 	}
 	
-	private void checkCounts(Node ours, Node theirs) {
+	private void checkCounts(PackedNode ours, PackedNode theirs) {
 		if (ours == null && theirs == null) return;
 		if (ours == null || theirs == null) throw new IllegalStateException("Missing node " + ours + " " + theirs);
 		if (ours.getCount() != theirs.getCount()) throw new IllegalStateException("Different sizes between " + ours + " " + theirs + " ("+ours.getCount()+") ("+theirs.getCount()+")");
@@ -287,14 +287,14 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		checkCounts(ours.getSibling(), theirs.getSibling());
 	}
 	
-	private int count(Node node, int count) {
+	private int count(PackedNode node, int count) {
 		if (node.isTerminal()) count ++;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		if (node.hasSibling()) count += count(node.getSibling(), 0);
 		return count;
 	}
 	
-	private int count(Node node) {
+	private int count(PackedNode node) {
 		int count = node.isTerminal() ? 1 : 0;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		return count;
@@ -310,7 +310,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 	}
 	
 	private void compact(int newCapacity) {
-		PackedIntTrieNodes those = new PackedIntTrieNodes(byteOrder, newCapacity, counting);
+		PackedTrieNodes those = new PackedTrieNodes(byteOrder, newCapacity, counting);
 		those.adopt(those.root, root);
 		capacity = newCapacity;
 		data = those.data;
@@ -327,7 +327,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 
 	// inner classes
 	
-	class Node implements TrieNode {
+	class PackedNode implements TrieNode {
 
 		// statics
 		
@@ -349,11 +349,11 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 
 		// constructors
 		
-		private Node(int index) {
+		private PackedNode(int index) {
 			this(index, 0);
 		}
 
-		private Node(int index, int ordinal) {
+		private PackedNode(int index, int ordinal) {
 			this.index = index;
 			this.ordinal = ordinal;
 			this.offset = index * nodeSize;
@@ -362,8 +362,8 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		// attributes
 		
 		@Override
-		public PackedIntTrieNodes nodes() {
-			return PackedIntTrieNodes.this;
+		public PackedTrieNodes nodes() {
+			return PackedTrieNodes.this;
 		}
 		
 		@Override
@@ -392,14 +392,14 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public Node getSibling() {
+		public PackedNode getSibling() {
 			int siblingIndex = getSiblingIndex();
-			return siblingIndex == 0 ? null : new Node(siblingIndex);
+			return siblingIndex == 0 ? null : new PackedNode(siblingIndex);
 		}
 		
 		@Override
-		public Node insertSibling(byte value) {
-			Node sibling = newNode(value);
+		public PackedNode insertSibling(byte value) {
+			PackedNode sibling = newNode(value);
 			sibling.setSibling(getSibling());
 			setSibling(sibling);
 			return sibling;
@@ -407,16 +407,16 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean isSibling(TrieNode node) {
-			return getSiblingFlag() && getSiblingIndex() == ((Node) node).index;
+			return getSiblingFlag() && getSiblingIndex() == ((PackedNode) node).index;
 		}
 		
 		// child
 		
-		public Node getChild() {
+		public PackedNode getChild() {
 			int childOrd = ordinal + 1;
-			if (childOrd < getValueCount()) return new Node(index, childOrd);
+			if (childOrd < getValueCount()) return new PackedNode(index, childOrd);
 			int childIndex = getChildIndex();
-			return childIndex == 0 ? null : new Node(childIndex);
+			return childIndex == 0 ? null : new PackedNode(childIndex);
 		}
 		
 		@Override
@@ -425,8 +425,8 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public Node insertChild(byte value) {
-			Node existingChild = separateChild();
+		public PackedNode insertChild(byte value) {
+			PackedNode existingChild = separateChild();
 			if (getValueCount() < MAX_VALUES && !hasSibling() && existingChild == null) {
 				int childOrd = ordinal + 1;
 				// insert new value
@@ -434,9 +434,9 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 				// update count
 				setValueCount(getValueCount() + 1);
 				// fabricate child node
-				return new Node(index, childOrd);
+				return new PackedNode(index, childOrd);
 			}
-			Node child = newNode(value);
+			PackedNode child = newNode(value);
 			//TODO replace with setting index & flag
 			child.setSibling(existingChild);
 			setChildIndex(child.index);
@@ -445,7 +445,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 
 		@Override
 		public boolean remove(TrieNode childOrSibling) {
-			Node n = (Node) childOrSibling;
+			PackedNode n = (PackedNode) childOrSibling;
 			if (index == n.index && n.ordinal == ordinal + 1) {
 				// note, truncates packed descendants
 				setValueCount(ordinal + 1);
@@ -502,7 +502,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 			if (ordinal == 0) {
 				separateChild();
 			} else {
-				Node parent = new Node(index, ordinal - 1);
+				PackedNode parent = new PackedNode(index, ordinal - 1);
 				parent.separateChild();
 				//TODO ugly - any better way?
 				index = parent.getChildIndex();
@@ -520,7 +520,7 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 				// ... and we mustn't have packed children ...
 				separateChild();
 				// ... now we are safe to set a sibling
-				setSiblingIndex(((Node) sibling).index);
+				setSiblingIndex(((PackedNode) sibling).index);
 				setSiblingFlag(true);
 			}
 		}
@@ -533,14 +533,14 @@ public class PackedIntTrieNodes extends AbstractTrieNodes {
 				setChildIndex(0);
 			} else {
 				separateChild();
-				setChildIndex(((Node) child).index);
+				setChildIndex(((PackedNode) child).index);
 			}
 		}
 		
-		private Node separateChild() {
+		private PackedNode separateChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd >= getValueCount()) return getChild(); // no child to separate
-			Node child = newNode();
+			PackedNode child = newNode();
 			int valueCount = getValueCount();
 			for (int i = childOrd; i < valueCount; i++) {
 				child.setChildValue(i - childOrd, getChildValue(i));

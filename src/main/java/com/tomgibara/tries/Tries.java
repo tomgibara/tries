@@ -258,10 +258,10 @@ public class Tries<E> {
 	// package scoped methods
 	
 	TrieNodes newNodes() {
-		return new PackedIntTrieNodes(byteOrder, capacity, false);
+		return new PackedTrieNodes(byteOrder, capacity, false);
 	}
 	
 	TrieNodes newIndexedNodes() {
-		return new PackedIntTrieNodes(byteOrder, capacity, true);
+		return new PackedTrieNodes(byteOrder, capacity, true);
 	}
 }
