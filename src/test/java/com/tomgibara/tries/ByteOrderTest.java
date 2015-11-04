@@ -4,6 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -39,6 +44,7 @@ public class ByteOrderTest {
 		testComparator(bo);
 		testEquality(bo);
 		testHashCode(bo);
+		testSerialization(bo);
 	}
 	
 	private void testComparator(ByteOrder bo) {
@@ -72,5 +78,25 @@ public class ByteOrderTest {
 		for (ByteOrder order : orders) {
 			if (order.equals(bo)) assertEquals(order.hashCode(), bo.hashCode());
 		}
+	}
+	
+	private void testSerialization(ByteOrder bo) {
+		ByteOrder copy;
+		try {
+			ByteArrayOutputStream boa = new ByteArrayOutputStream();
+			ObjectOutputStream out = new ObjectOutputStream(boa);
+			out.writeObject(bo);
+			out.close();
+			byte[] bytes = boa.toByteArray();
+			ByteArrayInputStream bai = new ByteArrayInputStream(bytes);
+			ObjectInputStream in = new ObjectInputStream(bai);
+			copy = (ByteOrder) in.readObject();
+			in.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		assertEquals(bo, copy);
 	}
 }

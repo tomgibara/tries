@@ -1,14 +1,20 @@
 package com.tomgibara.tries;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.SortedSet;
 
+import com.tomgibara.bits.BitStore;
+import com.tomgibara.bits.Bits;
 import com.tomgibara.storage.Stores;
 
-public final class ByteOrder {
+public final class ByteOrder implements Serializable {
 
 	// constants
 	
+	private static final long serialVersionUID = 7031876057420610423L;
+
 	private static final int CMP = 0;
 	private static final int UNS = 1;
 	private static final int SGN = 2;
@@ -50,6 +56,27 @@ public final class ByteOrder {
 		return order;
 	}
 	
+	private static int fixedHashCode(int fixedType) {
+		// note hashes precomputed
+		switch (fixedType) {
+		case UNS: return 0x037ce081;
+		case SGN: return 0x3c831f7f;
+		case RUN: return 0x7a53307f;
+		case RSN: return 0x3a53307f;
+		default: throw new IllegalArgumentException();
+		}
+	}
+	
+	private static Comparator<Byte> fixedComparator(int fixedType) {
+		switch (fixedType) {
+		case UNS: return ByteOrder::unsCmp;
+		case SGN: return ByteOrder::sgnCmp;
+		case RUN: return ByteOrder::runCmp;
+		case RSN: return ByteOrder::rsnCmp;
+		default: throw new IllegalArgumentException();
+		}
+	}
+	
 	// fields
 	
 	private final int fixedType;
@@ -61,18 +88,8 @@ public final class ByteOrder {
 	
 	private ByteOrder(int fixedType) {
 		this.fixedType = fixedType;
-		Comparator<Byte> c;
-		int h;
-		// note hashes precomputed
-		switch (fixedType) {
-		case UNS: c = ByteOrder::unsCmp; h = 0x037ce081; break;
-		case SGN: c = ByteOrder::sgnCmp; h = 0x3c831f7f; break;
-		case RUN: c = ByteOrder::runCmp; h = 0x7a53307f; break;
-		case RSN: c = ByteOrder::rsnCmp; h = 0x3a53307f; break;
-		default: throw new IllegalArgumentException();
-		}
-		comparator = c;
-		hashCode = h;
+		hashCode = fixedHashCode(fixedType);
+		comparator = fixedComparator(fixedType);
 	}
 
 	private ByteOrder(Comparator<Byte> comparator) {
@@ -83,7 +100,14 @@ public final class ByteOrder {
 		// cache hashCode
 		hashCode = Math.abs( Arrays.hashCode(lookup()) );
 	}
-	
+
+	private ByteOrder(int[] lookup) {
+		fixedType = CMP;
+		this.lookup = lookup;
+		// validates the lookup
+		comparator = new LookupComparator(lookup);
+		hashCode = Math.abs( Arrays.hashCode(lookup) );
+	}
 	// methods
 	
 	public Comparator<Byte> asComparator() {
@@ -185,5 +209,63 @@ public final class ByteOrder {
 		// use lookup equality instead
 		if (!Arrays.equals(this.lookup(), that.lookup())) return false;
 		return true;
+	}
+
+	// serialization
+	
+	private Object writeReplace() {
+		return fixedType == CMP ? new LookupSerial(lookup) : new FixedSerial(fixedType);
+	}
+	
+	private static class FixedSerial implements Serializable {
+
+		private static final long serialVersionUID = -4929447042921599241L;
+
+		private final int fixedType;
+		
+		FixedSerial(int fixedType) {
+			this.fixedType = fixedType;
+		}
+		
+		private Object readResolve() {
+			return new ByteOrder(fixedType);
+		}
+
+	}
+	
+	private static class LookupSerial implements Serializable {
+
+		private static final long serialVersionUID = 652788669095291423L;
+
+		private final int[] lookup;
+		
+		LookupSerial(int[] lookup) {
+			this.lookup = lookup;
+		}
+		
+		private Object readResolve() {
+			return new ByteOrder(lookup);
+		}
+
+	}
+	
+	private static class LookupComparator implements Comparator<Byte> {
+
+		private final int[] lookup;
+		
+		LookupComparator(int[] lookup) {
+			if (lookup.length != 256) throw new IllegalArgumentException();
+			BitStore bits = Bits.newBitStore(256);
+			SortedSet<Integer> set = bits.ones().asSet();
+			for (int index : lookup) set.add(index);
+			if (!bits.rangeTo(set.size()).ones().isAll()) throw new IllegalArgumentException();
+
+			this.lookup = lookup;
+		}
+		
+		@Override
+		public int compare(Byte a, Byte b) {
+			return lookup[a & 0xff] - lookup[b & 0xff];
+		}
 	}
 }
