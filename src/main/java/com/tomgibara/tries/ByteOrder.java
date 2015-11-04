@@ -11,6 +11,23 @@ public final class ByteOrder {
 	private static final int RSN = 3;
 	private static final int CMP = 4;
 	
+	
+	private static int unsCmp(byte a, byte b) {
+		return Integer.compare(a & 0xff, b & 0xff);
+	}
+
+	private static int sgnCmp(byte a, byte b) {
+		return Byte.compare(a, b);
+	}
+
+	private static int runCmp(byte a, byte b) {
+		return Integer.compare(b & 0xff, a & 0xff);
+	}
+
+	private static int rsnCmp(byte a, byte b) {
+		return Byte.compare(b, a);
+	}
+
 	public static final ByteOrder UNSIGNED = new ByteOrder(UNS);
 
 	public static final ByteOrder SIGNED = new ByteOrder(SGN);
@@ -29,7 +46,15 @@ public final class ByteOrder {
 
 	private ByteOrder(int fixedType) {
 		this.fixedType = fixedType;
-		comparator = null;
+		Comparator<Byte> c;
+		switch (fixedType) {
+		case UNS: c = ByteOrder::unsCmp; break;
+		case SGN: c = ByteOrder::sgnCmp; break;
+		case RUN: c = ByteOrder::runCmp; break;
+		case RSN: c = ByteOrder::rsnCmp; break;
+		default: throw new IllegalArgumentException();
+		}
+		comparator = c;
 	}
 
 	private ByteOrder(Comparator<Byte> comparator) {
@@ -37,14 +62,17 @@ public final class ByteOrder {
 		this.comparator = comparator;
 	}
 	
+	public Comparator<Byte> asComparator() {
+		return comparator;
+	}
+	
 	public int compare(byte a, byte b) {
 		switch (fixedType) {
-		case UNS: return Integer.compare(a & 0xff, b & 0xff);
-		case SGN: return Byte.compare(a, b);
-		case RUN: return Integer.compare(b & 0xff, a & 0xff);
-		case RSN: return Byte.compare(b, a);
-		case CMP: return comparator.compare(a, b);
-		default : throw new IllegalStateException("Unexpected type: " + fixedType);
+		case UNS: return unsCmp(a, b);
+		case SGN: return sgnCmp(a, b);
+		case RUN: return runCmp(a, b);
+		case RSN: return rsnCmp(a, b);
+		default: return comparator.compare(a, b);
 		}
 	}
 	
@@ -55,8 +83,7 @@ public final class ByteOrder {
 		case SGN: return "SIGNED";
 		case RUN: return "REVERSE_UNSIGNED";
 		case RSN: return "REVERSE_SIGNED";
-		case CMP: return comparator.toString();
-		default : throw new IllegalStateException("Unexpected type: " + fixedType);
+		default : return comparator.toString();
 		}
 	}
 	
