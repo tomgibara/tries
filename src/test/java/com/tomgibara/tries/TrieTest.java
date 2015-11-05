@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.tomgibara.storage.Stores;
 
-public class TrieTest {
+public abstract class TrieTest {
 
 	static final Charset UTF8 = Charset.forName("UTF8");
 	static final Charset ASCII = Charset.forName("ASCII");
@@ -44,9 +44,11 @@ public class TrieTest {
 		((Trie<?>) trie).check();
 	}
 
+	abstract protected TrieNodeSource getNodeSource();
+	
 	@Test
 	public void testIndexes() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		String s = "abcdedfgh";
 		for (int i = s.length(); i >= 0; i--) {
 			String t = s.substring(0,  i);
@@ -63,7 +65,7 @@ public class TrieTest {
 
 	@Test
 	public void testDoubleInsertion() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		trie.add("acxxx");
 		dump("ADDED acxxx", trie);
 		trie.add("abc");
@@ -81,7 +83,7 @@ public class TrieTest {
 	}
 
 	private void testStrings(boolean indexed) {
-		Tries<String> tries = Tries.strings(UTF8);
+		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -179,7 +181,7 @@ public class TrieTest {
 		
 		describe("EXPECTED EMPTY");
 		
-		Trie<String> asciiTrie = Tries.strings(ASCII).newTrie();
+		Trie<String> asciiTrie = Tries.strings(ASCII).nodeSource(getNodeSource()).newTrie();
 		try {
 			asciiTrie.add("\u00a9");
 			fail();
@@ -211,7 +213,7 @@ public class TrieTest {
 			} while (value < 0);
 			values[i] = value;
 		}
-		Tries<Long> tries = Tries.serial(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong());
+		Tries<Long> tries = Tries.serial(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong()).nodeSource(getNodeSource());
 		Trie<Long> trie;
 		IndexedTrie<Long> itrie;
 		if (indexed) {
@@ -351,7 +353,7 @@ public class TrieTest {
 	
 	@Test
 	public void testByteOrder() {
-		Trie<String> trie = Tries.strings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).newTrie();
+		Trie<String> trie = Tries.strings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).nodeSource(getNodeSource()).newTrie();
 		assertFalse(trie.first().isPresent());
 		assertFalse(trie.last().isPresent());
 		trie.add("Apple");
@@ -375,7 +377,7 @@ public class TrieTest {
 
 	@Test
 	public void testLiveIterator() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		assertTrue(trie.add("One"));
 		Iterator<String> i = trie.iterator();
 		assertEquals ("One", i.next());
@@ -406,7 +408,7 @@ public class TrieTest {
 				strs[j] = randStr(r, 8);
 			}
 			describe("STRINGS: " + i + ":" + Arrays.asList(strs));
-			IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+			IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 			trie.addAll(Arrays.asList(strs));
 			for (String str : strs) {
 				dump("REMOVING " + str, trie);
@@ -431,7 +433,7 @@ public class TrieTest {
 	}
 
 	private void testSubTries(boolean indexed) {
-		Tries<String> tries = Tries.strings(UTF8);
+		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -500,7 +502,7 @@ public class TrieTest {
 
 	@Test
 	public void testAsList() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		List<String> list = trie.asList();
 		assertEquals(0, list.size());
 		assertTrue(list.isEmpty());
@@ -545,7 +547,7 @@ public class TrieTest {
 	
 	@Test
 	public void testAsSet() {
-		Trie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		Set<String> set = trie.asSet();
 		assertTrue(set.isEmpty());
 		set.add("Scott");
@@ -572,7 +574,7 @@ public class TrieTest {
 	
 	@Test
 	public void testCaseInsensitive() {
-		IndexedTrie<String> trie = Tries.strings(ASCII).byteOrder((a, b) -> {
+		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).byteOrder((a, b) -> {
 			int ca = Character.toUpperCase(a & 0xff);
 			int cb = Character.toUpperCase(b & 0xff);
 			return ca - cb;
@@ -595,13 +597,13 @@ public class TrieTest {
 
 	@Test
 	public void testLongPrefix() {
-		Trie<String> trie = Tries.strings(UTF8).newIndexedTrie();
+		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newIndexedTrie();
 		trie.subTrie("Some very long prefix which is almost certain to exceed the default capacity").iterator();
 	}
 	
 	@Test
 	public void testMutability() {
-		Trie<String> trie = Tries.strings(UTF8).newTrie();
+		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newTrie();
 		trie.add("Moo");
 
 		Trie<String> iv = trie.immutableView();

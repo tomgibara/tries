@@ -225,8 +225,9 @@ public class Tries<E> {
 	// fields
 
 	final Producer<TrieSerialization<E>> serialProducer;
-	private int capacity = DEFAULT_CAPACITY;
+	private int capacityHint = DEFAULT_CAPACITY;
 	private ByteOrder byteOrder = ByteOrder.UNSIGNED;
+	private TrieNodeSource nodeSource = PackedTrieNodes.SOURCE;
 
 	// constructors
 
@@ -234,7 +235,7 @@ public class Tries<E> {
 		this.serialProducer = serialProducer;
 	}
 	
-	// methods
+	// mutation methods
 	
 	public Tries<E> byteOrder(Comparator<Byte> comparator) {
 		this.byteOrder = ByteOrder.from(comparator);
@@ -247,6 +248,20 @@ public class Tries<E> {
 		return this;
 	}
 	
+	public Tries<E> nodeSource(TrieNodeSource nodeSource) {
+		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
+		this.nodeSource = nodeSource;
+		return this;
+	}
+	
+	public Tries<E> capacityHint(int capacityHint) {
+		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
+		this.capacityHint = capacityHint;
+		return this;
+	}
+	
+	// creation methods
+	
 	public Trie<E> newTrie() {
 		return new Trie<>(this, newNodes());
 	}
@@ -258,10 +273,10 @@ public class Tries<E> {
 	// package scoped methods
 	
 	TrieNodes newNodes() {
-		return new PackedTrieNodes(byteOrder, capacity, false);
+		return nodeSource.newNodes(byteOrder, false, capacityHint);
 	}
 	
 	TrieNodes newIndexedNodes() {
-		return new PackedTrieNodes(byteOrder, capacity, true);
+		return nodeSource.newNodes(byteOrder, true, capacityHint);
 	}
 }

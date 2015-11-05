@@ -53,8 +53,12 @@ import java.util.Collections;
  *  |<-XVL5->|<-XVL4->|<-XVL3->|<-XVL2->|
  */
 
-public class PackedTrieNodes extends AbstractTrieNodes {
+class PackedTrieNodes extends AbstractTrieNodes {
 
+	// statics
+	
+	static TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new PackedTrieNodes(byteOrder, capacityHint, counting);
+	
 	// fields
 
 	private final ByteOrder byteOrder;

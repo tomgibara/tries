@@ -3,6 +3,8 @@ package com.tomgibara.tries;
 
 class BasicTrieNodes extends AbstractTrieNodes {
 
+	public static final TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new BasicTrieNodes(byteOrder);
+
 	// NOTE these are just estimates
 	private final int OBJ_HEADER_SIZE = 12;
 	private final int PTR_SIZE_IN_BYTES = 4;
