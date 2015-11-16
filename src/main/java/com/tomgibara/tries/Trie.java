@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.tomgibara.fundament.Mutability;
+import com.tomgibara.streams.StreamSerializer;
 
 public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
@@ -171,6 +172,15 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	// each call creates a new comparator, comparator is not threadsafe
 	public Comparator<E> comparator() {
 		return serialization.comparator(nodes.byteOrder());
+	}
+
+	// can be used to generate a hasher from a hash
+	public StreamSerializer<E> serializer() {
+		TrieSerialization<E> ts = serialization.resetCopy();
+		return (t,s) -> {
+			ts.set(t);
+			s.writeBytes(ts.buffer(), 0, ts.length());
+		};
 	}
 	
 	public Set<E> asSet() {
