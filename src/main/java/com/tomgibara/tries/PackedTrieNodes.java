@@ -6,6 +6,8 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 
+import com.tomgibara.tries.PackedTrieNodes2.PackedNode;
+
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
  * In addition to it's value and a child pointer, node can support either:
@@ -331,7 +333,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	// inner classes
 	
-	class PackedNode implements TrieNode {
+	class PackedNode extends AbstractTrieNode {
 
 		// statics
 		
@@ -402,14 +404,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public PackedNode insertSibling(byte value) {
-			PackedNode sibling = newNode(value);
-			sibling.setSibling(getSibling());
-			setSibling(sibling);
-			return sibling;
-		}
-		
-		@Override
 		public boolean isSibling(TrieNode node) {
 			return getSiblingFlag() && getSiblingIndex() == ((PackedNode) node).index;
 		}
@@ -429,24 +423,17 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public PackedNode insertChild(byte value) {
-			PackedNode existingChild = separateChild();
-			if (getValueCount() < MAX_VALUES && !hasSibling() && existingChild == null) {
-				int childOrd = ordinal + 1;
-				// insert new value
-				setChildValue(childOrd, value);
-				// update count
-				setValueCount(getValueCount() + 1);
-				// fabricate child node
-				return new PackedNode(index, childOrd);
+		public boolean isChild(TrieNode node) {
+			PackedNode n = (PackedNode) node;
+			if (n.ordinal != 0) { // node is packed
+				// packed in the same node and successors
+				return n.index == this.index && n.ordinal == this.ordinal + 1;
+			} else {
+				// this is the only/last node and the child index matches
+				return this.ordinal + 1 == getValueCount() && n.index == getChildIndex();
 			}
-			PackedNode child = newNode(value);
-			//TODO replace with setting index & flag
-			child.setSibling(existingChild);
-			setChildIndex(child.index);
-			return child;
 		}
-
+		
 		@Override
 		public boolean remove(TrieNode childOrSibling) {
 			PackedNode n = (PackedNode) childOrSibling;
@@ -500,6 +487,36 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			String following = followers < 0 ? "!" : String.join("", Collections.nCopies(followers, "."));
 			return index + "+" + ordinal + " " + valueAsString() + following + (isTerminal() ? "*" : "") + (counting ? ">" + getCountX() : "");
 		}
+
+		// package scoped implementations
+		
+		PackedNode insertChild(byte value) {
+			PackedNode existingChild = separateChild();
+			if (getValueCount() < MAX_VALUES && !hasSibling() && existingChild == null) {
+				int childOrd = ordinal + 1;
+				// insert new value
+				setChildValue(childOrd, value);
+				// update count
+				setValueCount(getValueCount() + 1);
+				// fabricate child node
+				return new PackedNode(index, childOrd);
+			}
+			PackedNode child = newNode(value);
+			//TODO replace with setting index & flag
+			child.setSibling(existingChild);
+			setChildIndex(child.index);
+			return child;
+		}
+
+		@Override
+		PackedNode insertSibling(byte value) {
+			PackedNode sibling = newNode(value);
+			sibling.setSibling(getSibling());
+			setSibling(sibling);
+			return sibling;
+		}
+
+		// private helper methods
 
 		private void separate() {
 			if (ordinal == 0 && getValueCount() == 1) return;

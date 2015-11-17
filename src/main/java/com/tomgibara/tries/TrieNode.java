@@ -12,9 +12,7 @@ interface TrieNode {
 	boolean isTerminal();
 	
 	// has dangling - non terminal and has no child
-	default boolean isDangling() {
-		return !isTerminal() && !hasChild();
-	}
+	boolean isDangling();
 	
 	void setTerminal(boolean terminal);
 
@@ -24,9 +22,7 @@ interface TrieNode {
 	
 	TrieNode getSibling();
 	
-	// any current sibling becomes sibling of new sibling
-	TrieNode insertSibling(byte value);
-
+	// only needed by remove method
 	boolean isSibling(TrieNode node);
 	
 	// child
@@ -37,67 +33,21 @@ interface TrieNode {
 	
 	TrieNode getChild();
 	
-	// any current child becomes sibling of new child
-	TrieNode insertChild(byte value);
-
+	// just for symmetry with sibling methods
+	boolean isChild(TrieNode node);
+	
 	// child navigation
 	
-	default TrieNode getLastChild() {
-		TrieNode child = getChild();
-		if (child != null) while (child.hasSibling()) child = child.getSibling();
-		return child;
-	}
+	TrieNode getLastChild();
 	
-	default TrieNode findChild(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		TrieNode child = getChild();
-		if (child == null) return null;
-		while (true) {
-			int c = order.compare(child.getValue(), value);
-			if (c == 0) return child;
-			if (c > 0) return null;
-			if (!child.hasSibling()) return null;
-			child = child.getSibling();
-		}
-	}
+	TrieNode findChild(byte value);
 
-	default TrieNode findChildOrNext(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		TrieNode child = getChild();
-		while (child != null) {
-			int c = order.compare(child.getValue(), value);
-			if (c >= 0) break;
-			child = child.getSibling();
-		}
-		return child;
-	}
+	TrieNode findChildOrNext(byte value);
 	
-	default TrieNode findOrInsertChild(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		TrieNode child = getChild();
-		if (child == null) return insertChild(value);
-		TrieNode previous = null;
-		while (true) {
-			int c = order.compare(child.getValue(), value);
-			if (c == 0) return child;
-			if (c > 0) return previous == null ? insertChild(value) : previous.insertSibling(value);
-			if (!child.hasSibling()) return child.insertSibling(value);
-			previous = child;
-			child = child.getSibling();
-		}
-	}
+	TrieNode findOrInsertChild(byte value);
 	
 	// to is the node's child or one of its siblings, but not including the value supplied
-	default int countToChild(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		int count = isTerminal() ? 1 : 0;
-		TrieNode child = getChild();
-		while (child != null && order.compare(child.getValue(), value) < 0) {
-			count += child.getCount();
-			child = child.getSibling();
-		}
-		return count;
-	}
+	int countToChild(byte value);
 
 	// miscellaneous
 	
@@ -105,8 +55,7 @@ interface TrieNode {
 	
 	int getCount();
 
-	default void delete() {
-		/* often a no-op */
-	}
+	// often a no-op
+	void delete();
 
 }

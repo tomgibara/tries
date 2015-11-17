@@ -105,7 +105,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		return ours;
 	}
 
-	private class BasicNode implements TrieNode {
+	private class BasicNode extends AbstractTrieNode {
 
 		private final byte value;
 		private boolean terminal;
@@ -177,6 +177,11 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			child.setSibling(this.child);
 			setChild(child);
 			return child;
+		}
+		
+		@Override
+		public boolean isChild(TrieNode node) {
+			return child == node;
 		}
 
 		@Override

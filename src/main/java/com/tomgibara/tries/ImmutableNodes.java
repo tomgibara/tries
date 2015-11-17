@@ -162,13 +162,8 @@ class ImmutableNodes implements TrieNodes {
 		}
 
 		@Override
-		public TrieNode insertSibling(byte value) {
-			return imm();
-		}
-
-		@Override
 		public boolean isSibling(TrieNode node) {
-			return node.isSibling(unwrap(node));
+			return this.node.isSibling(unwrap(node));
 		}
 
 		@Override
@@ -180,10 +175,10 @@ class ImmutableNodes implements TrieNodes {
 		public TrieNode getChild() {
 			return wrap(node.getChild());
 		}
-
+		
 		@Override
-		public TrieNode insertChild(byte value) {
-			return imm();
+		public boolean isChild(TrieNode node) {
+			return this.node.isChild(node);
 		}
 
 		@Override
