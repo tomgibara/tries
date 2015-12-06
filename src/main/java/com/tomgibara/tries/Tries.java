@@ -13,10 +13,11 @@ import java.util.Comparator;
 
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.storage.Stores;
-import com.tomgibara.streams.ByteReadStream;
-import com.tomgibara.streams.ByteWriteStream;
+import com.tomgibara.streams.StreamBytes;
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamSerializer;
+import com.tomgibara.streams.Streams;
+import com.tomgibara.streams.WriteStream;
 
 public class Tries<E> {
 
@@ -140,17 +141,16 @@ public class Tries<E> {
 
 		@Override
 		public E get() {
-			try(ByteReadStream s = new ByteReadStream(buffer, 0, length)) {
-				return s.readWith(deserializer).produce();
-			}
+			return Streams.bytes(buffer, length).reader().readWith(deserializer).produce();
 		}
 		
 		@Override
 		public void set(E e) {
-			try (ByteWriteStream s = new ByteWriteStream(buffer)) {
+			StreamBytes bytes = Streams.bytes(buffer);
+			try (WriteStream s = bytes.writer()) {
 				s.writeWith(serializer).consume(e);
-				length = s.position();
-				buffer = s.getBytes(false);
+				length = bytes.length();
+				buffer = bytes.directBytes();
 			}
 		}
 
