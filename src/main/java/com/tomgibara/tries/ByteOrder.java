@@ -255,7 +255,7 @@ public final class ByteOrder implements Serializable {
 		
 		LookupComparator(int[] lookup) {
 			if (lookup.length != 256) throw new IllegalArgumentException();
-			BitStore bits = Bits.newBitStore(256);
+			BitStore bits = Bits.store(256);
 			SortedSet<Integer> set = bits.ones().asSet();
 			for (int index : lookup) set.add(index);
 			if (!bits.rangeTo(set.size()).ones().isAll()) throw new IllegalArgumentException();
