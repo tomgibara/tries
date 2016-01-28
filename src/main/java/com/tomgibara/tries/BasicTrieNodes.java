@@ -197,6 +197,26 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			}
 			return false;
 		}
+		
+		@Override
+		public boolean removeChild(TrieNode child) {
+			BasicNode c = this.child;
+			if (c == null) return false;
+			BasicNode n = (BasicNode) child;
+			if (n == c) {
+				this.child = n.sibling;
+				return true;
+			}
+			while (true) {
+				BasicNode s = c.sibling;
+				if (s == null) return false;
+				if (s == n) {
+					c.sibling = s.sibling;
+					return true;
+				}
+				c = s;
+			}
+		}
 
 		@Override
 		public int getCount() {

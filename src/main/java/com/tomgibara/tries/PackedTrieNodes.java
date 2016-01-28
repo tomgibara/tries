@@ -6,8 +6,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.tomgibara.tries.PackedTrieNodes2.PackedNode;
-
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
  * In addition to it's value and a child pointer, node can support either:
@@ -29,11 +27,11 @@ import com.tomgibara.tries.PackedTrieNodes2.PackedNode;
  * is reserved for future use to indicate a 'binary tree node type' for
  * accelerating iteration over siblings.
  *  
- * The second int contains either a pointer to the sibling node OR 4 addition
+ * The second int contains either a pointer to the sibling node OR 4 additional
  * byte values.
  *  
  * The third int always points to a child node. Absence of a child node is
- * indicated by a pointer to the root node (which always resides at index 0.
+ * indicated by a pointer to the root node (which always resides at index 0).
  * 
  * The value of the fourth int (if present) is simply the number of terminal
  * nodes contained in all ancestors *not including those packed in the node
@@ -452,6 +450,39 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				return true;
 			}
 			return false;
+		}
+		
+		@Override
+		public boolean removeChild(TrieNode child) {
+			PackedNode n = (PackedNode) child;
+			// n may be a packed child
+			if (index == n.index && n.ordinal == ordinal + 1) {
+				// note, truncates packed descendants
+				setValueCount(ordinal + 1);
+				setChild(null);
+				return true;
+			}
+			if (n.ordinal != 0) return false;
+
+			// n may be an unpacked child
+			int i = getChildIndex();
+			if (i == 0) return false;
+			if (i == n.index) {
+				setChildIndex(n.getSiblingIndex());
+				return true;
+			}
+
+			// n may be a sibling
+			PackedNode c = new PackedNode(i);
+			while (true) {
+				PackedNode s = c.getSibling();
+				if (s == null) return false;
+				if (s.index == n.index) {
+					c.setSibling(s.getSibling());
+					return true;
+				}
+				c = s;
+			}
 		}
 		
 		public int getCount() {

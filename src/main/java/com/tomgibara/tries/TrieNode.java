@@ -53,6 +53,8 @@ interface TrieNode {
 	
 	boolean remove(TrieNode childOrSibling);
 	
+	boolean removeChild(TrieNode child);
+
 	int getCount();
 
 	// often a no-op

@@ -121,6 +121,21 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return addAll(iterable.iterator());
 	}
 	
+	public boolean removeAll(Iterator<E> iterator) {
+		if (iterator == null) throw new IllegalArgumentException("null iterator");
+		boolean mutated = false;
+		while (iterator.hasNext()) {
+			E e = iterator.next();
+			mutated = remove(e) || mutated;
+		}
+		return mutated;
+	}
+
+	public boolean removeAll(Iterable<E> iterable) {
+		if (iterable == null) throw new IllegalArgumentException("null iterable");
+		return removeAll(iterable.iterator());
+	}
+	
 	public boolean containsAll(Iterator<E> iterator) {
 		//TODO could implement optimally by building eq
 		if (iterator == null) throw new IllegalArgumentException("null iterator");
@@ -164,7 +179,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			node = child;
 			serialization.push(node.getValue());
 		}
-		if (!node.isTerminal()) throw new IllegalStateException();
+		assert(node.isTerminal());
 		return Optional.of(serialization.get());
 	}
 
@@ -290,64 +305,47 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		TrieNode node  = find(bytes, length);
 		return node == null ? false : node.isTerminal();
 	}
-	
+
 	private boolean remove(byte[] bytes, int length) {
 		nodes.ensureExtraCapacity(1);
-		TrieNode[] ancestors = new TrieNode[length];
-		TrieNode[] stack = new TrieNode[length];
 		TrieNode root = nodes.root();
-		// locate the target node, recording intermediate nodes (stack) and the nodes that refer to them (referrers)
-		if (nodes.populate(root, bytes, length, stack, ancestors) < length) return false;
-		if (length == 0) { // treat the root node as a special case
+		TrieNode[] stack = new TrieNode[length];
+		if (length == 0) {
 			if (!root.isTerminal()) return false;
 			nodes.decCounts(stack, length);
 			root.setTerminal(false);
 		} else {
-			int i = length - 1;
-			TrieNode node = stack[i];
-			if (!node.isTerminal()) return false;
+			TrieNode node = root;
+			for (int i = 0; i < length; i++) {
+				node = node.findChild(bytes[i]);
+				if (node == null) return false;
+				stack[i] = node;
+			}
+			if (!node.isTerminal()) return false; // not present
 			nodes.decCounts(stack, length);
 			node.setTerminal(false);
-			if (node.hasChild()) {
-				// we do nothing because our tree can have no dangling nodes (except possibly the root)
-				// so if the node has a child, there must be terminations further along the tree
-			} else {
-				// walk backwards looking for the first referrer we must preserve
-				// and then we remove the ancestor node pointed by that referrer
-				// since it's clear that it must be the last node we can lose
+			// we do no pruning if the node has a child
+			// because our tree can have no dangling nodes (except possibly the root)
+			// so if the node has a child, there must be terminations further along the tree
+			if (!node.hasChild()) {
+				int i = length - 2;
+				TrieNode child = node;
+				TrieNode parent = null;
 				for (; i >= 0; i--) {
-					node = stack[i];
-					TrieNode ancestor = ancestors[i];
-					// work out if we can must preserve this referrer
-					// ("remove" here indicates removal of the referrent)
-					boolean isSibling = ancestor.isSibling(node);
-					boolean branched = isSibling ? ancestor.hasChild() : node.hasSibling();
-					boolean remove =
-							i == 0 || // we've reached the root, must stop
-							ancestor.isTerminal() || // we've reached a terminal node, must stop here
-							branched; // ancestor has an additional branch to preserve
-					if (remove) {
-						ancestor.remove(node);
-						break;
-					}
+					parent = stack[i];
+					if (parent.getChild().hasSibling()) break;
+					child = parent;
 				}
-				// finally, delete any detatched nodes
-				for (int j = length - 1; j >= i ; j--) stack[j].delete();
+				if (i < 0) parent = root;
+				boolean removed = parent.removeChild(child);
+				assert(removed); // we know the child is there
+				// finally, delete any detached nodes
+				for (int j = length - 1; j > i ; j--) stack[j].delete();
 			}
 		}
 		return true;
 	}
-
-	private int walk(byte[] bytes, int length, TrieNode[] stack) {
-		TrieNode node = nodes.root();
-		for (int i = 0; i < length; i++) {
-			node = node.findChild(bytes[i]);
-			if (node == null) return i;
-			stack[i] = node;
-		}
-		return length;
-	}
-
+	
 	// inner classes
 	
 	class NodeIterator implements Iterator<E> {
