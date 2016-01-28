@@ -2,11 +2,14 @@ package com.tomgibara.tries;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +21,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.tomgibara.storage.Stores;
@@ -44,6 +48,25 @@ public abstract class TrieTest {
 		((Trie<?>) trie).check();
 	}
 
+	static long time(Runnable r) {
+		long start = System.currentTimeMillis();
+		r.run();
+		long finish = System.currentTimeMillis();
+		return finish - start;
+	}
+
+	static List<String> readWords() throws IOException {
+		List<String> words = new ArrayList<String>();
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(WordsTest.class.getResourceAsStream("/words.txt")))) {
+			while (true) {
+				String word = reader.readLine();
+				if (word == null) break;
+				words.add(word);
+			}
+		}
+		return words;
+	}
+	
 	abstract protected TrieNodeSource getNodeSource();
 	
 	@Test
@@ -253,7 +276,7 @@ public abstract class TrieTest {
 //				assertEquals(vs[j], v.longValue());
 //			}
 //		}
-		
+
 		for (long value : values) {
 			assertTrue(trie.contains(value));
 		}
@@ -555,12 +578,15 @@ public abstract class TrieTest {
 		assertEquals(1, set.size());
 		assertTrue(trie.contains("Scott"));
 		trie.add("Ramona");
+		dump("Scott and Ramona", trie);
 		assertTrue(set.contains("Ramona"));
 		Set<String> subset = trie.subTrie("Scott").asSet();
 		assertEquals(1, subset.size());
 		assertFalse(subset.contains("Ramona"));
 		assertTrue(subset.add("Scott Pilgrim"));
+		dump("Scott Pilgrim", trie);
 		assertFalse(subset.add("Ramona Flowers"));
+		dump("Before Iter", trie);
 		Iterator<String> it = subset.iterator();
 		assertTrue(it.hasNext());
 		assertEquals("Scott", it.next());
@@ -609,13 +635,17 @@ public abstract class TrieTest {
 		Trie<String> iv = trie.immutableView();
 		assertTrue(iv.contains("Moo"));
 		imm(() -> iv.remove("Moo"));
+		dump("BEFORE REMOVE", trie);
 		assertTrue(trie.remove("Moo"));
+		dump("AFTER REMOVE", trie);
 		assertTrue(trie.isEmpty());
 		assertFalse(iv.contains("Moo"));
 		imm(() -> iv.add("Moo"));
 
 		Trie<String> mc = trie.mutableCopy();
+		dump("BEFORE RE-ADD", trie);
 		assertTrue(trie.add("Moo"));
+		dump("AFTER RE_ADD", trie);
 		assertFalse(mc.contains("Moo"));
 		mc.add("Quack");
 		assertFalse(trie.contains("Quack"));
@@ -626,6 +656,16 @@ public abstract class TrieTest {
 		imm(() -> ic.add("Quack"));
 	}
 	
+	@Test
+	@Ignore
+	public void commonWords() throws IOException {
+		List<String> words = readWords();
+		Trie<String> trie = Tries.strings(Charset.forName("ASCII")).newTrie();
+		trie.addAll(words);
+		trie.compactStorage();
+		System.out.println(trie.size() + " words require " + trie.storageSizeInBytes() + " bytes");
+	}
+
 	private void imm(Runnable r) {
 		try {
 			r.run();
