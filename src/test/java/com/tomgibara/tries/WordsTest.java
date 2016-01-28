@@ -45,9 +45,10 @@ public class WordsTest {
 		for (int count = 0; count < trials; count++) {
 			long insertTime = time(() -> trie.addAll(allWords));
 			trie.compactStorage();
+			long storage = trie.storageSizeInBytes();
 			long containsTime = time(() -> trie.containsAll(allWords));
 			long removesTime = time(() -> trie.removeAll(allWords));
-			if ((count % reps) == 0) System.out.println("insert " + insertTime +"  contains " + containsTime + "  removes " + removesTime);
+			if ((count % reps) == 0) System.out.println("insert " + insertTime +"  contains " + containsTime + "  removes " + removesTime + "  (storage " + storage + ")");
 		}
 	}
 }
