@@ -141,13 +141,13 @@ public class Tries<E> {
 
 		@Override
 		public E get() {
-			return Streams.bytes(buffer, length).reader().readWith(deserializer).produce();
+			return Streams.bytes(buffer, length).readStream().readWith(deserializer).produce();
 		}
 		
 		@Override
 		public void set(E e) {
 			StreamBytes bytes = Streams.bytes(buffer);
-			try (WriteStream s = bytes.writer()) {
+			try (WriteStream s = bytes.writeStream()) {
 				s.writeWith(serializer).consume(e);
 				length = bytes.length();
 				buffer = bytes.directBytes();
