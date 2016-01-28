@@ -18,14 +18,14 @@ public class WordsTest {
 	public static void main(String... args) throws IOException {
 		allWords = TrieTest.readWords();
 
-		testSource(PackedTrieNodes2.SOURCE, false);
+		testSource(CompactTrieNodes.SOURCE, false);
 		testSource(PackedTrieNodes.SOURCE, false);
-		testSource(PackedTrieNodes2.SOURCE, false);
+		testSource(CompactTrieNodes.SOURCE, false);
 		testSource(PackedTrieNodes.SOURCE, false);
 
-		testSource(PackedTrieNodes2.SOURCE, true);
+		testSource(CompactTrieNodes.SOURCE, true);
 		testSource(PackedTrieNodes.SOURCE, true);
-		testSource(PackedTrieNodes2.SOURCE, true);
+		testSource(CompactTrieNodes.SOURCE, true);
 		testSource(PackedTrieNodes.SOURCE, true);
 	}
 

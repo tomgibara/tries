@@ -227,7 +227,7 @@ public class Tries<E> {
 	final Producer<TrieSerialization<E>> serialProducer;
 	private int capacityHint = DEFAULT_CAPACITY;
 	private ByteOrder byteOrder = ByteOrder.UNSIGNED;
-	private TrieNodeSource nodeSource = PackedTrieNodes.SOURCE;
+	private TrieNodeSource nodeSource = CompactTrieNodes.SOURCE;
 
 	// constructors
 

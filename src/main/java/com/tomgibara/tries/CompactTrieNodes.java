@@ -7,66 +7,26 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /*
- * Each node is organized into either 3 ints, or 4 (if counts are maintained).
- * In addition to it's value and a child pointer, node can support either:
- *   * a sequence of up to 5 child values prior to the referenced child
- *   * a sibling pointer.
- * The implementation takes care of packing child nodes when the tree is built
- * and splitting them out into separate nodes when siblings need to be added.
- * Child nodes are not re-packed when sibling nodes are deleted; re-packing only
- * occurs when the nodes are compacted.
- *
- * The first int contains:
- *  * bits [0-7]   the node's byte value
- *  * bits [8-13]  flags indicating terminal status
- *  * bit  15      flag indicating the presence of a sibling node
- *  * bits [16-18] the number of value bytes stored
- *  * bits [24-31] the second byte value (if present)
+ *  Everything as per PackedTrieNodes except, further to this...
  *  
- * At present, the number of value bytes is never less than 1. A value of zero
- * is reserved for future use to indicate a 'binary tree node type' for
- * accelerating iteration over siblings.
- *  
- * The second int contains either a pointer to the sibling node OR 4 additional
- * byte values.
- *  
- * The third int always points to a child node. Absence of a child node is
- * indicated by a pointer to the root node (which always resides at index 0).
- * 
- * The value of the fourth int (if present) is simply the number of terminal
- * nodes contained in all ancestors *not including those packed in the node
- * itself*.
- * 
- * Diagramatically structure of the first two ints is something like:
- * 
- *  _HEAD_
- *  |76543210|76543210|76543210|76543210|
- *  |<-XVL1->|_____CNT|S_<-TR->|<-VALU->|
- *
- * _   = unused
- * S   = has sibling
- * TR  = terminator flags [0,5]
- * CNT = number of embedded children [0,5]
- *
- *  _SIBLING_OR_VALUES_
- *  |76543210|76543210|76543210|76543210|
- *  |<-XVL5->|<-XVL4->|<-XVL3->|<-XVL2->|
- *  
- *  Further...
- *  
- *  This logic is extended in the following way. Nodes may have 'compact'
+ *  The logic is extended in the following way: Nodes may have 'compact'
  *  siblings. In this case the sibling flag is set, but the sibling pointer is
  *  negative, it counts the number of siblings that are stored immediately and
  *  contiguously after the node itself.
+ *  
+ *  These compact siblings are then amenable to linear scanning and binary
+ *  searching. Generally, this makes lookups on compacted trees faster, at the
+ *  expense of making removals slower (because time must be spent removing the
+ *  compact status of prior siblings).
  */
 
-class PackedTrieNodes2 extends AbstractTrieNodes {
+class CompactTrieNodes extends AbstractTrieNodes {
 
 	// statics
 	
 	private static final boolean BINARY_SEARCH = true;
 	
-	static TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new PackedTrieNodes2(byteOrder, capacityHint, counting);
+	static TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new CompactTrieNodes(byteOrder, capacityHint, counting);
 	
 	// fields
 
@@ -84,7 +44,7 @@ class PackedTrieNodes2 extends AbstractTrieNodes {
 	
 	// constructor
 	
-	PackedTrieNodes2(ByteOrder byteOrder, int capacity, boolean counting) {
+	CompactTrieNodes(ByteOrder byteOrder, int capacity, boolean counting) {
 		this.byteOrder = byteOrder;
 		this.counting = counting;
 		this.capacity = capacity;
@@ -203,7 +163,7 @@ class PackedTrieNodes2 extends AbstractTrieNodes {
 	
 	@Override
 	public TrieNodes mutableCopy() {
-		PackedTrieNodes2 copy = new PackedTrieNodes2(byteOrder, nodeCount, counting);
+		CompactTrieNodes copy = new CompactTrieNodes(byteOrder, nodeCount, counting);
 		copy.adopt(copy.root, root);
 		return copy;
 	}
@@ -335,7 +295,7 @@ class PackedTrieNodes2 extends AbstractTrieNodes {
 	}
 	
 	private void compact(int newCapacity) {
-		PackedTrieNodes2 those = new PackedTrieNodes2(byteOrder, newCapacity, counting);
+		CompactTrieNodes those = new CompactTrieNodes(byteOrder, newCapacity, counting);
 		those.adopt(those.root, root);
 		capacity = newCapacity;
 		data = those.data;
@@ -383,8 +343,8 @@ class PackedTrieNodes2 extends AbstractTrieNodes {
 		// attributes
 		
 		@Override
-		public PackedTrieNodes2 nodes() {
-			return PackedTrieNodes2.this;
+		public CompactTrieNodes nodes() {
+			return CompactTrieNodes.this;
 		}
 		
 		@Override
