@@ -18,15 +18,16 @@ public class WordsTest {
 	public static void main(String... args) throws IOException {
 		allWords = TrieTest.readWords();
 
-		testSource(CompactTrieNodes.SOURCE, false);
-		testSource(PackedTrieNodes.SOURCE, false);
-		testSource(CompactTrieNodes.SOURCE, false);
-		testSource(PackedTrieNodes.SOURCE, false);
-
-		testSource(CompactTrieNodes.SOURCE, true);
-		testSource(PackedTrieNodes.SOURCE, true);
-		testSource(CompactTrieNodes.SOURCE, true);
-		testSource(PackedTrieNodes.SOURCE, true);
+		TrieNodeSource[] sources = {CompactTrieNodes.SOURCE, PackedTrieNodes.SOURCE, BasicTrieNodes.SOURCE};
+		
+		for (int s = 0; s < 2; s++) {
+			boolean shuffle = s == 1;
+			for (int r = 0; r < 2; r++) {
+				for (TrieNodeSource source : sources) {
+					testSource(source, shuffle);
+				}
+			}
+		}
 	}
 
 	private static void testSource(TrieNodeSource source, boolean shuffle) {
