@@ -34,6 +34,18 @@ public class ByteOrderTest {
 			);
 	
 	@Test
+	public void testUnsigned() {
+		ByteOrder bo = ByteOrder.UNSIGNED;
+		for (int i = 0; i < 256; i++) {
+			assertTrue(bo.compare((byte) i, (byte) i) == 0);
+		}
+		for (int i = 0; i < 255; i++) {
+			assertTrue(bo.compare((byte) i, (byte) (i+1)) < 0);
+			assertTrue(bo.compare((byte) (i+1), (byte) i) > 0);
+		}
+	}
+	
+	@Test
 	public void testAll() {
 		for (ByteOrder order : orders) {
 			testByteOrder(order);
