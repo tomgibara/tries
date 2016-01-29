@@ -26,7 +26,20 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	
 	private static final boolean BINARY_SEARCH = true;
 	
-	static TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new CompactTrieNodes(byteOrder, capacityHint, counting);
+	static TrieNodeSource SOURCE = new TrieNodeSource() {
+		
+		@Override
+		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+			return new CompactTrieNodes(byteOrder, capacityHint, counting);
+		}
+		
+		@Override
+		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
+			CompactTrieNodes newNodes = new CompactTrieNodes(nodes.byteOrder(), capacityHint, counting);
+			newNodes.adopt(newNodes.root, nodes.root());
+			return newNodes;
+		}
+	};
 	
 	// fields
 
@@ -250,12 +263,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 
 	// returns number of siblings
-	private int adopt(PackedNode ours, PackedNode theirs) {
+	private int adopt(PackedNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
-		PackedNode sibling = theirs.getSibling();
+		TrieNode sibling = theirs.getSibling();
 		int sibcount = sibling == null ? 0 : 1 + adopt( ours.insertSibling(sibling.getValue()), sibling);
 		if (sibcount != 0) ours.setSiblingIndex(-1 - sibcount);
-		PackedNode child = theirs.getChild();
+		TrieNode child = theirs.getChild();
 		//TODO need force if there are too many children to pack too?
 		if (child != null) adopt( ours.insertChild(child.getValue(), child.hasSibling()), child);
 		if (counting && ours.ordinal == 0) ours.setCount(theirs.getCount() - ours.extraCount());

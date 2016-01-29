@@ -57,7 +57,20 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	// statics
 	
-	static TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new PackedTrieNodes(byteOrder, capacityHint, counting);
+	static TrieNodeSource SOURCE = new TrieNodeSource() {
+		
+		@Override
+		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+			return new PackedTrieNodes(byteOrder, capacityHint, counting);
+		}
+		
+		@Override
+		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
+			PackedTrieNodes newNodes = new PackedTrieNodes(nodes.byteOrder(), capacityHint, counting);
+			newNodes.adopt(newNodes.root, nodes.root());
+			return newNodes;
+		}
+	};
 	
 	// fields
 
@@ -273,11 +286,11 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		return node;
 	}
 
-	private PackedNode adopt(PackedNode ours, PackedNode theirs) {
+	private PackedNode adopt(PackedNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
-		PackedNode sibling = theirs.getSibling();
+		TrieNode sibling = theirs.getSibling();
 		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
-		PackedNode child = theirs.getChild();
+		TrieNode child = theirs.getChild();
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
 		if (counting && ours.ordinal == 0) ours.setCount(theirs.getCount() - ours.extraCount());
 		return ours;

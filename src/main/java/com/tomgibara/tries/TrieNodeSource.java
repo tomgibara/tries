@@ -27,4 +27,5 @@ public interface TrieNodeSource {
 	
 	TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint);
 	
+	TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint);
 }

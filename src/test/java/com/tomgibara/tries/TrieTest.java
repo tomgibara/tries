@@ -1,5 +1,6 @@
 package com.tomgibara.tries;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -660,7 +661,7 @@ public abstract class TrieTest {
 	@Ignore
 	public void commonWords() throws IOException {
 		List<String> words = readWords();
-		Trie<String> trie = Tries.strings(Charset.forName("ASCII")).newTrie();
+		Trie<String> trie = Tries.strings(ASCII).newTrie();
 		trie.addAll(words);
 		trie.compactStorage();
 		System.out.println(trie.size() + " words require " + trie.storageSizeInBytes() + " bytes");
@@ -688,4 +689,41 @@ public abstract class TrieTest {
 		}
 	}
 
+	@Test
+	public void testCopyBasic() {
+		List<String> strs = asList("One", "Once", "Onto", "Ontology", "Two");
+		Tries<String> tries = Tries.strings(ASCII).byteOrder(ByteOrder.UNSIGNED);
+		Trie<String> trie = tries.newTrie();
+		trie.addAll(strs);
+		IndexedTrie<String> indexed = tries.newIndexedTrie(trie);
+		indexed.addAll(strs);
+		IndexedTrie<String> reversed = tries.byteOrder(ByteOrder.REVERSE_UNSIGNED).newIndexedTrie(trie);
+		reversed.addAll(strs);
+		tries.byteOrder(ByteOrder.UNSIGNED).nodeSource(getNodeSource());
+
+		// test unindexed copy of unindexed
+		Trie<String> copy = tries.newTrie(trie);
+		assertTrue(copy.containsAll(strs));
+
+		// test indexed copy of indexed
+		IndexedTrie<String> copy2 = tries.newIndexedTrie(indexed);
+		assertTrue(copy2.containsAll(strs));
+		for (String str : strs) {
+			assertEquals(indexed.indexOf(str), copy2.indexOf(str));
+		}
+
+		// test indexed copy of unindexed
+		IndexedTrie<String> copy3 = tries.newIndexedTrie(trie);
+		assertTrue(copy3.containsAll(strs));
+		for (String str : strs) {
+			assertEquals(indexed.indexOf(str), copy3.indexOf(str));
+		}
+
+		// test indexed copy of reversed
+		IndexedTrie<String> copy4 = tries.newIndexedTrie(reversed);
+		assertTrue(copy4.containsAll(strs));
+		for (String str : strs) {
+			assertEquals(indexed.indexOf(str), copy4.indexOf(str));
+		}
+	}
 }

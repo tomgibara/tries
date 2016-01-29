@@ -266,10 +266,36 @@ public class Tries<E> {
 		return new Trie<>(this, newNodes());
 	}
 	
+	public Trie<E> newTrie(Trie<E> trie) {
+		if (trie.nodes.byteOrder().equals(byteOrder)) {
+			// fast path - we can adopt the nodes, they're in the right order
+			TrieNodes nodes = nodeSource.copyNodes(trie.nodes, false, capacityHint);
+			return new Trie<>(this, nodes);
+		} else {
+			// slow path - just treat it as an add-all
+			Trie<E> newTrie = new Trie<>(this, newNodes());
+			newTrie.addAll(trie);
+			return newTrie;
+		}
+	}
+	
 	public IndexedTrie<E> newIndexedTrie() {
 		return new IndexedTrie<>(this, newIndexedNodes());
 	}
 
+	public IndexedTrie<E> newIndexedTrie(Trie<E> trie) {
+		if (trie.nodes.byteOrder().equals(byteOrder)) {
+			// fast path - we can adopt the nodes, they're in the right order
+			TrieNodes nodes = nodeSource.copyNodes(trie.nodes, true, capacityHint);
+			return new IndexedTrie<>(this, nodes);
+		} else {
+			// slow path - just treat it as an add-all
+			IndexedTrie<E> newTrie = new IndexedTrie<>(this, newIndexedNodes());
+			newTrie.addAll(trie);
+			return newTrie;
+		}
+	}
+	
 	// package scoped methods
 	
 	TrieNodes newNodes() {
@@ -279,4 +305,5 @@ public class Tries<E> {
 	TrieNodes newIndexedNodes() {
 		return nodeSource.newNodes(byteOrder, true, capacityHint);
 	}
+	
 }

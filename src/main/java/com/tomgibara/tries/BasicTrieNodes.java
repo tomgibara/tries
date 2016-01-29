@@ -3,7 +3,20 @@ package com.tomgibara.tries;
 
 class BasicTrieNodes extends AbstractTrieNodes {
 
-	public static final TrieNodeSource SOURCE = (byteOrder, counting, capacityHint) -> new BasicTrieNodes(byteOrder);
+	public static final TrieNodeSource SOURCE = new TrieNodeSource() {
+
+		@Override
+		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+			return new BasicTrieNodes(byteOrder);
+		}
+		
+		@Override
+		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
+			BasicTrieNodes newNodes = new BasicTrieNodes(nodes.byteOrder());
+			newNodes.adopt(newNodes.root, nodes.root());
+			return newNodes;
+		}
+	};
 
 	// NOTE these are just estimates
 	private final int OBJ_HEADER_SIZE = 12;
@@ -95,11 +108,11 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		// TODO Auto-generated method stub
 	}
 	
-	private BasicNode adopt(BasicNode ours, BasicNode theirs) {
+	private BasicNode adopt(BasicNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
-		BasicNode sibling = theirs.getSibling();
+		TrieNode sibling = theirs.getSibling();
 		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
-		BasicNode child = theirs.getChild();
+		TrieNode child = theirs.getChild();
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
 		ours.count = theirs.getCount();
 		return ours;
