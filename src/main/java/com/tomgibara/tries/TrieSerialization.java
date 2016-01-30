@@ -4,44 +4,109 @@ import java.util.Comparator;
 
 import com.tomgibara.fundament.Producer;
 
+/**
+ * Implementations of this interface are responsible for converting objects
+ * to-and-from bytes.
+ * 
+ * @author Tom Gibara
+ *
+ * @param <E>
+ *            the type of object marshalled
+ */
+
 public interface TrieSerialization<E> {
 
+	/**
+	 * Whether the specified object can be serialized by this object.
+	 * 
+	 * @param obj an object
+	 * @return true if and only if the supplied object can be serialized
+	 */
+	
 	boolean isSerializable(Object obj);
 	
-	// for efficiency purposes, implementations are not required to make defensive copy
-	// the buffer is treated strictly read-only by the trie implementations
-	// the length of the buffer may exceed value reported by length()
+	/**
+	 * The byte array containing the serialized bytes. For efficiency purposes,
+	 * implementations are not required to make defensive copies of the buffer;
+	 * the buffer is treated strictly read-only by the trie implementations. The
+	 * length of the buffer may exceed the value reported by {@link #length()}.
+	 * 
+	 * @return the underlying bytes
+	 */
+
 	byte[] buffer();
 
-	// push a byte into the buffer, growing as necessary
-	// increases length by 1
+	/**
+	 * Pushes a byte onto the end of the buffer. The buffer's length, as
+	 * reported by {@link #length()} will increase by one. The buffer's capacity
+	 * will grow as necessary.
+	 * 
+	 * @param b
+	 *            the byte value to append to the buffer
+	 */
+
 	void push(byte b);
-	
-	// reduces length by 1
-	// illegal state exception if length is zero
+
+	/**
+	 * Pops a byte off the end of the buffer. The buffer's length as reported by
+	 * {@link #length()} will decrease by one.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if called when the length is zero
+	 */
+
 	void pop();
 
-	// push a byte into the buffer, growing as necessary
-	// leaves length unchanged
-	// illegal state exception if length is zero
+	/**
+	 * Replaces the last byte value in the buffer. The length of the buffer
+	 * remains unchanged.
+	 * 
+	 * @param b
+	 *            the byte value to be set
+	 * @throws IllegalArgumentException
+	 *             if the length is zero
+	 */
+
 	default void replace(byte b) {
 		pop();
 		push(b);
 	}
 
-	// the number of bytes stored in the buffer
+	/**
+	 * The number of byte values stored by this serialization. The reported
+	 * length will never exceed the length of the array returned by
+	 * {@link #buffer()}.
+	 * 
+	 * @return the length in bytes
+	 */
+
 	int length();
 
-	// reset the length to zero
-	// this should not shrink the buffer capacity
+	/**
+	 * Sets the length to zero, leaving the buffer capacity unchanged.
+	 */
+
 	default void reset() {
 		for (int i = length(); i > 0; i --) pop();
 	}
 
-	// create a copy of the serialization, with its length reset to zero
+	/**
+	 * Creates a new instance of the serialization with the same capacity but
+	 * zero length.
+	 * 
+	 * @return a new serialization instance.
+	 */
+
 	TrieSerialization<E> resetCopy();
 
-	// true iff the buffer starts with the supplied prefix
+	/**
+	 * Whether the buffer starts with the supplied prefix.
+	 * 
+	 * @param prefix
+	 *            an array of byte values
+	 * @return true iff and only iff the buffer starts with with supplied prefix
+	 */
+	
 	default boolean startsWith(byte[] prefix) {
 		if (prefix.length > length()) return false;
 		byte[] buffer = buffer();
@@ -51,25 +116,55 @@ public interface TrieSerialization<E> {
 		return true;
 	}
 	
-	// sets the initial bytes of the buffer equal to the prefix
-	// sets the length prefix.length
-	//TODO some ambiguity here - currently impossible to be called with a prefix longer than the buffer
+	//TODO currently impossible to be called with a prefix longer than the buffer
 	// but this may change if we allow byte-based prefixing
+	/**
+	 * Sets the initial bytes of the buffer. The length of of the buffer is set
+	 * to the length of the prefix. Implementations may assume that the length
+	 * of the prefix will not exceed the capacity of the buffer.
+	 * 
+	 * @param prefix
+	 *            an array of byte values
+	 */
+
 	default void set(byte[] prefix) {
 		reset();
 		for (byte value : prefix) push(value);
 	}
 	
-	// serializes the object into the buffer, growing the buffer as necessary
-	// and recording the number of bytes written into length.
-	// may throw an IllegalArgumentException for invalid e
+	/**
+	 * Serializes an object into the buffer, growing the buffer as necessary and
+	 * recording the number of bytes written as the length.
+	 * 
+	 * @param e
+	 *            the object to serialize
+	 * @throws IllegalArgumentException
+	 *             if the supplied object cannot be serialized by this object
+	 */
+
 	void set(E e);
 
-	// deserializes the buffered bytes into an object
+	/**
+	 * Deserializes the buffered bytes into an object. Any bytes beyond the
+	 * first {@link #length()} bytes are ignored.
+	 * 
+	 * @return the deserialized object
+	 */
+
 	E get();
 	
-	// returns a comparator consistent with the natural byte ordering indicated
-	// some implementations may be able to return more efficient comparators for certain byte orders
+	/**
+	 * Returns a comparator consistent with the byte ordering indicated. Some
+	 * implementations may be able to return more efficient comparators for
+	 * certain byte orders. The comparator is assumed to use the buffer
+	 * underlying this serialization, and as such concurrency must be managed
+	 * appropriately.
+	 * 
+	 * @param byteOrder
+	 *            a byte order
+	 * @return a comparator consistent with the supplied byte order
+	 */
+	
 	default Comparator<E> comparator(ByteOrder byteOrder) {
 		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
 		TrieSerialization<E> as = resetCopy();
@@ -90,14 +185,25 @@ public interface TrieSerialization<E> {
 		};
 	}
 
-	// a producer that can create more instances of this type of serialization
-	// the default implementation uses resetCopy()
+	/**
+	 * A producer that can create more instanceof of this type of serialization.
+	 * The default implementation uses {@link #resetCopy()}.
+	 * 
+	 * @return a producer of these serializations.
+	 */
+
 	default Producer<TrieSerialization<E>> producer() {
 		return () -> resetCopy();
 	}
 
-	// create a tries using this serialization
+	/**
+	 * Creates new {@link #tries()} based on this serialization.
+	 * 
+	 * @return a new {@link #tries()} instance
+	 */
+
 	default Tries<E> tries() {
 		return new Tries<E>(producer());
 	}
+
 }
