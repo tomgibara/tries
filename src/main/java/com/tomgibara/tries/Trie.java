@@ -202,7 +202,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return new TrieSet();
 	}
 	
-	// iterable methods
+	public Trie<byte[]> asBytesTrie() {
+		return new Trie<byte[]>(Tries.newByteSerialization(serialization.buffer().length), nodes.immutableView());
+	}
 	
 	public Iterator<E> iterator() {
 		return new NodeIterator(null);

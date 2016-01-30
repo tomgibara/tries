@@ -70,6 +70,10 @@ public abstract class TrieTest {
 		return words;
 	}
 	
+	static byte[] bytes(String str) {
+		return str.getBytes(TrieTest.UTF8);
+	}
+	
 	abstract protected TrieNodeSource getNodeSource();
 	
 	@Test
@@ -770,5 +774,37 @@ public abstract class TrieTest {
 			remaining.removeIf(s -> s.startsWith("a"));
 			assertEquals(remaining, trie.asList());
 		}
+	}
+
+	@Test
+	public void testAsBytes() {
+		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Trie<String> trie = tries.newTrie();
+		Trie<byte[]> bytes = trie.asBytesTrie();
+		assertTrue(bytes.isEmpty());
+		trie.add("dog");
+		assertTrue(bytes.contains(bytes("dog")));
+		
+		try {
+			bytes.remove(bytes("dog"));
+			fail();
+		} catch (IllegalStateException e) {
+			/* expected - immutable */
+		}
+		
+		IndexedTrie<String> indexed = tries.newIndexedTrie();
+		IndexedTrie<byte[]> indexedBytes = indexed.asBytesTrie();
+		
+		indexed.add("cat");
+		assertTrue(indexed.contains("cat"));
+		assertTrue(indexedBytes.contains(bytes("cat")));
+
+		try {
+			indexedBytes.remove(bytes("cat"));
+			fail();
+		} catch (IllegalStateException e) {
+			/* expected - immutable */
+		}
+		
 	}
 }

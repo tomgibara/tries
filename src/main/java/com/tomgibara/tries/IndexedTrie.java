@@ -93,6 +93,11 @@ public class IndexedTrie<E> extends Trie<E> {
 		return new TrieList();
 	}
 
+	@Override
+	public IndexedTrie<byte[]> asBytesTrie() {
+		return new IndexedTrie<byte[]>(Tries.newByteSerialization(serialization.buffer().length), nodes.immutableView());
+	}
+
 	// package scoped methods
 	
 	@Override

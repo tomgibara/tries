@@ -1,15 +1,12 @@
 package com.tomgibara.tries;
 
+import static com.tomgibara.tries.TrieTest.bytes;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 public class TriesTest {
 
-	private static byte[] bytes(String str) {
-		return str.getBytes(TrieTest.UTF8);
-	}
-	
 	@Test
 	public void testBytes() {
 		Trie<byte[]> trie = Tries.bytes().newTrie();

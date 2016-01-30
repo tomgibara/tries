@@ -41,6 +41,10 @@ public class Tries<E> {
 		return new Tries<>(() -> new ByteSerialization());
 	}
 
+	static TrieSerialization<byte[]> newByteSerialization(int capacity) {
+		return new ByteSerialization(capacity);
+	}
+	
 	// inner classes
 	
 	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {
@@ -50,11 +54,14 @@ public class Tries<E> {
 
 		BaseSerialization() { }
 		
-		BaseSerialization(BaseSerialization<E> that) {
-			this.buffer = new byte[that.buffer.length];
-			this.length = 0;
+		BaseSerialization(int capacity) {
+			buffer = new byte[capacity];
 		}
 		
+//		BaseSerialization(BaseSerialization<E> that) {
+//			this.buffer = new byte[that.buffer.length];
+//		}
+//		
 		@Override
 		public byte[] buffer() {
 			return buffer;
@@ -132,7 +139,7 @@ public class Tries<E> {
 		}
 
 		private StreamSerialization(StreamSerialization<E> that) {
-			super(that);
+			super(that.buffer.length);
 			this.type = that.type;
 			this.serializer = that.serializer;
 			this.deserializer = that.deserializer;
@@ -173,7 +180,7 @@ public class Tries<E> {
 		}
 		
 		private  StringSerialization(StringSerialization that) {
-			super(that);
+			super(that.buffer.length);
 			this.encoder = that.encoder;
 		}
 
@@ -230,8 +237,8 @@ public class Tries<E> {
 		
 		ByteSerialization() { }
 		
-		private ByteSerialization(ByteSerialization that) {
-			super(that);
+		ByteSerialization(int capacity) {
+			super(capacity);
 		}
 		
 		@Override
@@ -256,7 +263,7 @@ public class Tries<E> {
 		
 		@Override
 		public TrieSerialization<byte[]> resetCopy() {
-			return new ByteSerialization(this);
+			return new ByteSerialization(buffer.length);
 		}
 	}
 	
