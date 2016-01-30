@@ -36,7 +36,11 @@ public class Tries<E> {
 		if (charset == null) throw new IllegalArgumentException("null charset");
 		return new Tries<>(() -> new StringSerialization(charset));
 	}
-	
+
+	public static Tries<byte[]> bytes() {
+		return new Tries<>(() -> new ByteSerialization());
+	}
+
 	// inner classes
 	
 	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {
@@ -222,6 +226,40 @@ public class Tries<E> {
 		
 	}
 
+	private static class ByteSerialization extends BaseSerialization<byte[]> {
+		
+		ByteSerialization() { }
+		
+		private ByteSerialization(ByteSerialization that) {
+			super(that);
+		}
+		
+		@Override
+		public boolean isSerializable(Object obj) {
+			return obj instanceof byte[];
+		}
+		
+		@Override
+		public void set(byte[] prefix) {
+			if (prefix.length > buffer.length) {
+				buffer = prefix.clone();
+			} else {
+				System.arraycopy(prefix, 0, buffer, 0, prefix.length);
+				length = prefix.length;
+			}
+		}
+
+		@Override
+		public byte[] get() {
+			return Arrays.copyOf(buffer, length);
+		}
+		
+		@Override
+		public TrieSerialization<byte[]> resetCopy() {
+			return new ByteSerialization(this);
+		}
+	}
+	
 	// fields
 
 	final Producer<TrieSerialization<E>> serialProducer;
