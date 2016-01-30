@@ -46,7 +46,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	private final ByteOrder byteOrder;
 	private final boolean counting;
 	private final int nodeSize;
-	private final PackedNode root;
+	private final CompactNode root;
 	private int capacity;
 	private int[] data;
 	private int freeIndex;
@@ -92,7 +92,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public PackedNode root() {
+	public CompactNode root() {
 		return root;
 	}
 
@@ -105,8 +105,8 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public PackedNode newNode(byte value) {
-		PackedNode n = newNode();
+	public CompactNode newNode(byte value) {
+		CompactNode n = newNode();
 		n.setChildValue(0, value);
 		n.setValueCount(1);
 		return n;
@@ -116,10 +116,10 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	public void incCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
-		int last = ((PackedNode) stack[length - 1]).index;
+		int last = ((CompactNode) stack[length - 1]).index;
 		int previous = last;
 		for (int i = length - 1; i >= 0; i--) {
-			PackedNode node = (PackedNode) stack[i];
+			CompactNode node = (CompactNode) stack[i];
 			int index = node.index;
 			if (index == previous) continue;
 			node.adjustCount(1);
@@ -132,11 +132,11 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	public void decCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
-		PackedNode lastNode = (PackedNode) stack[length - 1];
+		CompactNode lastNode = (CompactNode) stack[length - 1];
 		int last = lastNode.index;
 		int previous = last;
 		for (int i = length - 1; i >= 0; i--) {
-			PackedNode node = (PackedNode) stack[i];
+			CompactNode node = (CompactNode) stack[i];
 			int index = node.index;
 			if (index == previous) continue;
 			if (index != 0) node.adjustCount(-1);
@@ -200,7 +200,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	
 	// private helper methods
 	
-	private void dump(PrintStream out, int indent, PackedNode node) {
+	private void dump(PrintStream out, int indent, CompactNode node) {
 		if (node == null) return;
 		out.print(String.format("% 6d:", node.index));
 		for (int i = 0; i < indent; i++) {
@@ -216,7 +216,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		dump(out, indent, node.getSibling());
 	}
 	
-	private void check(PackedNode node, int count) {
+	private void check(CompactNode node, int count) {
 		//TODO if counted, check count is zero?
 		if (node == null) return;
 		
@@ -244,7 +244,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 	}
 
-	private PackedNode newNode() {
+	private CompactNode newNode() {
 		int index;
 		if (nodeLimit < capacity) {
 			index = nodeLimit++;
@@ -257,13 +257,13 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 		nodeCount++;
 		Arrays.fill(data, index * nodeSize, index * nodeSize + nodeSize, 0);
-		PackedNode node = new PackedNode(index);
+		CompactNode node = new CompactNode(index);
 		node.setValueCount(1);
 		return node;
 	}
 
 	// returns number of siblings
-	private int adopt(PackedNode ours, TrieNode theirs) {
+	private int adopt(CompactNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
 		TrieNode sibling = theirs.getSibling();
 		int sibcount = sibling == null ? 0 : 1 + adopt( ours.insertSibling(sibling.getValue()), sibling);
@@ -277,7 +277,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				count = theirs.getCount();
 			} else {
 				count = ours.isTerminal() ? 1 : 0;
-				PackedNode node = ours.getChild();
+				CompactNode node = ours.getChild();
 				while (node != null) {
 					count += node.getCount();
 					node = node.getSibling();
@@ -289,7 +289,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@SuppressWarnings("unused")
-	private void checkCounts(PackedNode ours, PackedNode theirs) {
+	private void checkCounts(CompactNode ours, CompactNode theirs) {
 		if (ours == null && theirs == null) return;
 		if (ours == null || theirs == null) throw new IllegalStateException("Missing node " + ours + " " + theirs);
 		if (ours.getCount() != theirs.getCount()) throw new IllegalStateException("Different sizes between " + ours + " " + theirs + " ("+ours.getCount()+") ("+theirs.getCount()+")");
@@ -297,14 +297,14 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		checkCounts(ours.getSibling(), theirs.getSibling());
 	}
 	
-	private int count(PackedNode node, int count) {
+	private int count(CompactNode node, int count) {
 		if (node.isTerminal()) count ++;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		if (node.hasSibling()) count += count(node.getSibling(), 0);
 		return count;
 	}
 	
-	private int count(PackedNode node) {
+	private int count(CompactNode node) {
 		int count = node.isTerminal() ? 1 : 0;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		return count;
@@ -334,7 +334,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 	// inner classes
 	
-	class PackedNode extends AbstractTrieNode {
+	class CompactNode extends AbstractTrieNode {
 
 		// statics
 		
@@ -356,11 +356,11 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 		// constructors
 		
-		private PackedNode(int index) {
+		private CompactNode(int index) {
 			this(index, 0);
 		}
 
-		private PackedNode(int index, int ordinal) {
+		private CompactNode(int index, int ordinal) {
 			this.index = index;
 			this.ordinal = ordinal;
 			this.offset = index * nodeSize;
@@ -399,23 +399,23 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public PackedNode getSibling() {
+		public CompactNode getSibling() {
 			int siblingIndex = getSiblingIndex();
-			return siblingIndex == 0 ? null : new PackedNode(siblingIndex);
+			return siblingIndex == 0 ? null : new CompactNode(siblingIndex);
 		}
 		
 		@Override
 		public boolean isSibling(TrieNode node) {
-			return getSiblingFlag() && getSiblingIndex() == ((PackedNode) node).index;
+			return getSiblingFlag() && getSiblingIndex() == ((CompactNode) node).index;
 		}
 		
 		// child
 		
-		public PackedNode getChild() {
+		public CompactNode getChild() {
 			int childOrd = ordinal + 1;
-			if (childOrd < getValueCount()) return new PackedNode(index, childOrd);
+			if (childOrd < getValueCount()) return new CompactNode(index, childOrd);
 			int childIndex = getChildIndex();
-			return childIndex == 0 ? null : new PackedNode(childIndex);
+			return childIndex == 0 ? null : new CompactNode(childIndex);
 		}
 		
 		@Override
@@ -425,7 +425,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean isChild(TrieNode node) {
-			PackedNode n = (PackedNode) node;
+			CompactNode n = (CompactNode) node;
 			if (n.ordinal != 0) { // node is packed
 				// packed in the same node and successors
 				return n.index == this.index && n.ordinal == this.ordinal + 1;
@@ -437,7 +437,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean remove(TrieNode childOrSibling) {
-			PackedNode n = (PackedNode) childOrSibling;
+			CompactNode n = (CompactNode) childOrSibling;
 			if (index == n.index && n.ordinal == ordinal + 1) {
 				// note, truncates packed descendants
 				setValueCount(ordinal + 1);
@@ -457,7 +457,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean removeChild(TrieNode child) {
-			PackedNode n = (PackedNode) child;
+			CompactNode n = (CompactNode) child;
 			int ni = n.index;
 			// n may be a packed child
 			if (index == ni && n.ordinal == ordinal + 1) {
@@ -477,19 +477,19 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			}
 
 			// n my be a sibling of our child
-			PackedNode c = new PackedNode(ci);
+			CompactNode c = new CompactNode(ci);
 			while (true) {
 				// watch out for a compact sibling
 				int count = c.getCompactCount();
 				if (count > 0) {
 					if (ni < ci || ni > ci + count) return false;
-					new PackedNode(ni - 1).setSibling(n.getSibling());
+					new CompactNode(ni - 1).setSibling(n.getSibling());
 					decompactNodes(ci, ni - 1);
 					return true;
 				}
 
 				// otherwise walk the reference
-				PackedNode s = c.getSibling();
+				CompactNode s = c.getSibling();
 				if (s == null) return false;
 				int si = s.index;
 				if (si == ni) {
@@ -525,12 +525,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public PackedNode findChild(byte value) {
+		public CompactNode findChild(byte value) {
 			ByteOrder order = nodes().byteOrder();
-			PackedNode child = getChild();
+			CompactNode child = getChild();
 			if (child == null) return null;
 			while (true) {
-				PackedNode compact = child.findCompactSibling(value);
+				CompactNode compact = child.findCompactSibling(value);
 				if (compact != null) return compact;
 				int c = order.compare(child.getValue(), value);
 				if (c == 0) return child;
@@ -541,12 +541,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public PackedNode findChildOrNext(byte value) {
+		public CompactNode findChildOrNext(byte value) {
 			ByteOrder order = nodes().byteOrder();
-			PackedNode child = getChild();
+			CompactNode child = getChild();
 			if (child == null) return null;
 			while (true) {
-				PackedNode compact = child.findCompactSiblingOrNext(value);
+				CompactNode compact = child.findCompactSiblingOrNext(value);
 				if (compact != null) return compact;
 				int c = order.compare(child.getValue(), value);
 				if (c >= 0) return child;
@@ -557,10 +557,10 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		//should simply reimplement this method
 		@Override
-		public PackedNode findOrInsertChild(byte value) {
-			PackedNode child = getChild();
+		public CompactNode findOrInsertChild(byte value) {
+			CompactNode child = getChild();
 			if (child == null) return insertChild(value);
-			PackedNode previous = null;
+			CompactNode previous = null;
 			ByteOrder order = nodes().byteOrder();
 			while (true) {
 				// first see if child has compact siblings
@@ -576,7 +576,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 							mid = (from + to) >> 1;
 							byte nodeValue = getSiblingValue(mid);
 							c = order.compare(nodeValue, value);
-							if (c == 0) return new PackedNode(mid);
+							if (c == 0) return new CompactNode(mid);
 							if (from == to) break;
 							if (c > 0) {
 								to = mid;
@@ -588,7 +588,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 						if (c < 0) {
 							// mid node is less, make new node its sibling
 							decompactNodes(child.index, mid);
-							PackedNode node = new PackedNode(mid);
+							CompactNode node = new CompactNode(mid);
 							return node.insertSibling(value);
 						}
 						if (mid == child.index) {
@@ -597,14 +597,14 @@ class CompactTrieNodes extends AbstractTrieNodes {
 						}
 						// new node needs to go before mid node
 						decompactNodes(child.index, mid - 1);
-						PackedNode node = new PackedNode(mid - 1);
+						CompactNode node = new CompactNode(mid - 1);
 						return node.insertSibling(value);
 					}
 					// not okay to do a binary search, so use a linear scan
 					int limit = child.index + count + 1;
 					for (int i = child.index; i < limit; i++) {
 						//TODO eliminate object creation
-						PackedNode node = new PackedNode(i);
+						CompactNode node = new CompactNode(i);
 						byte nodeValue = node.getValue();
 						int c = order.compare(nodeValue, value);
 						if (c == 0) return node;
@@ -628,12 +628,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		public PackedNode getLastChild() {
-			PackedNode child = getChild();
+		public CompactNode getLastChild() {
+			CompactNode child = getChild();
 			if (child == null) return null;
 			// fast case - child has compact siblings
 			int count = child.getCompactCount();
-			if (count > 0) return new PackedNode(child.index + count);
+			if (count > 0) return new CompactNode(child.index + count);
 			// slow path - walk the chain
 			while (child.hasSibling()) child = child.getSibling();
 			return child;
@@ -650,12 +650,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 		// package scoped implementations
 
-		PackedNode insertChild(byte value) {
+		CompactNode insertChild(byte value) {
 			return insertChild(value, false);
 		}
 
-		PackedNode insertChild(byte value, boolean forceNewNode) {
-			PackedNode existingChild = separateChild();
+		CompactNode insertChild(byte value, boolean forceNewNode) {
+			CompactNode existingChild = separateChild();
 			if (!forceNewNode && getValueCount() < MAX_VALUES && !hasSibling() && existingChild == null) {
 				int childOrd = ordinal + 1;
 				// insert new value
@@ -663,9 +663,9 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				// update count
 				setValueCount(getValueCount() + 1);
 				// fabricate child node
-				return new PackedNode(index, childOrd);
+				return new CompactNode(index, childOrd);
 			}
-			PackedNode child = newNode(value);
+			CompactNode child = newNode(value);
 			//TODO replace with setting index & flag
 			child.setSibling(existingChild);
 			setChildIndex(child.index);
@@ -673,18 +673,18 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		PackedNode insertSibling(byte value) {
+		CompactNode insertSibling(byte value) {
 			// decompact any earlier compact nodes
 			// if our prior node has compact nodes, we must be its sibling
 			if (ordinal == 0) {
 				int i = index;
 				while (true) {
-					PackedNode prev = new PackedNode(--i);
+					CompactNode prev = new CompactNode(--i);
 					if (prev.getCompactCount() <= 0) break;
 					prev.decompact();
 				}
 			}
-			PackedNode sibling = newNode(value);
+			CompactNode sibling = newNode(value);
 			sibling.setSibling(getSibling());
 			setSibling(sibling);
 			return sibling;
@@ -697,7 +697,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			if (ordinal == 0) {
 				separateChild();
 			} else {
-				PackedNode parent = new PackedNode(index, ordinal - 1);
+				CompactNode parent = new CompactNode(index, ordinal - 1);
 				parent.separateChild();
 				//TODO ugly - any better way?
 				index = parent.getChildIndex();
@@ -715,7 +715,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				// ... and we mustn't have packed children ...
 				separateChild();
 				// ... now we are safe to set a sibling
-				setSiblingIndex(((PackedNode) sibling).index);
+				setSiblingIndex(((CompactNode) sibling).index);
 				setSiblingFlag(true);
 			}
 		}
@@ -728,14 +728,14 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				setChildIndex(0);
 			} else {
 				separateChild();
-				setChildIndex(((PackedNode) child).index);
+				setChildIndex(((CompactNode) child).index);
 			}
 		}
 		
-		private PackedNode separateChild() {
+		private CompactNode separateChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd >= getValueCount()) return getChild(); // no child to separate
-			PackedNode child = newNode();
+			CompactNode child = newNode();
 			int valueCount = getValueCount();
 			for (int i = childOrd; i < valueCount; i++) {
 				child.setChildValue(i - childOrd, getChildValue(i));
@@ -757,7 +757,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			return child;
 		}
 
-		private PackedNode findCompactSibling(byte value) {
+		private CompactNode findCompactSibling(byte value) {
 			int count = getCompactCount();
 			if (count <= 0) return null;
 			ByteOrder order = nodes().byteOrder();
@@ -770,7 +770,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 					mid = (from + to) >> 1;
 					byte nodeValue = getSiblingValue(mid);
 					int c = order.compare(nodeValue, value);
-					if (c == 0) return new PackedNode(mid);
+					if (c == 0) return new CompactNode(mid);
 					if (from == to) return null;
 					if (c > 0) {
 						to = mid;
@@ -784,13 +784,13 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			for (int i = index; i <= limit; i++) {
 				byte nodeValue = getSiblingValue(i);
 				int c = order.compare(nodeValue, value);
-				if (c == 0) return new PackedNode(i);
+				if (c == 0) return new CompactNode(i);
 				if (c > 0) return null;
 			}
 			return null;
 		}
 
-		private PackedNode findCompactSiblingOrNext(byte value) {
+		private CompactNode findCompactSiblingOrNext(byte value) {
 			int count = getCompactCount();
 			if (count <= 0) return null;
 			ByteOrder order = nodes().byteOrder();
@@ -803,10 +803,10 @@ class CompactTrieNodes extends AbstractTrieNodes {
 					mid = (from + to) >> 1;
 					byte nodeValue = getSiblingValue(mid);
 					int c = order.compare(nodeValue, value);
-					if (c == 0) return new PackedNode(mid);
+					if (c == 0) return new CompactNode(mid);
 					if (from == to) {
-						if (c > 0) return new PackedNode(mid);
-						return mid == index + count ? null : new PackedNode(mid + 1);
+						if (c > 0) return new CompactNode(mid);
+						return mid == index + count ? null : new CompactNode(mid + 1);
 					};
 					if (c > 0) {
 						to = mid;
@@ -820,7 +820,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			for (int i = index; i <= limit; i++) {
 				byte nodeValue = getSiblingValue(i);
 				int c = order.compare(nodeValue, value);
-				if (c >= 0) return new PackedNode(i);
+				if (c >= 0) return new CompactNode(i);
 			}
 			return null;
 		}
@@ -929,7 +929,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		private void decompactNodes(int fromIndex, int toIndex) {
 			//TODO optimize away object creations
 			for (int j = fromIndex; j < toIndex; j++) {
-				PackedNode tmp = new PackedNode(j);
+				CompactNode tmp = new CompactNode(j);
 				tmp.decompact();
 			}
 		}
@@ -950,7 +950,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@SuppressWarnings("unused")
 		private int countChildren() {
-			PackedNode child = getChild();
+			CompactNode child = getChild();
 			int count = 0;
 			while (child != null) {
 				count++;

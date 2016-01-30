@@ -6,8 +6,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.tomgibara.tries.CompactTrieNodes.PackedNode;
-
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
  * In addition to it's value and a child pointer, node can support either:
