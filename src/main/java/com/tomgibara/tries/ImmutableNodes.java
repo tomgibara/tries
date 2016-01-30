@@ -71,15 +71,15 @@ class ImmutableNodes implements TrieNodes {
 		return imm();
 	}
 
-	@Override
-	public int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
-		int len = nodes.populate(unwrap(root), values, length, stack, referrers);
-		for (int i = 0; i < len; i++) {
-			stack[i] = wrap(stack[i]);
-			referrers[i] = wrap(referrers[i]);
-		}
-		return len;
-	}
+//	@Override
+//	public int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
+//		int len = nodes.populate(unwrap(root), values, length, stack, referrers);
+//		for (int i = 0; i < len; i++) {
+//			stack[i] = wrap(stack[i]);
+//			referrers[i] = wrap(referrers[i]);
+//		}
+//		return len;
+//	}
 
 	@Override
 	public void incCounts(TrieNode[] stack, int length) {
