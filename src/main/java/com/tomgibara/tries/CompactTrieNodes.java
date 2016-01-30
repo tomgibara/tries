@@ -269,9 +269,22 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		int sibcount = sibling == null ? 0 : 1 + adopt( ours.insertSibling(sibling.getValue()), sibling);
 		if (sibcount != 0) ours.setSiblingIndex(-1 - sibcount);
 		TrieNode child = theirs.getChild();
-		//TODO need force if there are too many children to pack too?
 		if (child != null) adopt( ours.insertChild(child.getValue(), child.hasSibling()), child);
-		if (counting && ours.ordinal == 0) ours.setCount(theirs.getCount() - ours.extraCount());
+		// resolve counting
+		if (counting && ours.ordinal == 0) {
+			int count;
+			if (theirs.nodes().isCounting()) {
+				count = theirs.getCount();
+			} else {
+				count = ours.isTerminal() ? 1 : 0;
+				PackedNode node = ours.getChild();
+				while (node != null) {
+					count += node.getCount();
+					node = node.getSibling();
+				}
+			}
+			ours.setCount(count- ours.extraCount());
+		}
 		return sibcount;
 	}
 	

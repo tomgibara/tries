@@ -6,6 +6,8 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 
+import com.tomgibara.tries.CompactTrieNodes.PackedNode;
+
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
  * In addition to it's value and a child pointer, node can support either:
@@ -292,7 +294,21 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
 		TrieNode child = theirs.getChild();
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
-		if (counting && ours.ordinal == 0) ours.setCount(theirs.getCount() - ours.extraCount());
+		// resolve counting
+		if (counting && ours.ordinal == 0) {
+			int count;
+			if (theirs.nodes().isCounting()) {
+				count = theirs.getCount();
+			} else {
+				count = ours.isTerminal() ? 1 : 0;
+				PackedNode node = ours.getChild();
+				while (node != null) {
+					count += node.getCount();
+					node = node.getSibling();
+				}
+			}
+			ours.setCount(count- ours.extraCount());
+		}
 		return ours;
 	}
 	

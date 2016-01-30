@@ -1,5 +1,7 @@
 package com.tomgibara.tries;
 
+import com.tomgibara.tries.PackedTrieNodes.PackedNode;
+
 
 class BasicTrieNodes extends AbstractTrieNodes {
 
@@ -114,7 +116,19 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
 		TrieNode child = theirs.getChild();
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
-		ours.count = theirs.getCount();
+		// resolve counting
+		int count;
+		if (theirs.nodes().isCounting()) {
+			count = theirs.getCount();
+		} else {
+			count = ours.isTerminal() ? 1 : 0;
+			BasicNode node = ours.getChild();
+			while (node != null) {
+				count += node.getCount();
+				node = node.getSibling();
+			}
+		}
+		ours.count = count;
 		return ours;
 	}
 

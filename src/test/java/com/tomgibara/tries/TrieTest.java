@@ -221,6 +221,7 @@ public abstract class TrieTest {
 	}
 
 	@Test
+	@Ignore
 	public void testRandomizedLongs() {
 		testRandomizedLongs(true);
 		testRandomizedLongs(false);
@@ -690,12 +691,18 @@ public abstract class TrieTest {
 	}
 
 	@Test
-	public void testCopyBasic() {
+	public void testCopy() {
+		testCopy(TrieNodeSource.forSpeed());
+		testCopy(TrieNodeSource.forCompactness());
+		testCopy(TrieNodeSource.forCompactLookups());
+	}
+
+	private void testCopy(TrieNodeSource source) {
 		List<String> strs = asList("One", "Once", "Onto", "Ontology", "Two");
-		Tries<String> tries = Tries.strings(ASCII).byteOrder(ByteOrder.UNSIGNED);
+		Tries<String> tries = Tries.strings(ASCII).byteOrder(ByteOrder.UNSIGNED).nodeSource(source);
 		Trie<String> trie = tries.newTrie();
 		trie.addAll(strs);
-		IndexedTrie<String> indexed = tries.newIndexedTrie(trie);
+		IndexedTrie<String> indexed = tries.newIndexedTrie();
 		indexed.addAll(strs);
 		IndexedTrie<String> reversed = tries.byteOrder(ByteOrder.REVERSE_UNSIGNED).newIndexedTrie(trie);
 		reversed.addAll(strs);
