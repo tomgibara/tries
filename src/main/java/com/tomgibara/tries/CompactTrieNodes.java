@@ -159,7 +159,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		root.setTerminal(false);
 		root.setSibling(null);
 		root.setChild(null);
-		if (counting) root.setCount(0);
+		if (counting) root.setExternalCount(0);
 	}
 	
 	@Override
@@ -208,7 +208,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 		out.print(node.valueAsString());
 		if (node.isTerminal()) out.print("*");
-		if (counting) out.print(" (" + node.getCountX() + "|" + node.extraCount() + ")");
+		if (counting) out.print(" (" + node.getExternalCount() + "|" + node.internalCount() + ")");
 		out.print(" -- " + node.getSiblingIndex() + " " + node.getCompactCount());
 		out.println();
 		
@@ -283,7 +283,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 					node = node.getSibling();
 				}
 			}
-			ours.setCount(count- ours.extraCount());
+			ours.setExternalCount(count- ours.internalCount());
 		}
 		return sibcount;
 	}
@@ -504,7 +504,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public int getCount() {
-			return counting ? getCountX() + extraCount() : count(this);
+			return counting ? getExternalCount() + internalCount() : count(this);
 		}
 		
 		@Override
@@ -645,7 +645,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		public String toString() {
 			int followers = getValueCount() - ordinal - 1;
 			String following = followers < 0 ? "!" : String.join("", Collections.nCopies(followers, "."));
-			return index + "+" + ordinal + " " + valueAsString() + following + (isTerminal() ? "*" : "") + (counting ? ">" + getCountX() : "") + (getCompactCount() > 0 ? " (" + getCompactCount() + ")" : "");
+			return index + "+" + ordinal + " " + valueAsString() + following + (isTerminal() ? "*" : "") + (counting ? ">" + getExternalCount() : "") + (getCompactCount() > 0 ? " (" + getCompactCount() + ")" : "");
 		}
 
 		// package scoped implementations
@@ -741,7 +741,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				child.setChildValue(i - childOrd, getChildValue(i));
 			}
 			int terminals = getTerminals();
-			int count = getCountX();
+			int count = getExternalCount();
 			child.setChildIndex(getChildIndex());
 			child.setValueCount(valueCount - childOrd);
 			int childTerminals = terminals >> childOrd;
@@ -751,8 +751,8 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			setValueCount(childOrd);
 			setTerminals(parentTerminals);
 			if (counting) {
-				child.setCount(count);
-				setCount(count + child.extraCount());
+				child.setExternalCount(count);
+				setExternalCount(count + child.internalCount());
 			}
 			return child;
 		}
@@ -912,17 +912,17 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			invalidations ++;
 		}
 
-		private void setCount(int count) {
+		private void setExternalCount(int count) {
 			if (count < 0) throw new IllegalStateException();
 			data[offset + 3] = count;
 			invalidations ++;
 		}
 
-		private int getCountX() {
+		private int getExternalCount() {
 			return data[offset + 3];
 		}
 
-		private int extraCount() {
+		private int internalCount() {
 			return Integer.bitCount(getTerminals() >> ordinal);
 		}
 
