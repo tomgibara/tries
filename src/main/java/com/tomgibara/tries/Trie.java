@@ -250,6 +250,18 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		root = findRoot(prefix, prefix.length);
 		return root;
 	}
+	
+	int stackToRoot(TrieNode[] stack) {
+		byte[] bytes = prefix;
+		int length = prefix.length;
+		TrieNode node = nodes.root();
+		for (int i = 0; i < length; i++) {
+			node = node.findChild(bytes[i]);
+			if (node == null) return i;
+			stack[i] = node;
+		}
+		return length;
+	}
 
 	// overridden to allow indexed try to compute root index
 	TrieNode findRoot(byte[] bytes, int length) {
@@ -273,6 +285,39 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			System.err.println(e.getMessage());
 			throw e;
 		}
+	}
+	
+	boolean doRemove(TrieNode[] stack, int length) {
+		if (length == 0) {
+			TrieNode root = nodes.root();
+			if (!root.isTerminal()) return false;
+			nodes.decCounts(stack, length);
+			root.setTerminal(false);
+			return true;
+		}
+		TrieNode node = stack[length - 1];
+		if (!node.isTerminal()) return false; // not present
+		nodes.decCounts(stack, length);
+		node.setTerminal(false);
+		// we do no pruning if the node has a child
+		// because our tree can have no dangling nodes (except possibly the root)
+		// so if the node has a child, there must be terminations further along the tree
+		if (!node.hasChild()) {
+			int i = length - 2;
+			TrieNode child = node;
+			TrieNode parent = null;
+			for (; i >= 0; i--) {
+				parent = stack[i];
+				if (parent.isTerminal() || parent.getChild().hasSibling()) break;
+				child = parent;
+			}
+			if (i < 0) parent = nodes.root();
+			boolean removed = parent.removeChild(child);
+			assert(removed); // we know the child is there
+			// finally, delete any detached nodes
+			for (int j = length - 1; j > i ; j--) stack[j].delete();
+		}
+		return true;
 	}
 	
 	// private helper methods
@@ -308,42 +353,16 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	private boolean remove(byte[] bytes, int length) {
 		nodes.ensureExtraCapacity(1);
-		TrieNode root = nodes.root();
 		TrieNode[] stack = new TrieNode[length];
-		if (length == 0) {
-			if (!root.isTerminal()) return false;
-			nodes.decCounts(stack, length);
-			root.setTerminal(false);
-		} else {
-			TrieNode node = root;
+		if (length > 0) {
+			TrieNode node = nodes.root();
 			for (int i = 0; i < length; i++) {
 				node = node.findChild(bytes[i]);
 				if (node == null) return false;
 				stack[i] = node;
 			}
-			if (!node.isTerminal()) return false; // not present
-			nodes.decCounts(stack, length);
-			node.setTerminal(false);
-			// we do no pruning if the node has a child
-			// because our tree can have no dangling nodes (except possibly the root)
-			// so if the node has a child, there must be terminations further along the tree
-			if (!node.hasChild()) {
-				int i = length - 2;
-				TrieNode child = node;
-				TrieNode parent = null;
-				for (; i >= 0; i--) {
-					parent = stack[i];
-					if (parent.getChild().hasSibling()) break;
-					child = parent;
-				}
-				if (i < 0) parent = root;
-				boolean removed = parent.removeChild(child);
-				assert(removed); // we know the child is there
-				// finally, delete any detached nodes
-				for (int j = length - 1; j > i ; j--) stack[j].delete();
-			}
 		}
-		return true;
+		return doRemove(stack, length);
 	}
 	
 	// inner classes

@@ -250,6 +250,12 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			return count;
 		}
 
+		@Override
+		public String toString() {
+			String str = Integer.toHexString(value);
+			return (str.length() == 1 ? "0" : "") + str + (terminal ? "." : "") + " (" + count + ")";
+		}
+		
 		void setSibling(BasicNode sibling) {
 			if (sibling == this.sibling) return;
 			this.sibling = sibling;
@@ -268,8 +274,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			if (sibling != null) count += sibling.countNodes();
 			return count;
 		}
-
-
 
 	}
 }

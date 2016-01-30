@@ -50,6 +50,38 @@ public class IndexedTrie<E> extends Trie<E> {
 		return serialization.get();
 	}
 	
+	public E remove(int index) {
+		if (index < 0) throw new IllegalArgumentException("negative index");
+		TrieNode[] stack = new TrieNode[ serialization.buffer().length ];
+		int length = stackToRoot(stack);
+		if (length != prefix.length) throw new IllegalArgumentException("index too large");
+		TrieNode node = length == 0 ? nodes.root() : stack[length - 1]; // the logical root
+		if (index >= node.getCount()) throw new IllegalArgumentException("index too large");
+		nodes.ensureExtraCapacity(1);
+		serialization.set(prefix);
+		int count = node.getCount();
+
+		while (!node.isTerminal() || index != 0) {
+			if (index < count) {
+				if (node.isTerminal()) index--;
+				node = node.getChild();
+				serialization.push(node.getValue());
+				stack[length++] = node;
+			} else {
+				index -= count;
+				node = node.getSibling();
+				serialization.replace(node.getValue());
+				stack[length - 1] = node;
+			}
+			count = node.getCount();
+		}
+
+		if (index >= node.getCount()) return null;
+		boolean removed = doRemove(stack, length);
+		assert(removed);
+		return serialization.get();
+	}
+	
 	public int indexOf(E e) {
 		checkSerializable(e);
 		serialization.set(e);
@@ -168,8 +200,7 @@ public class IndexedTrie<E> extends Trie<E> {
 
 		@Override
 		public E remove(int index) {
-			//TODO
-			throw new UnsupportedOperationException();
+			return IndexedTrie.this.remove(index);
 		}
 		
 		@Override

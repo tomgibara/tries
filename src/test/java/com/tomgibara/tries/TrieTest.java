@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -221,7 +224,6 @@ public abstract class TrieTest {
 	}
 
 	@Test
-	@Ignore
 	public void testRandomizedLongs() {
 		testRandomizedLongs(true);
 		testRandomizedLongs(false);
@@ -731,6 +733,43 @@ public abstract class TrieTest {
 		assertTrue(copy4.containsAll(strs));
 		for (String str : strs) {
 			assertEquals(indexed.indexOf(str), copy4.indexOf(str));
+		}
+	}
+
+	@Test
+	public void testRemoveAtIndex() {
+		Function<List<String>, List<String>> arrange = list -> list.stream().sorted().distinct().collect(Collectors.toList());
+		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).newIndexedTrie();
+		List<String> words = asList("There was a young lady of Niger who smiled as she rode on a tiger They returned from the ride with the lady inside and the smile on the face of the tiger".split("\\s+"));
+
+		{ // check basic removal
+			trie.addAll(words);
+			List<String> remaining = arrange.apply(words);
+			assertEquals(remaining, trie.asList());
+
+			Random r = new Random(0L);
+			while (!remaining.isEmpty()) {
+				int index = r.nextInt(remaining.size());
+				assertEquals("Mistake removing " + index + " of " + remaining.size(), remaining.get(index), trie.remove(index));
+				remaining.remove(index);
+				assertEquals(remaining, trie.asList());
+			}
+		}
+
+		{ // check removal from sub trie
+			trie.addAll(words);
+			List<String> remaining = arrange.apply(words);
+			assertEquals(remaining, trie.asList());
+			IndexedTrie<String> sub = trie.subTrie("a");
+	
+			assertEquals(3, sub.size());
+			assertEquals("and", sub.remove(1));
+			assertEquals("a", sub.remove(0));
+			assertEquals("as", sub.remove(0));
+			assertTrue(sub.isEmpty());
+
+			remaining.removeIf(s -> s.startsWith("a"));
+			assertEquals(remaining, trie.asList());
 		}
 	}
 }
