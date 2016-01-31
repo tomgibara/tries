@@ -9,6 +9,19 @@ import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.Bits;
 import com.tomgibara.storage.Stores;
 
+/**
+ * <p>
+ * Efficiently compares byte values using a fixed ordering.
+ * 
+ * <p>
+ * Note that this class is serializable so that applications seeking to persist
+ * tries may do so together with the byte ordering applied. Serialization works
+ * even if the byte order was constructed using a comparator that is not
+ * serializable.
+ * 
+ * @author Tom Gibara
+ */
+
 public final class ByteOrder implements Serializable {
 
 	// constants
@@ -41,18 +54,52 @@ public final class ByteOrder implements Serializable {
 	
 	// public statics
 
+	/**
+	 * Unsigned byte order. Comparisons between <code>a</code> and
+	 * <code>b</code> are equivalent to:
+	 * <code>Integer.compare(a & 0xff, b & 0xff)</code>.
+	 */
+
 	public static final ByteOrder UNSIGNED = new ByteOrder(UNS);
+
+	/**
+	 * Signed byte order. Comparisons between <code>a</code> and
+	 * <code>b</code> are equivalent to:
+	 * <code>Byte.compare(a, b)</code>.
+	 */
 
 	public static final ByteOrder SIGNED = new ByteOrder(SGN);
 
+	/**
+	 * Reverse unsigned byte order. Comparisons between <code>a</code> and
+	 * <code>b</code> are equivalent to:
+	 * <code>Integer.compare(b & 0xff, a & 0xff)</code>.
+	 */
+
 	public static final ByteOrder REVERSE_UNSIGNED = new ByteOrder(RUN);
+
+	/**
+	 * Reverse signed byte order. Comparisons between <code>a</code> and
+	 * <code>b</code> are equivalent to:
+	 * <code>Byte.compare(b, a)</code>.
+	 */
 
 	public static final ByteOrder REVERSE_SIGNED = new ByteOrder(RSN);
 	
+	/**
+	 * Derives a byte order from the ordering imposed by a comparator.
+	 * The supplied comparator must provide a consistent ordering.
+	 * 
+	 * 
+	 * @param comparator a consistent byte comparator
+	 * @return a byte order equivalent to the supplied comparator
+	 * @throws IllegalArgumentException if the comparator ordering is
+	 * inconsistent
+	 */
+
 	public static ByteOrder from(Comparator<Byte> comparator) {
 		if (comparator == null) throw new IllegalArgumentException("null comparator");
 		ByteOrder order = new ByteOrder(comparator);
-		//TODO consider canonicalizing fixed orders
 		return order;
 	}
 	
@@ -113,7 +160,17 @@ public final class ByteOrder implements Serializable {
 	public Comparator<Byte> asComparator() {
 		return comparator;
 	}
-	
+
+	/**
+	 * Compares two bytes. As per Java conventions, the method returns a
+	 * negative integer if <code>a < b</code>, zero if <code>a == b</code> and
+	 * a positive integer if <code>a > b</code>
+	 * 
+	 * @param a any byte
+	 * @param b another byte
+	 * @return <code>a</code> compared to <code>b</code>
+	 */
+
 	public int compare(byte a, byte b) {
 		switch (fixedType) {
 		case UNS: return unsCmp(a, b);
@@ -129,7 +186,7 @@ public final class ByteOrder implements Serializable {
 	private int[] lookup() {
 		// lookup is lazy for fixed types
 		// use of custom comparators is rare
-		// why do the work unnecessarily on startup
+		// why do the work unnecessarily on startup?
 		if (lookup == null) {
 			int[] lookup = new int[256];
 			// optimize fixed types
@@ -193,11 +250,20 @@ public final class ByteOrder implements Serializable {
 		}
 	}
 	
+	/**
+	 * A hash code consistent with equality on this class.
+	 */
+
 	@Override
 	public int hashCode() {
 		return hashCode;
 	}
-	
+
+	/**
+	 * Two {@link ByteOrder} instances are equal if they impose an identical
+	 * ordering on bytes.
+	 */
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
