@@ -5,12 +5,13 @@ import com.tomgibara.fundament.Mutability;
 /**
  * <p>
  * A tree of {@link TrieNode} instances. All trees operate with a fixed byte
- * ordering which is reported by the {@link #byteOrder()} method. Trees also
- * support mutability controls as per the <code>Mutability</code> interface.
+ * ordering which is reported by the {@link #byteOrder()} method and imposes an
+ * ordering on sibling nodes. Trees also support mutability controls as per the
+ * <code>Mutability</code> interface.
  * 
  * <p>
  * Some tree implementations may support recording the number of terminating
- * children at each node. This is required to support the functionality exposed 
+ * children at each node. This is required to support the functionality exposed
  * by {@link IndexedTrie}.
  * 
  * <p>

@@ -188,10 +188,10 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			return sibling;
 		}
 
-		@Override
-		public boolean isSibling(TrieNode node) {
-			return sibling == node;
-		}
+//		@Override
+//		public boolean isSibling(TrieNode node) {
+//			return sibling == node;
+//		}
 
 		@Override
 		public BasicNode getChild() {
@@ -206,24 +206,24 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			return child;
 		}
 		
-		@Override
-		public boolean isChild(TrieNode node) {
-			return child == node;
-		}
+//		@Override
+//		public boolean isChild(TrieNode node) {
+//			return child == node;
+//		}
 
-		@Override
-		public boolean remove(TrieNode childOrSibling) {
-			BasicNode node = (BasicNode) childOrSibling;
-			if (childOrSibling == child) {
-				setChild(node.getSibling());
-				return true;
-			}
-			if (childOrSibling == sibling) {
-				setSibling(node.getSibling());
-				return true;
-			}
-			return false;
-		}
+//		@Override
+//		public boolean remove(TrieNode childOrSibling) {
+//			BasicNode node = (BasicNode) childOrSibling;
+//			if (childOrSibling == child) {
+//				setChild(node.getSibling());
+//				return true;
+//			}
+//			if (childOrSibling == sibling) {
+//				setSibling(node.getSibling());
+//				return true;
+//			}
+//			return false;
+//		}
 		
 		@Override
 		public boolean removeChild(TrieNode child) {

@@ -161,10 +161,10 @@ class ImmutableNodes implements TrieNodes {
 			return wrap(node.getSibling());
 		}
 
-		@Override
-		public boolean isSibling(TrieNode node) {
-			return this.node.isSibling(unwrap(node));
-		}
+//		@Override
+//		public boolean isSibling(TrieNode node) {
+//			return this.node.isSibling(unwrap(node));
+//		}
 
 		@Override
 		public boolean hasChild() {
@@ -176,10 +176,10 @@ class ImmutableNodes implements TrieNodes {
 			return wrap(node.getChild());
 		}
 		
-		@Override
-		public boolean isChild(TrieNode node) {
-			return this.node.isChild(node);
-		}
+//		@Override
+//		public boolean isChild(TrieNode node) {
+//			return this.node.isChild(node);
+//		}
 
 		@Override
 		public TrieNode getLastChild() {
@@ -206,10 +206,10 @@ class ImmutableNodes implements TrieNodes {
 			return node.countToChild(value);
 		}
 
-		@Override
-		public boolean remove(TrieNode childOrSibling) {
-			return node.remove(unwrap(childOrSibling));
-		}
+//		@Override
+//		public boolean remove(TrieNode childOrSibling) {
+//			return node.remove(unwrap(childOrSibling));
+//		}
 		
 		@Override
 		public boolean removeChild(TrieNode child) {

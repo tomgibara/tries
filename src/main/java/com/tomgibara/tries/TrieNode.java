@@ -1,63 +1,201 @@
 package com.tomgibara.tries;
 
-
+/**
+ * <p>
+ * A node in {@link TrieNodes} tree. Note that in some implementations,
+ * instances of nodes may only be valid between successive invalidations.
+ * 
+ * <p>
+ * Note that in the documentation for this class, comparisons of node values are
+ * always in the context of the {@link ByteOrder} applied to the
+ * {@link TrieNodes} containing the node and its children.
+ * 
+ * @author Tom Gibara
+ *
+ */
 interface TrieNode {
 
 	// attributes
-	
+
+	/**
+	 * The tree of nodes to which this node belongs.
+	 * 
+	 * @return the tree containing this node.
+	 */
+
 	TrieNodes nodes();
-	
+
+	/**
+	 * The byte value at this node
+	 * 
+	 * @return the node's value
+	 */
+
 	byte getValue();
-	
+
+	/**
+	 * Whether this node terminates a complete byte sequence within the tree.
+	 * 
+	 * @return whether this node terminates a valid byte sequence
+	 */
+
 	boolean isTerminal();
 	
-	// has dangling - non terminal and has no child
-	boolean isDangling();
-	
+	/**
+	 * Sets whether this is a terminating node. Terminating nodes form define
+	 * the valid byte sequences within the tree.
+	 * 
+	 * @param terminal whether the node is terminal.
+	 */
+
 	void setTerminal(boolean terminal);
 
 	// sibling
 	
+	/**
+	 * Whether this node has a sibling node.
+	 * 
+	 * @return true iff the node has a sibling.
+	 */
+
 	boolean hasSibling();
 	
+	/**
+	 * The sibling node of this node, if any.
+	 * 
+	 * @return the sibling node, or null
+	 */
+
 	TrieNode getSibling();
 	
-	// only needed by remove method
-	boolean isSibling(TrieNode node);
+//	// only needed by remove method
+//	boolean isSibling(TrieNode node);
 	
 	// child
-	
+
+	/**
+	 * Whether this node has a child node.
+	 * 
+	 * @return true iff the node has a child
+	 */
+
 	default boolean hasChild() {
 		return getChild() != null;
 	}
 	
+	/**
+	 * The child node of this node, if any. Any child returned by this method
+	 * will have the least value of any of its siblings (as per the byte order
+	 * applied to the tree).
+	 * 
+	 * @return the child node, or null
+	 */
+
 	TrieNode getChild();
 	
-	// just for symmetry with sibling methods
-	boolean isChild(TrieNode node);
+//	// just for symmetry with sibling methods
+//	boolean isChild(TrieNode node);
 	
 	// child navigation
 	
+	/**
+	 * The last child of this node, if any. Any child returned by this method
+	 * will have the greatest value of any of its siblings.
+	 * 
+	 * @return the last child node, or null.
+	 */
+
 	TrieNode getLastChild();
 	
+	/**
+	 * Finds, if it exists, the child node of this node with the specified
+	 * value.
+	 * 
+	 * @param value
+	 *            the desired node value
+	 * @return a child with the specified value, or null if no such child exists
+	 */
+
 	TrieNode findChild(byte value);
 
-	TrieNode findChildOrNext(byte value);
-	
-	TrieNode findOrInsertChild(byte value);
-	
-	// to is the node's child or one of its siblings, but not including the value supplied
-	int countToChild(byte value);
+	/**
+	 * Finds a child node of this node with the specified value, or returns the
+	 * child node with the next highest node value, or null if no such node
+	 * exists.
+	 * 
+	 * @param value
+	 *            a node value
+	 * @return the child node with the specified value, or the child node with
+	 *         the least value exceeding the specified value, or null
+	 */
 
-	// miscellaneous
-	
-	boolean remove(TrieNode childOrSibling);
-	
-	boolean removeChild(TrieNode child);
+	TrieNode findChildOrNext(byte value);
+
+	// counting
+
+	/**
+	 * The number of terminating descendants of this node, including the node
+	 * itself.
+	 * 
+	 * @return the number terminated paths that include this node.
+	 */
 
 	int getCount();
 
-	// often a no-op
+	/**
+	 * Identifies all of the child nodes with values not meeting or exceeding
+	 * the supplied value, and returns the sum of their counts, plus one if this
+	 * node is a terminating node.
+	 * 
+	 * @param value
+	 *            the cut-off node value
+	 * @return the number of terminations up-to but not including the node with
+	 *         the specified value
+	 */
+
+	int countToChild(byte value);
+
+	// mutation
+
+//	boolean remove(TrieNode childOrSibling);
+	
+	/**
+	 * Returns the child node of this node with the specified value. If at the
+	 * time of the method call no such node exists, a new child node with the
+	 * given value is added to this node. Thus this method never returns null.
+	 * 
+	 * @param value
+	 *            a node value
+	 * @return a child node with the specified value
+	 */
+
+	TrieNode findOrInsertChild(byte value);
+
+	/**
+	 * Removes the supplied node from the list of child nodes of this node.
+	 * 
+	 * @param child a child node of this node
+	 * @return true iff the node was a child and was removed
+	 */
+	
+	boolean removeChild(TrieNode child);
+
+	/**
+	 * This method is called on a node to signal that any associated storage may
+	 * be released by the managing {@link TrieNodes}. This method will only be
+	 * called on detached nodes and indicates the node will not be reattached to
+	 * the tree. In many possible implementations, this will be a no-op.
+	 */
+
 	void delete();
+
+	// convenience
+	
+	/**
+	 * Whether this node is non-terminal and has no child.
+	 * @return true iff the node does not terminate and has no child
+	 */
+
+	boolean isDangling();
 
 }
