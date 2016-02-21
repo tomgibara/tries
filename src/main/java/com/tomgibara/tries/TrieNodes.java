@@ -41,8 +41,9 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	boolean isCounting();
 	
 	/**
-	 * The number of nodes in the tree. Note that if the tree is not counting
-	 * node children, this may be a very slow operation.
+	 * The number of nodes in the tree. Note that this may be a slow operation
+	 * since implementations are not required to maintain an active count of
+	 * the number of nodes in the tree.
 	 * 
 	 * @return the total number of nodes in the tree
 	 */
@@ -193,7 +194,7 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	// mutability
 	
 	default TrieNodes immutableView() {
-		return new ImmutableNodes(this);
+		return ImmutableNodes.nodes(this);
 	}
 
 	@Override

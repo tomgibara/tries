@@ -1,6 +1,8 @@
 package com.tomgibara.tries;
 
-public interface TrieNodeSource {
+import com.tomgibara.streams.StreamDeserializer;
+
+public interface TrieNodeSource  {
 
 	// implementation models trie nodes using Java objects. This is fast, at
 	// the expense of a large memory overhead
@@ -28,4 +30,6 @@ public interface TrieNodeSource {
 	TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint);
 	
 	TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint);
+	
+	StreamDeserializer<TrieNodes> deserializer(ByteOrder byteOrder, boolean counting, int capacityHint);
 }

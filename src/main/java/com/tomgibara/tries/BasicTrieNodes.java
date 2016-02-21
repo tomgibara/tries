@@ -1,23 +1,23 @@
 package com.tomgibara.tries;
 
-import com.tomgibara.tries.PackedTrieNodes.PackedNode;
+import static com.tomgibara.tries.AbstractTrieNode.FLAG_CHILD;
+import static com.tomgibara.tries.AbstractTrieNode.FLAG_SIBLING;
+import static com.tomgibara.tries.AbstractTrieNode.FLAG_TERMINAL;
+
+import java.util.List;
+
+import com.tomgibara.streams.ReadStream;
 
 
 class BasicTrieNodes extends AbstractTrieNodes {
 
-	public static final TrieNodeSource SOURCE = new TrieNodeSource() {
+	public static final TrieNodeSource SOURCE = new AbstractTrieNodeSource() {
 
 		@Override
-		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+		public BasicTrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
 			return new BasicTrieNodes(byteOrder);
 		}
-		
-		@Override
-		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
-			BasicTrieNodes newNodes = new BasicTrieNodes(nodes.byteOrder());
-			newNodes.adopt(newNodes.root, nodes.root());
-			return newNodes;
-		}
+
 	};
 
 	// NOTE these are just estimates
@@ -110,6 +110,16 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		// TODO Auto-generated method stub
 	}
 	
+	@Override
+	void adopt(AbstractTrieNode ours, TrieNode theirs) {
+		adopt((BasicNode) ours, theirs);
+	}
+	
+	@Override
+	void readComplete() {
+		root.computeCounts();
+	}
+	
 	private BasicNode adopt(BasicNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
 		TrieNode sibling = theirs.getSibling();
@@ -130,6 +140,16 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		}
 		ours.count = count;
 		return ours;
+	}
+	
+	private BasicNode readNode(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
+		byte value = stream.readByte();
+		BasicNode node = new BasicNode(value);
+		int flags = stream.readByte();
+		node.terminal = (flags & FLAG_TERMINAL) != 0;
+		if ((flags & FLAG_SIBLING) != 0) awaitingSiblings.add(node);
+		if ((flags & FLAG_CHILD) != 0) node.readChild(stream, awaitingSiblings);
+		return node;
 	}
 
 	private class BasicNode extends AbstractTrieNode {
@@ -274,6 +294,24 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			if (sibling != null) count += sibling.countNodes();
 			return count;
 		}
+		
+		@Override
+		void readChild(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
+			child = readNode(stream, awaitingSiblings);
+		}
+		
+		@Override
+		void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
+			sibling = readNode(stream, awaitingSiblings);
+		}
 
+		private int computeCounts() {
+			int c = terminal ? 1 : 0;
+			if (child != null) c += child.computeCounts();
+			count = c;
+			if (sibling != null) c += sibling.computeCounts();
+			return c;
+		}
+		
 	}
 }

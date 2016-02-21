@@ -1,5 +1,7 @@
 package com.tomgibara.tries;
 
+import com.tomgibara.streams.WriteStream;
+
 /**
  * <p>
  * A node in {@link TrieNodes} tree. Note that in some implementations,
@@ -198,4 +200,7 @@ interface TrieNode {
 
 	boolean isDangling();
 
+	// io
+	
+	void writeNodes(WriteStream stream);
 }

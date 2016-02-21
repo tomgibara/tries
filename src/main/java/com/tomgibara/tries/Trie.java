@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.tomgibara.fundament.Mutability;
 import com.tomgibara.streams.StreamSerializer;
+import com.tomgibara.streams.WriteStream;
 
 public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
@@ -32,8 +33,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	// constructors
 	
 	Trie(Tries<E> tries, TrieNodes nodes) {
-		serialization = tries.serialProducer.produce();
 		this.nodes = nodes;
+		serialization = tries.serialProducer.produce();
 		prefix = NO_PREFIX;
 		root = nodes.root();
 		invalidations = nodes.invalidations();
@@ -215,6 +216,11 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return new NodeIterator(from);
 	}
 
+	public void writeTo(WriteStream stream) {
+		if (stream == null) throw new IllegalArgumentException("null stream");
+		root().writeNodes(stream);
+	}
+	
 	// mutability methods
 	
 	@Override

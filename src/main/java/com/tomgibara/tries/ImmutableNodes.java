@@ -1,15 +1,33 @@
 package com.tomgibara.tries;
 
+import com.tomgibara.streams.WriteStream;
+
 class ImmutableNodes implements TrieNodes {
 
-	private final TrieNodes nodes;
-	
-	ImmutableNodes(TrieNodes nodes) {
-		this.nodes = nodes;
-	}
+	// statics
 	
 	private static final <T> T imm() {
 		throw new IllegalStateException("immutable");
+	}
+
+	static ImmutableNodes nodes(TrieNodes nodes) {
+		return new ImmutableNodes(nodes);
+	}
+	
+	// fields
+	
+	private final TrieNodes nodes;
+	
+	// constructors
+	
+	private ImmutableNodes(TrieNodes nodes) {
+		this.nodes = nodes;
+	}
+	
+	// accessors
+	
+	TrieNodes nodes() {
+		return nodes;
 	}
 	
 	// mutability
@@ -224,6 +242,11 @@ class ImmutableNodes implements TrieNodes {
 		@Override
 		public void delete() {
 			node.delete();
+		}
+		
+		@Override
+		public void writeNodes(WriteStream stream) {
+			node.writeNodes(stream);
 		}
 		
 	}

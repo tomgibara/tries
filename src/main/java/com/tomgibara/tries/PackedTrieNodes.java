@@ -5,6 +5,9 @@ import static java.lang.Math.max;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
+import com.tomgibara.streams.ReadStream;
 
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).
@@ -57,19 +60,13 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	// statics
 	
-	static TrieNodeSource SOURCE = new TrieNodeSource() {
+	static TrieNodeSource SOURCE = new AbstractTrieNodeSource() {
 		
 		@Override
-		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+		public PackedTrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
 			return new PackedTrieNodes(byteOrder, capacityHint, counting);
 		}
-		
-		@Override
-		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
-			PackedTrieNodes newNodes = new PackedTrieNodes(nodes.byteOrder(), capacityHint, counting);
-			newNodes.adopt(newNodes.root, nodes.root());
-			return newNodes;
-		}
+
 	};
 	
 	// fields
@@ -132,7 +129,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		int free = (capacity - nodeLimit) + freeCount;
 		if (free >= extraCapacity) return;
 		extraCapacity = max(capacity, max(extraCapacity, 256));
-		compact(capacity + extraCapacity);
+		compact(capacity + extraCapacity, counting);
 	}
 	
 	@Override
@@ -178,7 +175,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	@Override
 	public void compact() {
-		compact(nodeCount);
+		compact(nodeCount, counting);
 	}
 	
 	@Override
@@ -217,6 +214,16 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	@Override
 	void dump() {
 		dump(System.out, 0, root);
+	}
+	
+	@Override
+	void adopt(AbstractTrieNode ours, TrieNode theirs) {
+		adopt((PackedNode)ours, theirs, theirs.nodes().isCounting());
+	}
+	
+	@Override
+	void readComplete() {
+		compact(nodeCount, false);
 	}
 	
 	void check(int count) {
@@ -286,16 +293,16 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		return node;
 	}
 
-	private PackedNode adopt(PackedNode ours, TrieNode theirs) {
+	private PackedNode adopt(PackedNode ours, TrieNode theirs, boolean theirsCount) {
 		ours.setTerminal(theirs.isTerminal());
 		TrieNode sibling = theirs.getSibling();
-		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling);
+		if (sibling != null) adopt( ours.insertSibling(sibling.getValue()), sibling, theirsCount);
 		TrieNode child = theirs.getChild();
-		if (child != null) adopt( ours.insertChild(child.getValue()), child);
+		if (child != null) adopt( ours.insertChild(child.getValue()), child, theirsCount);
 		// resolve counting
 		if (counting && ours.ordinal == 0) {
 			int count;
-			if (theirs.nodes().isCounting()) {
+			if (theirsCount) {
 				count = theirs.getCount();
 			} else {
 				count = ours.isTerminal() ? 1 : 0;
@@ -305,7 +312,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 					node = node.getSibling();
 				}
 			}
-			ours.setExternalCount(count- ours.internalCount());
+			ours.setExternalCount(count - ours.internalCount());
 		}
 		return ours;
 	}
@@ -340,9 +347,9 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		return false;
 	}
 	
-	private void compact(int newCapacity) {
+	private void compact(int newCapacity, boolean trustCount) {
 		PackedTrieNodes those = new PackedTrieNodes(byteOrder, newCapacity, counting);
-		those.adopt(those.root, root);
+		those.adopt(those.root, root, trustCount);
 		capacity = newCapacity;
 		data = those.data;
 		nodeLimit = those.nodeLimit;
@@ -547,7 +554,8 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 
 		// package scoped implementations
-		
+
+		@Override
 		PackedNode insertChild(byte value) {
 			PackedNode existingChild = separateChild();
 			if (getValueCount() < MAX_VALUES && !hasSibling() && existingChild == null) {
@@ -574,7 +582,37 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			return sibling;
 		}
 
+		@Override
+		void readChild(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
+			readNode(stream, false, awaitingSiblings);
+		}
+
+		@Override
+		void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
+			readNode(stream, true, awaitingSiblings);
+		}
+
 		// private helper methods
+
+		private void readNode(ReadStream stream, boolean sibling, List<AbstractTrieNode> awaitingSiblings) {
+			byte value = stream.readByte();
+			int flags = stream.readByte();
+			boolean isTerminal = (flags & FLAG_TERMINAL) != 0;
+			boolean hasSibling = (flags & FLAG_SIBLING) != 0;
+			boolean hasChild = (flags & FLAG_CHILD) != 0;
+
+			PackedNode node;
+			if (sibling) {
+				node = newNode(value);
+				setSibling(node);
+			} else {
+				node = insertChild(value);
+				if (hasSibling) node = separateChild();
+			}
+			if (hasSibling) awaitingSiblings.add(node);
+			node.setTerminal(isTerminal);
+			if (hasChild) node.readNode(stream, false, awaitingSiblings);
+		}
 
 		private void separate() {
 			if (ordinal == 0 && getValueCount() == 1) return;

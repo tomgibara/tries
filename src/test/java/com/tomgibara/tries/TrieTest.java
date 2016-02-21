@@ -28,6 +28,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.tomgibara.storage.Stores;
+import com.tomgibara.streams.EndOfStreamException;
+import com.tomgibara.streams.ReadStream;
+import com.tomgibara.streams.StreamBytes;
+import com.tomgibara.streams.Streams;
 
 public abstract class TrieTest {
 
@@ -72,6 +76,43 @@ public abstract class TrieTest {
 	
 	static byte[] bytes(String str) {
 		return str.getBytes(TrieTest.UTF8);
+	}
+	
+	static <E> void checkSerialization(Tries<E> tries, Trie<E> trie, boolean indexed) {
+		StreamBytes bytes = Streams.bytes();
+		trie.writeTo(bytes.writeStream());
+		ReadStream stream = bytes.readStream();
+		Trie<E> copy = indexed ? tries.readIndexedTrie(stream) : tries.readTrie(stream);
+
+		try { // check exhaustion
+			stream.readByte();
+			fail("unused bytes");
+		} catch (EndOfStreamException e) {
+			/* expected */
+		}
+
+		{ // check iteration
+			Iterator<E> ti = trie.iterator();
+			Iterator<E> ci = copy.iterator();
+			while (ti.hasNext() && ci.hasNext()) {
+				E te = ti.next();
+				E ce = ci.next();
+				assertEquals(te, ce);
+			}
+			if (ti.hasNext() || ci.hasNext()) fail("iterators have mismatched length");
+		}
+		
+		if (indexed) { // check indexing
+			Iterator<E> it = trie.iterator();
+			IndexedTrie<E> dupe = (IndexedTrie<E>) copy;
+			int size = dupe.size();
+			for (int i = 0; i < size; i++) {
+				E ce = it.next();
+				E de = dupe.get(i);
+				assertEquals(ce, de);
+			}
+			assertFalse(it.hasNext());
+		}
 	}
 	
 	abstract protected TrieNodeSource getNodeSource();
@@ -807,4 +848,52 @@ public abstract class TrieTest {
 		}
 		
 	}
+
+	@Test
+	public void testSerialization() {
+//		testSerialization(false);
+		testSerialization(true);
+	}
+
+	private void testSerialization(boolean indexed) {
+		Tries<String> tries = Tries.strings(ASCII).nodeSource(getNodeSource());
+
+		// test empty
+		IndexedTrie<String> empty = tries.newIndexedTrie();
+		checkSerialization(tries, empty, true);
+
+		// test singleton
+		Trie<String> singleton = indexed ? tries.newIndexedTrie() : tries.newTrie();
+		singleton.add("Cat");
+		checkSerialization(tries, singleton, indexed);
+
+		// test pair
+		Trie<String> pair = indexed ? tries.newIndexedTrie() : tries.newTrie();
+		pair.add("Cat");
+		pair.add("Dog");
+		checkSerialization(tries, pair, indexed);
+
+		// test large
+		Random r = new Random(0L);
+		for (int t = 0; t < 50; t++) {
+			int size = 5000 + r.nextInt(5000);
+			List<String> strs = new ArrayList<>();
+			for (int i = 0; i < size; i++) {
+				strs.add(Integer.toString(r.nextInt(size)));
+			}
+	
+			Trie<String> large = indexed ? tries.newIndexedTrie() : tries.newTrie();
+			large.addAll(strs);
+			Set<String> set = new HashSet<>(strs);
+			for (int i = 0; i < strs.size(); i += 10) {
+				String str = strs.get(i);
+				large.remove(str);
+				set.remove(str);
+			}
+			assertEquals(set, large.asSet());
+			checkSerialization(tries, large, indexed);
+		}
+	}
+
+
 }

@@ -13,6 +13,7 @@ import java.util.Comparator;
 
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.storage.Stores;
+import com.tomgibara.streams.ReadStream;
 import com.tomgibara.streams.StreamBytes;
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamSerializer;
@@ -324,6 +325,10 @@ public class Tries<E> {
 		}
 	}
 	
+	public Trie<E> readTrie(ReadStream stream) {
+		return new Trie<>(this, deserializer(false).deserialize(stream));
+	}
+	
 	public IndexedTrie<E> newIndexedTrie() {
 		return new IndexedTrie<>(this, newIndexedNodes());
 	}
@@ -341,6 +346,10 @@ public class Tries<E> {
 		}
 	}
 	
+	public IndexedTrie<E> readIndexedTrie(ReadStream stream) {
+		return new IndexedTrie<>(this, deserializer(true).deserialize(stream));
+	}
+	
 	// package scoped methods
 	
 	TrieNodes newNodes() {
@@ -351,4 +360,7 @@ public class Tries<E> {
 		return nodeSource.newNodes(byteOrder, true, capacityHint);
 	}
 	
+	private StreamDeserializer<TrieNodes> deserializer(boolean indexed) {
+		return nodeSource.deserializer(byteOrder, indexed, capacityHint);
+	}
 }

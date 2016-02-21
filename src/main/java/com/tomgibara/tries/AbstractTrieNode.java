@@ -1,6 +1,19 @@
 package com.tomgibara.tries;
 
+import java.util.List;
+
+import com.tomgibara.streams.ReadStream;
+import com.tomgibara.streams.WriteStream;
+
 abstract class AbstractTrieNode implements TrieNode {
+
+	// statics
+	
+	static final int FLAG_TERMINAL = 1;
+	static final int FLAG_CHILD    = 2;
+	static final int FLAG_SIBLING  = 4;
+	
+	// node methods
 
 	@Override
 	public abstract AbstractTrieNode getChild();
@@ -77,6 +90,18 @@ abstract class AbstractTrieNode implements TrieNode {
 	@Override
 	public void delete() { }
 
+	@Override
+	public void writeNodes(WriteStream stream) {
+		CountingStream counter = new CountingStream();
+		doWriteNodes(counter);
+		// each node writes two bytes
+		int count = counter.count() >> 1;
+		// write number of nodes
+		stream.writeInt(count);
+		// write nodes
+		doWriteNodes(stream);
+	}
+
 	// package scoped methods
 
 	// any current sibling becomes sibling of new sibling
@@ -85,4 +110,79 @@ abstract class AbstractTrieNode implements TrieNode {
 	// any current child becomes sibling of new child
 	abstract AbstractTrieNode insertChild(byte value);
 
+	abstract void readChild(ReadStream stream, List<AbstractTrieNode> awaitingSiblings);
+
+	abstract void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings);
+	
+	private void writeNode(WriteStream stream) {
+		stream.writeByte(getValue());
+		stream.writeByte(flags());
+		if (hasChild()) getChild().writeNode(stream);
+		if (hasSibling()) getSibling().writeNode(stream);
+	}
+
+	byte flags() {
+		int flags = 0;
+		if (isTerminal()) flags |= FLAG_TERMINAL;
+		if (hasSibling()) flags |= FLAG_SIBLING;
+		if (hasChild()) flags |= FLAG_CHILD;
+		return (byte) flags;
+	}
+	private void doWriteNodes(WriteStream stream) {
+		// root always written with zero value
+		stream.writeByte((byte) 0);
+		stream.writeByte(flags());
+		if (hasChild()) getChild().writeNode(stream);
+		// sibling of root never written
+	}
+
+	//TODO move to streams package?
+	private static class CountingStream implements WriteStream {
+
+		private int count = 0;
+		
+		public int count() {
+			return count;
+		}
+		
+		@Override
+		public void writeByte(byte v) { count ++; }
+		
+		@Override
+		public void writeBytes(byte[] bs) { count += bs.length; }
+		
+		@Override
+		public void writeBytes(byte[] bs, int off, int len) { count += len; }
+		
+		@Override
+		public void writeInt(int v) { count += 4; }
+		
+		@Override
+		public void writeBoolean(boolean v) { count += 1; }
+		
+		@Override
+		public void writeShort(short v) { count += 2; }
+		
+		@Override
+		public void writeLong(long v) { count += 8; }
+		
+		@Override
+		public void writeFloat(float v) { count += 4; }
+		
+		@Override
+		public void writeDouble(double v) { count += 8; }
+		
+		@Override
+		public void writeChar(char v) { count += 2; }
+		
+		@Override
+		public void writeChars(char[] cs) { count += 4; }
+		
+		@Override
+		public void writeChars(char[] cs, int off, int len) { count += len; }
+		
+		@Override
+		public void writeChars(CharSequence cs) { count += 4 + cs.length(); }
+		
+	}
 }
