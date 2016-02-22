@@ -271,9 +271,9 @@ public class Tries<E> {
 	// fields
 
 	final Producer<TrieSerialization<E>> serialProducer;
-	private final ByteOrder byteOrder;
-	private final TrieNodeSource nodeSource;
-	private final int capacityHint;
+	final ByteOrder byteOrder;
+	final TrieNodeSource nodeSource;
+	final int capacityHint;
 
 	// constructors
 
@@ -281,7 +281,7 @@ public class Tries<E> {
 		this(serialProducer, ByteOrder.UNSIGNED, CompactTrieNodes.SOURCE, DEFAULT_CAPACITY);
 	}
 	
-	private Tries(
+	Tries(
 			Producer<TrieSerialization<E>> serialProducer,
 			ByteOrder byteOrder,
 			TrieNodeSource nodeSource,
@@ -291,6 +291,14 @@ public class Tries<E> {
 		this.byteOrder = byteOrder;
 		this.nodeSource = nodeSource;
 		this.capacityHint = capacityHint;
+	}
+	
+	public IndexedTries<E> indexed() {
+		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+	
+	public Tries<E> indexed(boolean indexed) {
+		return indexed ? indexed() : this;
 	}
 	
 	// mutation methods
@@ -320,7 +328,7 @@ public class Tries<E> {
 		return new Trie<>(this, newNodes());
 	}
 	
-	public Trie<E> newTrie(Trie<E> trie) {
+	public Trie<E> copyTrie(Trie<E> trie) {
 		if (trie.nodes.byteOrder().equals(byteOrder)) {
 			// fast path - we can adopt the nodes, they're in the right order
 			TrieNodes nodes = nodeSource.copyNodes(trie.nodes, false, capacityHint);
@@ -334,41 +342,13 @@ public class Tries<E> {
 	}
 	
 	public Trie<E> readTrie(ReadStream stream) {
-		return new Trie<>(this, deserializer(false).deserialize(stream));
+		return new Trie<>(this, nodeSource.deserializer(byteOrder, false, capacityHint).deserialize(stream));
 	}
 	
-	public IndexedTrie<E> newIndexedTrie() {
-		return new IndexedTrie<>(this, newIndexedNodes());
-	}
-
-	public IndexedTrie<E> newIndexedTrie(Trie<E> trie) {
-		if (trie.nodes.byteOrder().equals(byteOrder)) {
-			// fast path - we can adopt the nodes, they're in the right order
-			TrieNodes nodes = nodeSource.copyNodes(trie.nodes, true, capacityHint);
-			return new IndexedTrie<>(this, nodes);
-		} else {
-			// slow path - just treat it as an add-all
-			IndexedTrie<E> newTrie = new IndexedTrie<>(this, newIndexedNodes());
-			newTrie.addAll(trie);
-			return newTrie;
-		}
-	}
+	// private utility methods
 	
-	public IndexedTrie<E> readIndexedTrie(ReadStream stream) {
-		return new IndexedTrie<>(this, deserializer(true).deserialize(stream));
-	}
-	
-	// package scoped methods
-	
-	TrieNodes newNodes() {
+	private TrieNodes newNodes() {
 		return nodeSource.newNodes(byteOrder, false, capacityHint);
 	}
 	
-	TrieNodes newIndexedNodes() {
-		return nodeSource.newNodes(byteOrder, true, capacityHint);
-	}
-	
-	private StreamDeserializer<TrieNodes> deserializer(boolean indexed) {
-		return nodeSource.deserializer(byteOrder, indexed, capacityHint);
-	}
 }

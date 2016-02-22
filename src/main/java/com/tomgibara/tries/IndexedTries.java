@@ -1,0 +1,90 @@
+package com.tomgibara.tries;
+
+import java.util.Comparator;
+
+import com.tomgibara.fundament.Producer;
+import com.tomgibara.streams.ReadStream;
+
+public class IndexedTries<E> extends Tries<E> {
+
+	IndexedTries(
+			Producer<TrieSerialization<E>> serialProducer,
+			ByteOrder byteOrder,
+			TrieNodeSource nodeSource,
+			int capacityHint) {
+		super(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+
+	public Tries<E> unindexed() {
+		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+
+	@Override
+	public IndexedTries<E> indexed() {
+		return this;
+	}
+	
+	@Override
+	public Tries<E> indexed(boolean indexed) {
+		return indexed ? this : unindexed();
+	}
+	
+	// mutation methods
+
+	@Override
+	public IndexedTries<E> byteOrder(Comparator<Byte> comparator) {
+		return new IndexedTries<>(serialProducer, ByteOrder.from(comparator), nodeSource, capacityHint);
+	}
+
+	@Override
+	public IndexedTries<E> byteOrder(ByteOrder byteOrder) {
+		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
+		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+	
+	@Override
+	public IndexedTries<E> nodeSource(TrieNodeSource nodeSource) {
+		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
+		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+	
+	@Override
+	public IndexedTries<E> capacityHint(int capacityHint) {
+		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
+		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+
+	// creation methods
+	
+	@Override
+	public IndexedTrie<E> newTrie() {
+		return new IndexedTrie<>(this, newNodes());
+	}
+
+	@Override
+	public IndexedTrie<E> copyTrie(Trie<E> trie) {
+		if (trie.nodes.byteOrder().equals(byteOrder)) {
+			// fast path - we can adopt the nodes, they're in the right order
+			TrieNodes nodes = nodeSource.copyNodes(trie.nodes, true, capacityHint);
+			return new IndexedTrie<>(this, nodes);
+		} else {
+			// slow path - just treat it as an add-all
+			IndexedTrie<E> newTrie = new IndexedTrie<>(this, newNodes());
+			newTrie.addAll(trie);
+			return newTrie;
+		}
+	}
+	
+	@Override
+	public IndexedTrie<E> readTrie(ReadStream stream) {
+		return new IndexedTrie<>(this, nodeSource.deserializer(byteOrder, true, capacityHint).deserialize(stream));
+	}
+
+	// private utility methods
+	
+	private TrieNodes newNodes() {
+		return nodeSource.newNodes(byteOrder, true, capacityHint);
+	}
+	
+
+}
