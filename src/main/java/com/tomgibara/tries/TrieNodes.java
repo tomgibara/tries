@@ -4,10 +4,15 @@ import com.tomgibara.fundament.Mutability;
 
 /**
  * <p>
- * A tree of {@link TrieNode} instances. All trees operate with a fixed byte
- * ordering which is reported by the {@link #byteOrder()} method and imposes an
- * ordering on sibling nodes. Trees also support mutability controls as per the
- * <code>Mutability</code> interface.
+ * A tree of {@link TrieNode} instances. The specific implementation of this
+ * interface has a significant impact on the performance characteristics of any
+ * {@link Trie} that uses it.
+ * 
+ * <p>
+ * All trees operate with a fixed byte ordering which is reported by the
+ * {@link #byteOrder()} method and imposes an ordering on sibling nodes. Trees
+ * also support mutability controls as per the <code>Mutability</code>
+ * interface.
  * 
  * <p>
  * Some tree implementations may support recording the number of terminating
@@ -20,6 +25,7 @@ import com.tomgibara.fundament.Mutability;
  * {@link #invalidations()} methods.
  * 
  * @author Tom Gibara
+ * @see TrieNodeSource
  */
 
 interface TrieNodes extends Mutability<TrieNodes> {
