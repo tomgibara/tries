@@ -271,39 +271,47 @@ public class Tries<E> {
 	// fields
 
 	final Producer<TrieSerialization<E>> serialProducer;
-	private int capacityHint = DEFAULT_CAPACITY;
-	private ByteOrder byteOrder = ByteOrder.UNSIGNED;
-	private TrieNodeSource nodeSource = CompactTrieNodes.SOURCE;
+	private final ByteOrder byteOrder;
+	private final TrieNodeSource nodeSource;
+	private final int capacityHint;
 
 	// constructors
 
 	Tries(Producer<TrieSerialization<E>> serialProducer) {
+		this(serialProducer, ByteOrder.UNSIGNED, CompactTrieNodes.SOURCE, DEFAULT_CAPACITY);
+	}
+	
+	private Tries(
+			Producer<TrieSerialization<E>> serialProducer,
+			ByteOrder byteOrder,
+			TrieNodeSource nodeSource,
+			int capacityHint
+			) {
 		this.serialProducer = serialProducer;
+		this.byteOrder = byteOrder;
+		this.nodeSource = nodeSource;
+		this.capacityHint = capacityHint;
 	}
 	
 	// mutation methods
 	
 	public Tries<E> byteOrder(Comparator<Byte> comparator) {
-		this.byteOrder = ByteOrder.from(comparator);
-		return this;
+		return new Tries<>(serialProducer, ByteOrder.from(comparator), nodeSource, capacityHint);
 	}
 	
 	public Tries<E> byteOrder(ByteOrder byteOrder) {
 		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
-		this.byteOrder = byteOrder;
-		return this;
+		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
 	public Tries<E> nodeSource(TrieNodeSource nodeSource) {
 		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
-		this.nodeSource = nodeSource;
-		return this;
+		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
 	public Tries<E> capacityHint(int capacityHint) {
 		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
-		this.capacityHint = capacityHint;
-		return this;
+		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
 	// creation methods
