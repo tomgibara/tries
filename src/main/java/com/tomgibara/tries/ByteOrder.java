@@ -1,6 +1,7 @@
 package com.tomgibara.tries;
 
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -34,6 +35,11 @@ public final class ByteOrder implements Serializable {
 	private static final int RUN = 3;
 	private static final int RSN = 4;
 
+	private static final int HASH_UNS = 0x037ce081;
+	private static final int HASH_SGN = 0x3c831f7f;
+	private static final int HASH_RUN = 0x7a53307f;
+	private static final int HASH_RSN = 0x3a53307f;
+	
 	// private statics
 	
 	private static int unsCmp(byte a, byte b) {
@@ -51,7 +57,11 @@ public final class ByteOrder implements Serializable {
 	private static int rsnCmp(byte a, byte b) {
 		return Byte.compare(b, a);
 	}
-	
+
+	private static boolean isSameOrder(ByteOrder a, ByteOrder b) {
+		return Arrays.equals(a.lookup(), b.lookup());
+	}
+
 	// public statics
 
 	/**
@@ -100,16 +110,17 @@ public final class ByteOrder implements Serializable {
 	public static ByteOrder from(Comparator<Byte> comparator) {
 		if (comparator == null) throw new IllegalArgumentException("null comparator");
 		ByteOrder order = new ByteOrder(comparator);
-		return order;
+		ByteOrder fixed = fixedOrder(order.hashCode);
+		return fixed != null && isSameOrder(order, fixed) ? fixed : order;
 	}
 	
 	private static int fixedHashCode(int fixedType) {
 		// note hashes precomputed
 		switch (fixedType) {
-		case UNS: return 0x037ce081;
-		case SGN: return 0x3c831f7f;
-		case RUN: return 0x7a53307f;
-		case RSN: return 0x3a53307f;
+		case UNS: return HASH_UNS;
+		case SGN: return HASH_SGN;
+		case RUN: return HASH_RUN;
+		case RSN: return HASH_RSN;
 		default: throw new IllegalArgumentException();
 		}
 	}
@@ -121,6 +132,16 @@ public final class ByteOrder implements Serializable {
 		case RUN: return ByteOrder::runCmp;
 		case RSN: return ByteOrder::rsnCmp;
 		default: throw new IllegalArgumentException();
+		}
+	}
+	
+	private static ByteOrder fixedOrder(int hashCode) {
+		switch (hashCode) {
+		case HASH_UNS: return UNSIGNED;
+		case HASH_SGN: return SIGNED;
+		case HASH_RUN: return REVERSE_UNSIGNED;
+		case HASH_RSN: return REVERSE_SIGNED;
+		default: return null;
 		}
 	}
 	
@@ -273,7 +294,7 @@ public final class ByteOrder implements Serializable {
 		if (this.hashCode != that.hashCode) return false;
 		// don't rely on comparator equality - that cannot be relied upon
 		// use lookup equality instead
-		if (!Arrays.equals(this.lookup(), that.lookup())) return false;
+		if (!isSameOrder(this, that)) return false;
 		return true;
 	}
 
@@ -293,8 +314,14 @@ public final class ByteOrder implements Serializable {
 			this.fixedType = fixedType;
 		}
 		
-		private Object readResolve() {
-			return new ByteOrder(fixedType);
+		private Object readResolve() throws StreamCorruptedException {
+			switch (fixedType) {
+			case UNS: return UNSIGNED;
+			case SGN: return SIGNED;
+			case RUN: return REVERSE_UNSIGNED;
+			case RSN: return REVERSE_SIGNED;
+			default:  throw new StreamCorruptedException("invalid fixedType value: " + fixedType);
+			}
 		}
 
 	}

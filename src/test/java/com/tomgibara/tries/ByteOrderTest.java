@@ -2,6 +2,7 @@ package com.tomgibara.tries;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -43,6 +44,10 @@ public class ByteOrderTest {
 			assertTrue(bo.compare((byte) i, (byte) (i+1)) < 0);
 			assertTrue(bo.compare((byte) (i+1), (byte) i) > 0);
 		}
+	}
+	
+	public void testCanonical() {
+		assertSame(ByteOrder.SIGNED, ByteOrder.from(Byte::compare));
 	}
 	
 	@Test
@@ -109,6 +114,15 @@ public class ByteOrderTest {
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-		assertEquals(bo, copy);
+		if ( // check canonicalization
+				bo == ByteOrder.SIGNED           ||
+				bo == ByteOrder.UNSIGNED         ||
+				bo == ByteOrder.REVERSE_SIGNED   ||
+				bo == ByteOrder.REVERSE_UNSIGNED
+				) {
+			assertSame(bo, copy);
+		} else {
+			assertEquals(bo, copy);
+		}
 	}
 }
