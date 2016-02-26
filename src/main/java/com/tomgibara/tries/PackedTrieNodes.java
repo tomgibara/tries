@@ -488,6 +488,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean removeChild(TrieNode child) {
+			if (child == null) return false;
 			PackedNode n = (PackedNode) child;
 			// n may be a packed child
 			if (index == n.index && n.ordinal == ordinal + 1) {

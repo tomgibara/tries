@@ -464,6 +464,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public boolean removeChild(TrieNode child) {
+			if (child == null) return false;
 			CompactNode n = (CompactNode) child;
 			int ni = n.index;
 			// n may be a packed child
