@@ -46,7 +46,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		prefix = toPrefix(serialization);
 		invalidations = -1L; // to force computation of root
 	}
-	
+
 	Trie(Trie<E> trie, TrieNodes nodes) {
 		this.nodes = nodes;
 		this.serialization = trie.serialization.resetCopy();
@@ -155,10 +155,16 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		if (root == null) throw new IllegalArgumentException("null root");
 		TrieSerialization<E> s = serialization.resetCopy();
 		s.set(root);
-		if (!s.startsWith(prefix)) throw new IllegalArgumentException("new sub root not in sub-trie");
 		return newTrie(s);
 	}
-	
+
+	public Trie<E> subTrieAtPrefix(byte[] prefix) {
+		if (prefix == null) throw new IllegalArgumentException("null prefix");
+		TrieSerialization<E> s = serialization.resetCopy();
+		s.set(prefix);
+		return newTrie(s);
+	}
+
 	public Optional<E> first() {
 		if (isEmpty()) return Optional.empty();
 		serialization.set(prefix);
@@ -277,6 +283,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	}
 
 	Trie<E> newTrie(TrieSerialization<E> s) {
+		if (!s.startsWith(prefix)) throw new IllegalArgumentException("root not within trie");
 		return new Trie<E>(s, nodes);
 	}
 	

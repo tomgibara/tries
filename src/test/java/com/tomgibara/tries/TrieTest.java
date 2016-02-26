@@ -55,6 +55,24 @@ public abstract class TrieTest {
 		((Trie<?>) trie).check();
 	}
 
+	private static void checkIAE(Runnable r) {
+		try {
+			r.run();
+			fail("IAE expected");
+		} catch (IllegalArgumentException e) {
+			/* expected */
+		}
+	}
+	
+	private static void checkImm(Runnable r) {
+		try {
+			r.run();
+			fail("expected immutable");
+		} catch (IllegalStateException e) {
+			/* expected */
+		}
+	}
+	
 	static long time(Runnable r) {
 		long start = System.currentTimeMillis();
 		r.run();
@@ -561,12 +579,7 @@ public abstract class TrieTest {
 			assertEquals(-3, isub.indexOf("Hot potato"));
 		}
 
-		try {
-			sub.add("Got");
-			fail();
-		} catch (IllegalArgumentException e) {
-			/* expected */
-		}
+		checkIAE(() -> sub.add("Got"));
 
 		checkTrieOrder(trie);
 	}
@@ -682,13 +695,13 @@ public abstract class TrieTest {
 
 		Trie<String> iv = trie.immutableView();
 		assertTrue(iv.contains("Moo"));
-		imm(() -> iv.remove("Moo"));
+		checkImm(() -> iv.remove("Moo"));
 		dump("BEFORE REMOVE", trie);
 		assertTrue(trie.remove("Moo"));
 		dump("AFTER REMOVE", trie);
 		assertTrue(trie.isEmpty());
 		assertFalse(iv.contains("Moo"));
-		imm(() -> iv.add("Moo"));
+		checkImm(() -> iv.add("Moo"));
 
 		Trie<String> mc = trie.mutableCopy();
 		dump("BEFORE RE-ADD", trie);
@@ -701,7 +714,7 @@ public abstract class TrieTest {
 		Trie<String> ic = trie.immutableCopy();
 		assertTrue(ic.contains("Moo"));
 		assertFalse(ic.contains("Quack"));
-		imm(() -> ic.add("Quack"));
+		checkImm(() -> ic.add("Quack"));
 	}
 	
 	@Test
@@ -714,15 +727,6 @@ public abstract class TrieTest {
 		System.out.println(trie.size() + " words require " + trie.storageSizeInBytes() + " bytes");
 	}
 
-	private void imm(Runnable r) {
-		try {
-			r.run();
-			fail("expected immutable");
-		} catch (IllegalStateException e) {
-			/* expected */
-		}
-	}
-	
 	private <E> void checkTrieOrder(Trie<E> trie) {
 		Comparator<E> c = trie.comparator();
 		E previous = null;
@@ -825,13 +829,8 @@ public abstract class TrieTest {
 		assertTrue(bytes.isEmpty());
 		trie.add("dog");
 		assertTrue(bytes.contains(bytes("dog")));
-		
-		try {
-			bytes.remove(bytes("dog"));
-			fail();
-		} catch (IllegalStateException e) {
-			/* expected - immutable */
-		}
+
+		checkImm(()-> bytes.remove(bytes("dog")));
 		
 		IndexedTrie<String> indexed = tries.indexed().newTrie();
 		IndexedTrie<byte[]> indexedBytes = indexed.asBytesTrie();
@@ -840,18 +839,32 @@ public abstract class TrieTest {
 		assertTrue(indexed.contains("cat"));
 		assertTrue(indexedBytes.contains(bytes("cat")));
 
-		try {
-			indexedBytes.remove(bytes("cat"));
-			fail();
-		} catch (IllegalStateException e) {
-			/* expected - immutable */
-		}
-		
+		checkImm(()-> indexedBytes.remove(bytes("cat")));
 	}
 
 	@Test
+	public void testSubTrieAtPrefix() {
+		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Trie<String> t = tries.newTrie();
+		Trie<String> s = t.subTrieAtPrefix(new byte[] {65});
+		assertTrue(s.isEmpty());
+		t.add("Pear");
+		assertTrue(s.isEmpty());
+		t.add("Apple");
+		assertFalse(s.isEmpty());
+		assertTrue(s.contains("Apple"));
+		s.add("Apricot");
+		assertTrue(t.contains("Apricot"));
+		checkIAE(() -> s.add("Peach"));
+		checkIAE(() -> s.subTrieAtPrefix(new byte[] {66}));
+		Trie<String> r = s.subTrieAtPrefix(new byte[] {65, 112, 112});
+		assertTrue(r.contains("Apple"));
+		assertFalse(r.contains("Apricot"));
+	}
+	
+	@Test
 	public void testSerialization() {
-//		testSerialization(false);
+		testSerialization(false);
 		testSerialization(true);
 	}
 

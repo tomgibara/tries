@@ -26,7 +26,12 @@ public class IndexedTrie<E> extends Trie<E> {
 	public IndexedTrie<E> subTrie(E root) {
 		return (IndexedTrie<E>) super.subTrie(root);
 	}
-	
+
+	@Override
+	public IndexedTrie<E> subTrieAtPrefix(byte[] prefix) {
+		return (IndexedTrie<E>) super.subTrieAtPrefix(prefix);
+	}
+
 	// trie methods
 	
 	public E get(int index) {
