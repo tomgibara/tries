@@ -20,28 +20,80 @@ import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.Streams;
 import com.tomgibara.streams.WriteStream;
 
+/**
+ * <p>
+ * A class for creating {@link Trie} instances and a convenient entry point for
+ * this library. Instances of this class may be created from any
+ * {@link TrieSerialization}. Tries that use common serializations may be
+ * created directly from this class.
+ * 
+ * <p>
+ * Instances of this class are immutable, and are safe for multithreaded use.
+ * Methods to configure and customize the creation of tries are available. These
+ * return new immutable instances of this class via a builder pattern.
+ * 
+ * 
+ * @author Tom Gibara
+ *
+ * @param <E>
+ *            the type of elements to be stored
+ * @see Trie
+ * @see TrieSerialization#tries()
+ */
+
 public class Tries<E> {
 
 	// statics
 	
 	private static final int DEFAULT_CAPACITY = 16;
-	
+
+	/**
+	 * Uses a serializer/deserializer pair to define a {@link TrieSerialization}
+	 * from which tries are defined.
+	 * 
+	 * @param type
+	 *            the type of object marshalled by the serializers.
+	 * @param serializer
+	 *            writes objects of the specified type to a byte stream
+	 * @param deserializer
+	 *            reads objects of the spefified type from a byte stream
+	 * @return tries based on the supplied serialization
+	 */
+
 	public static <E> Tries<E> serial(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
 		if (type == null) throw new IllegalArgumentException("null type");
 		if (serializer == null) throw new IllegalArgumentException("null serializer");
 		if (deserializer == null) throw new IllegalArgumentException("null deserializer");
 		return new Tries<>(() -> new StreamSerialization<E>(type, serializer, deserializer));
 	}
-	
+
+	/**
+	 * Creates tries to contain strings under a specified encoding. Since the
+	 * tries are byte based, a specific encoding is needed to provide an
+	 * unambiguous encoding.
+	 * 
+	 * @param charset
+	 *            the character encoding used to convert the string to/from
+	 *            bytes
+	 * @return tries containing strings
+	 */
+
 	public static Tries<String> strings(Charset charset) {
 		if (charset == null) throw new IllegalArgumentException("null charset");
 		return new Tries<>(() -> new StringSerialization(charset));
 	}
 
+	/**
+	 * Creates tries that can store byte arrays.
+	 * 
+	 * @return tries containing byte arrays
+	 */
+
 	public static Tries<byte[]> bytes() {
 		return new Tries<>(() -> new ByteSerialization());
 	}
 
+	// used for byte tries
 	static TrieSerialization<byte[]> newByteSerialization(int capacity) {
 		return new ByteSerialization(capacity);
 	}
@@ -293,30 +345,78 @@ public class Tries<E> {
 		this.capacityHint = capacityHint;
 	}
 	
+	/**
+	 * An instance of this class, with the same configuration, that creates
+	 * indexed tries.
+	 * 
+	 * @return tries with indexed elements
+	 * @see IndexedTrie
+	 */
+
 	public IndexedTries<E> indexed() {
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
+	/**
+	 * An instance of this class, with the same configuration, that returns
+	 * indexed tries or non-indexed tries as-per the parameter.
+	 * 
+	 * @param indexed
+	 *            whether the tries generated the returned object should index
+	 *            their elements
+	 * @return tries with the indidcated indexation
+	 * @see #indexed()
+	 * @see IndexedTries#unindexed()
+	 */
+
 	public Tries<E> indexed(boolean indexed) {
 		return indexed ? indexed() : this;
 	}
 	
 	// mutation methods
 	
+	/**
+	 * Converts a byte comparator into a byte-order for the tries. The byte
+	 * order is applied consistently at all positions in the trie.
+	 * 
+	 * @param comparator
+	 *            a comparator of byte values
+	 * @return tries under the specified ordering
+	 * @see ByteOrder#from(Comparator)
+	 */
+	
 	public Tries<E> byteOrder(Comparator<Byte> comparator) {
 		return new Tries<>(serialProducer, ByteOrder.from(comparator), nodeSource, capacityHint);
 	}
-	
+
+	/**
+	 * Specifies a byte-order for the tries. The byte order is applied
+	 * consistently at all positions in the trie.
+	 * 
+	 * @param byteOrder
+	 *            an ordering of byte values
+	 * @return tries under the specified ordering
+	 * @see ByteOrder#from(Comparator)
+	 */
+
 	public Tries<E> byteOrder(ByteOrder byteOrder) {
 		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
-	
+
+	/**
+	 * Controls the nodes that will be used to store the elements in tries.
+	 * 
+	 * @param nodeSource
+	 *            a source of trie nodes
+	 * @return tries using the specified nodes
+	 */
+
 	public Tries<E> nodeSource(TrieNodeSource nodeSource) {
 		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
-	
+
 	public Tries<E> capacityHint(int capacityHint) {
 		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
@@ -324,10 +424,30 @@ public class Tries<E> {
 	
 	// creation methods
 	
+	/**
+	 * Creates a new trie. The trie will be empty and will be mutable if the
+	 * configured node source supports the creation of mutable nodes.
+	 * 
+	 * @return a new trie
+	 */
+
 	public Trie<E> newTrie() {
 		return new Trie<>(this, newNodes());
 	}
-	
+
+	/**
+	 * Creates a copy of an existing trie. The copy will be mutable of the
+	 * configured node source supports it. The trie being copied is not required
+	 * to have originated from an identically configured {@link Tries} instance
+	 * but <em>must</em> use a compatible serialization (this constraint is not
+	 * enforced). Copying can be expected to be significantly faster if the trie
+	 * shares the same byte order.
+	 * 
+	 * @param trie
+	 *            the trie to be copied
+	 * @return the copied trie
+	 */
+
 	public Trie<E> copyTrie(Trie<E> trie) {
 		if (trie.nodes.byteOrder().equals(byteOrder)) {
 			// fast path - we can adopt the nodes, they're in the right order
@@ -340,7 +460,18 @@ public class Tries<E> {
 			return newTrie;
 		}
 	}
-	
+
+	/**
+	 * Reads a trie that was previously serialized via its
+	 * {@link Trie#writeTo(WriteStream)} method. The stream must have been
+	 * generated by a compatible {@link Tries} instance, unless otherwise
+	 * documented this means an instance with identical configuration.
+	 * 
+	 * @param stream
+	 *            the stream to read from
+	 * @return a trie read from the stream
+	 */
+
 	public Trie<E> readTrie(ReadStream stream) {
 		return new Trie<>(this, nodeSource.deserializer(byteOrder, false, capacityHint).deserialize(stream));
 	}

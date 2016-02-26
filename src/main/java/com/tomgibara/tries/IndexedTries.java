@@ -5,6 +5,20 @@ import java.util.Comparator;
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.streams.ReadStream;
 
+/**
+ * A class for creating {@link IndexedTrie} instances. Instances of this class
+ * are obtained via the {@link Tries#indexed()} and
+ * {@link Tries#indexed(boolean)} methods. It has the same characteristics
+ * as the {@link Tries} class.
+ * 
+ * @author Tom Gibara
+ *
+ * @param <E>
+ *            the type of elements to be stored
+ * @see Tries#indexed()
+ * @see Tries#indexed(boolean)
+ */
+
 public class IndexedTries<E> extends Tries<E> {
 
 	IndexedTries(
@@ -14,6 +28,13 @@ public class IndexedTries<E> extends Tries<E> {
 			int capacityHint) {
 		super(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
+
+	/**
+	 * An instance of this class, with the same configuration, that creates
+	 * unindexed tries.
+	 * 
+	 * @return tries with non-indexed elements
+	 */
 
 	public Tries<E> unindexed() {
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
