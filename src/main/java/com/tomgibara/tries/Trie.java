@@ -12,6 +12,23 @@ import com.tomgibara.fundament.Mutability;
 import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.WriteStream;
 
+/**
+ * <p>
+ * A data structure that stores its elements in a byte based trie.
+ *
+ * <p>
+ * The trie, any sub-tries, and other views are all backed by the same nodes;
+ * any concurrent access to these must be externally synchronized.
+ *
+ * @author Tom Gibara
+ *
+ * @param <E>
+ *            the type of element stored in the trie
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/Trie">Trie in Wikipedia</a>
+ * @see Tries
+ */
+
 public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	// statics
@@ -56,16 +73,33 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	
 	// trie methods
 
+	/**
+	 * The number of elements in the trie.
+	 * 
+	 * @return the number of elements
+	 */
+	
 	public int size() {
 		TrieNode root = root();
 		return root == null ? 0 : root.getCount();
 	}
 	
+	/**
+	 * True if and only if the size is zero.
+	 * 
+	 * @return whether the trie contains no elements
+	 * @see #size()
+	 */
+	
 	public boolean isEmpty() {
 		TrieNode root = root();
 		return root == null ? true : root.isDangling();
 	}
-	
+
+	/**
+	 * Removes all elements from the trie.
+	 */
+
 	public void clear() {
 		if (prefix.length == 0) {
 			nodes.clear();
@@ -78,21 +112,55 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		}
 	}
 	
+	/**
+	 * An estimate of number of bytes used to store the trie elements.
+	 * 
+	 * @return the storage size in bytes
+	 */
+
 	public long storageSizeInBytes() {
 		return nodes.storageSize();
 	}
-	
+
+	/**
+	 * Compacts the node storage backing the trie. Depending on the
+	 * implementation of the trie nodes, this action may do nothing. In some
+	 * implementations memory usage may be reduced and/or performance may be
+	 * improve.
+	 * 
+	 * @see Tries#nodeSource(TrieNodeSource)
+	 */
+
 	public void compactStorage() {
 		nodes.compact();
 	}
 	
+	/**
+	 * Adds an element to trie. The supplied object must be serializable by the
+	 * serializer of this trie.
+	 * 
+	 * @param e
+	 *            the element to add to the trie
+	 * @return true if the element was added to the trie, false if trie already
+	 *         contained the element
+	 */
+
 	public boolean add(E e) {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) throw new IllegalArgumentException("element not in sub-trie");
 		return add(serialization.buffer(), serialization.length());
 	}
-	
+
+	/**
+	 * Tests whether an element is contained by this trie. The supplied object
+	 * must be serializable by the serializer of this trie.
+	 * 
+	 * @param e
+	 *            a possible element
+	 * @return true
+	 */
+
 	public boolean contains(E e) {
 		checkSerializable(e);
 		serialization.set(e);
@@ -100,13 +168,33 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return contains(serialization.buffer(), serialization.length());
 	}
 	
+	/**
+	 * Removes an element from a trie. The supplied object must be serializable
+	 * by the serializer of this trie.
+	 * 
+	 * @param e
+	 *            the element to remove from the trie
+	 * @return true if the element was removed from the trie, false if the
+	 *         element was not contained in the trie
+	 */
+
 	public boolean remove(E e) {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) return false;
 		return remove(serialization.buffer(), serialization.length());
 	}
-	
+
+	/**
+	 * Adds all the of the items returned by an iterator. All of the items must
+	 * be serializable by the serializer of this trie.
+	 * 
+	 * @param iterator
+	 *            iterates over the items to be added to the trie
+	 * @return true if any of the iterator's items were added to the trie, false
+	 *         otherwise.
+	 */
+
 	public boolean addAll(Iterator<E> iterator) {
 		if (iterator == null) throw new IllegalArgumentException("null iterator");
 		boolean mutated = false;
@@ -117,11 +205,31 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return mutated;
 	}
 
+	/**
+	 * Adds all the of the items of an iterable. All of the items must be
+	 * serializable by the serializer of this trie.
+	 * 
+	 * @param iterable
+	 *            provides an iterator over the items to be added to the trie
+	 * @return true if any of the iterable's items were added to the trie, false
+	 *         otherwise.
+	 */
+
 	public boolean addAll(Iterable<E> iterable) {
 		if (iterable == null) throw new IllegalArgumentException("null iterable");
 		return addAll(iterable.iterator());
 	}
 	
+	/**
+	 * Removes all the of the items returned by an iterator. All of the items
+	 * must be serializable by the serializer of this trie.
+	 * 
+	 * @param iterator
+	 *            iterates over the items to be removed from the trie
+	 * @return true if any of the iterator's items were previously contained in
+	 *         the trie, false otherwise.
+	 */
+
 	public boolean removeAll(Iterator<E> iterator) {
 		if (iterator == null) throw new IllegalArgumentException("null iterator");
 		boolean mutated = false;
@@ -132,11 +240,31 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return mutated;
 	}
 
+	/**
+	 * Removes all the of the items of an iterable. All of the items must be
+	 * serializable by the serializer of this trie.
+	 * 
+	 * @param iterable
+	 *            provides an iterator over the items to be removed from the
+	 *            trie
+	 * @return true if any of the iterable's items were previously contained in
+	 *         the trie, false otherwise.
+	 */
+
 	public boolean removeAll(Iterable<E> iterable) {
 		if (iterable == null) throw new IllegalArgumentException("null iterable");
 		return removeAll(iterable.iterator());
 	}
-	
+
+	/**
+	 * Tests whether the trie contains all of the items returned by an iterator.
+	 * 
+	 * @param iterator
+	 *            an iterator over the items to be tested
+	 * 
+	 * @return true if the trie contains all of the items, false otherwise
+	 */
+
 	public boolean containsAll(Iterator<E> iterator) {
 		//TODO could implement optimally by building eq
 		if (iterator == null) throw new IllegalArgumentException("null iterator");
@@ -146,10 +274,35 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return true;
 	}
 
+	/**
+	 * Tests whether the trie contains all of the items contained in an
+	 * iterable.
+	 * 
+	 * @param iterable
+	 *            contains the items to be tested
+	 * 
+	 * @return true if the trie contains all of the items, false otherwise
+	 */
+	
 	public boolean containsAll(Iterable<E> iterable) {
 		if (iterable == null) throw new IllegalArgumentException("null iterable");
 		return containsAll(iterable.iterator());
 	}
+
+	/**
+	 * <p>
+	 * Returns a sub-trie that is rooted at the given element. The sub-trie will
+	 * contain all elements that are ancestors of the root, or the root itself.
+	 * The sub-trie will be mutable if and only if this trie is mutable.
+	 * 
+	 * <p>
+	 * Note that the root must be a valid element for the trie, but it does not
+	 * necessarily need to be an element of the trie.
+	 * 
+	 * @param root
+	 *            the root of the trie
+	 * @return a sub-trie
+	 */
 
 	public Trie<E> subTrie(E root) {
 		if (root == null) throw new IllegalArgumentException("null root");
@@ -158,12 +311,39 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return newTrie(s);
 	}
 
+	/**
+	 * <p>
+	 * Returns a sub-trie that is restricted to all elements whose serialization
+	 * starts with the given prefix. The sub-trie will be mutable if and only if
+	 * this trie is mutable.
+	 * 
+	 * <p>
+	 * Note that the prefix is not required to be a complete serialization of
+	 * any valid element; it's only required that the prefix itself is valid for
+	 * this trie.
+	 * 
+	 * @param prefix
+	 *            a byte sequence with which element serializations are required
+	 *            to start
+	 * @return a sub-trie containing of all matching elements
+	 */
+
 	public Trie<E> subTrieAtPrefix(byte[] prefix) {
 		if (prefix == null) throw new IllegalArgumentException("null prefix");
 		TrieSerialization<E> s = serialization.resetCopy();
 		s.set(prefix);
 		return newTrie(s);
 	}
+
+	/**
+	 * Optionally, the first element of the trie, or empty. If it exists, this
+	 * is the element whose serialization comes first, with respect to the byte
+	 * order defined for the trie, or equivalently, the least element of the
+	 * induced comparator.
+	 * 
+	 * @return optionally, the first element of the trie
+	 * @see #comparator()
+	 */
 
 	public Optional<E> first() {
 		if (isEmpty()) return Optional.empty();
@@ -176,6 +356,16 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return Optional.of(serialization.get());
 	}
 	
+	/**
+	 * Optionally, the first element of the trie, or empty. If it exists, this
+	 * is the element whose serialization comes first, with respect to the byte
+	 * order defined for the trie, or equivalently, the greatest element of the
+	 * induced comparator.
+	 * 
+	 * @return optionally, the last element of the trie
+	 * @see #comparator()
+	 */
+
 	public Optional<E> last() {
 		if (isEmpty()) return Optional.empty();
 		serialization.set(prefix);
@@ -190,13 +380,26 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return Optional.of(serialization.get());
 	}
 
-	// a comparator consistent with the trie ordering
-	// each call creates a new comparator, comparator is not threadsafe
+	/**
+	 * A comparator consistent with the element ordering in this trie. Each call
+	 * to this method creates a new comparator that is not threadsafe.
+	 * 
+	 * @return a comparator giving the element order applied by the trie
+	 */
+
 	public Comparator<E> comparator() {
 		return serialization.comparator(nodes.byteOrder());
 	}
 
-	// can be used to generate a hasher from a hash
+	/**
+	 * Provides a stream serializer for the valid elements of this trie. Each
+	 * call to this method creates a new serializer that is not threadsafe. This
+	 * may be used for, among other things, defining hashes consistent with
+	 * the element equality implied by this trie.
+	 * 
+	 * @return a stream serializer for the trie
+	 */
+
 	public StreamSerializer<E> serializer() {
 		TrieSerialization<E> ts = serialization.resetCopy();
 		return (t,s) -> {
@@ -205,22 +408,67 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		};
 	}
 	
+	/**
+	 * Exposes a the trie elements as a set. The returned object is a live view
+	 * of this trie. mutations to either with will be reflected in the other.
+	 * The returned set will be mutable if and only if the trie is mutable.
+	 * 
+	 * @return the trie as a set
+	 */
+
 	public Set<E> asSet() {
 		return new TrieSet();
 	}
 	
+	/**
+	 * Exposes the underlying serializations of the contained elements as a trie
+	 * of byte arrays. The returned trie is immutable, but provides a live view
+	 * of this trie; any modifications made to this trie will be reflected in
+	 * the returned trie.
+	 * 
+	 * @return the underlying element serializations as a byte array trie
+	 */
+
 	public Trie<byte[]> asBytesTrie() {
 		return new Trie<byte[]>(Tries.newByteSerialization(serialization.buffer().length), nodes.immutableView());
 	}
-	
+
+	/**
+	 * An iterator over all of the elements in the trie. Elements are returned
+	 * in a stable order as per the trie's associated comparator.
+	 * 
+	 * @return an iterator over the elemets of the trie
+	 * @see #comparator()
+	 */
+
 	public Iterator<E> iterator() {
 		return new NodeIterator(null);
 	}
 	
+	/**
+	 * An iterator over the elements of the trie beginning with the first
+	 * element that that is greater than or equal to the given element under the
+	 * trie's comparator.
+	 * 
+	 * @param from
+	 *            the element less than which all elements are skipped.
+	 * @return an iterator over all matching elements
+	 * @see #comparator()
+	 */
+
 	public Iterator<E> iterator(E from) {
 		if (from == null) throw new IllegalArgumentException("null from");
 		return new NodeIterator(from);
 	}
+
+	/**
+	 * Serializes the elements stored in the trie to a stream that may be
+	 * deserialized with
+	 * {@link Tries#readTrie(com.tomgibara.streams.ReadStream)}.
+	 * 
+	 * @param stream
+	 *            the stream to which the trie elements are to be written
+	 */
 
 	public void writeTo(WriteStream stream) {
 		if (stream == null) throw new IllegalArgumentException("null stream");
