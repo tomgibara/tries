@@ -86,11 +86,13 @@ public class IndexedTries<E> extends Tries<E> {
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
+	/*
 	@Override
 	public IndexedTries<E> capacityHint(int capacityHint) {
 		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
+	*/
 
 	// creation methods
 	

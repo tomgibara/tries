@@ -436,10 +436,12 @@ public class Tries<E> {
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 
+	/*  TG: viability TBD
 	public Tries<E> capacityHint(int capacityHint) {
 		if (capacityHint < 0) throw new IllegalArgumentException("negative capacityHint");
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
+	*/
 	
 	// creation methods
 	
