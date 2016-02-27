@@ -125,6 +125,11 @@ public abstract class TrieTest {
 			/* expected */
 		}
 
+		{ // check first/last
+			assertEquals(trie.first(), copy.first());
+			assertEquals(trie.last(), copy.last());
+		}
+
 		{ // check iteration
 			Iterator<E> ti = trie.iterator();
 			Iterator<E> ci = copy.iterator();
@@ -862,6 +867,7 @@ public abstract class TrieTest {
 	public void testSubTrieAtPrefix() {
 		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
 		Trie<String> t = tries.newTrie();
+		t.subTrieAtPrefix(new byte[128]); // check that long prefix is handled okay
 		Trie<String> s = t.subTrieAtPrefix(new byte[] {65});
 		assertTrue(s.isEmpty());
 		t.add("Pear");
@@ -922,6 +928,11 @@ public abstract class TrieTest {
 			assertEquals(set, large.asSet());
 			checkSerialization(tries, large, indexed);
 		}
+		
+		// test long
+		Trie<String> lengthy = tries.newTrie();
+		lengthy.add("This is a long trie element for testing serialization, which is itself a long word.");
+		checkSerialization(tries, singleton, indexed);
 	}
 
 	@Test

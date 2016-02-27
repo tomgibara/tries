@@ -207,8 +207,8 @@ public class Tries<E> {
 			this.deserializer = deserializer;
 		}
 
-		private StreamSerialization(StreamSerialization<E> that) {
-			super(that.buffer.length);
+		private StreamSerialization(StreamSerialization<E> that, int capacity) {
+			super(capacity);
 			this.type = that.type;
 			this.serializer = that.serializer;
 			this.deserializer = that.deserializer;
@@ -235,8 +235,8 @@ public class Tries<E> {
 		}
 
 		@Override
-		public StreamSerialization<E> resetCopy() {
-			return new StreamSerialization<>(this);
+		public StreamSerialization<E> resetCopy(int capacity) {
+			return new StreamSerialization<>(this, capacity);
 		}
 	}
 	
@@ -248,8 +248,8 @@ public class Tries<E> {
 			encoder = charset.newEncoder();
 		}
 		
-		private  StringSerialization(StringSerialization that) {
-			super(that.buffer.length);
+		private  StringSerialization(StringSerialization that, int capacity) {
+			super(capacity);
 			this.encoder = that.encoder;
 		}
 
@@ -296,8 +296,8 @@ public class Tries<E> {
 		}
 		
 		@Override
-		public TrieSerialization<String> resetCopy() {
-			return new StringSerialization(this);
+		public TrieSerialization<String> resetCopy(int capacity) {
+			return new StringSerialization(this, capacity);
 		}
 		
 	}
@@ -331,8 +331,8 @@ public class Tries<E> {
 		}
 		
 		@Override
-		public TrieSerialization<byte[]> resetCopy() {
-			return new ByteSerialization(buffer.length);
+		public TrieSerialization<byte[]> resetCopy(int capacity) {
+			return new ByteSerialization(capacity);
 		}
 	}
 	

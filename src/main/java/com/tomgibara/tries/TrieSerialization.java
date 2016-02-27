@@ -89,9 +89,18 @@ public interface TrieSerialization<E> {
 	}
 
 	/**
+	 * The length of the array returned by {@link #buffer()}.
+	 * 
+	 * @return the capacity in bytes
+	 */
+	
+	default int capacity() {
+		return buffer().length;
+	}
+	
+	/**
 	 * The number of byte values stored by this serialization. The reported
-	 * length will never exceed the length of the array returned by
-	 * {@link #buffer()}.
+	 * length will never exceed the capacity.
 	 * 
 	 * @return the length in bytes
 	 */
@@ -113,7 +122,18 @@ public interface TrieSerialization<E> {
 	 * @return a new serialization instance.
 	 */
 
-	TrieSerialization<E> resetCopy();
+	default TrieSerialization<E> resetCopy() {
+		return resetCopy(capacity());
+	}
+
+	/**
+	 * Creates a new instance of the serialization with the specified capacity
+	 * and zero length.
+	 * 
+	 * @return a new serialization instance.
+	 */
+
+	TrieSerialization<E> resetCopy(int capacity);
 
 	/**
 	 * Whether the buffer starts with the supplied prefix.

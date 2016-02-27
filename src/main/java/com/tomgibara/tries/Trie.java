@@ -336,8 +336,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 * 
 	 * <p>
 	 * Note that the prefix is not required to be a complete serialization of
-	 * any valid element; it's only required that the prefix itself is valid for
-	 * this trie.
+	 * any valid element.
 	 * 
 	 * @param prefix
 	 *            a byte sequence with which element serializations are required
@@ -347,7 +346,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	public Trie<E> subTrieAtPrefix(byte[] prefix) {
 		if (prefix == null) throw new IllegalArgumentException("null prefix");
-		TrieSerialization<E> s = serialization.resetCopy();
+		int capacity = Math.max(serialization.capacity(), prefix.length);
+		TrieSerialization<E> s = serialization.resetCopy(capacity);
 		s.set(prefix);
 		return newTrie(s);
 	}
