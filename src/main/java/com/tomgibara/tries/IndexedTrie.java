@@ -6,6 +6,24 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+/**
+ * <p>
+ * A trie that can efficiently return the index of any element. Elements are
+ * ordered by the comparator associated with the trie; all valid indices are
+ * positive and less than the size of the trie. Instances are initially obtained
+ * from {@link IndexedTries}.
+ * 
+ * <p>
+ * The trie, any sub-tries, and other views are all backed by the same nodes;
+ * any concurrent access to these must be externally synchronized.
+ * 
+ * @author Tom Gibara
+ *
+ * @param <E>
+ *            the type of element stored in the trie
+ * @see IndexedTries
+ */
+
 public class IndexedTrie<E> extends Trie<E> {
 
 	// constructors
@@ -34,6 +52,13 @@ public class IndexedTrie<E> extends Trie<E> {
 
 	// trie methods
 	
+	/**
+	 * The element at the specified index. 
+	 * 
+	 * @param index a valid index for the trie
+	 * @return the element at the index
+	 */
+
 	public E get(int index) {
 		if (index < 0) throw new IllegalArgumentException("negative index");
 		TrieNode node = root();
@@ -55,6 +80,13 @@ public class IndexedTrie<E> extends Trie<E> {
 		return serialization.get();
 	}
 	
+	/**
+	 * Removes the element at the specified index.
+	 * 
+	 * @param index a valid index for the trie
+	 * @return the removed element
+	 */
+
 	public E remove(int index) {
 		if (index < 0) throw new IllegalArgumentException("negative index");
 		TrieNode[] stack = new TrieNode[ serialization.buffer().length ];
@@ -86,14 +118,34 @@ public class IndexedTrie<E> extends Trie<E> {
 		assert(removed);
 		return serialization.get();
 	}
-	
+
+	/**
+	 * The index of the given element. If the element does not exist in the trie
+	 * then the value <code>-1-n</code> is returned where <code>n</code> is the
+	 * index that the element would occupy if it was added to to the trie.
+	 * 
+	 * @param e
+	 *            an valid element for the trie
+	 * @return the index of the element, or a negative value indicating the
+	 *         index it would occupy
+	 */
+
 	public int indexOf(E e) {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) throw new IllegalArgumentException("element not in sub-trie");
 		return indexOf(serialization.buffer(), serialization.length());
 	}
-	
+
+	/**
+	 * The trie as a list. The list does not support adding elements, but does
+	 * supports removal if the trie is mutable. The returned object is a live
+	 * view of this trie. mutations to either with will be reflected in the
+	 * other.
+	 * 
+	 * @return the trie as a list
+	 */
+
 	public List<E> asList() {
 		return new TrieList();
 	}
@@ -161,7 +213,7 @@ public class IndexedTrie<E> extends Trie<E> {
 			node = node.findChild(value);
 			if (node == null) return -1 - index;
 		}
-		return index;
+		return node.isTerminal() ? index : -1 - index;
 	}
 
 	// inner classes

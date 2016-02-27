@@ -908,5 +908,16 @@ public abstract class TrieTest {
 		}
 	}
 
+	@Test
+	public void testIndexOf() {
+		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
+		assertEquals(-1, trie.indexOf(""));
+		assertEquals(-1, trie.indexOf("absent"));
+		trie.add("");
+		assertEquals(0, trie.indexOf(""));
+		trie.add("present");
+		assertEquals(1, trie.indexOf("present"));
+		assertEquals(-2, trie.indexOf("absent"));
+	}
 
 }

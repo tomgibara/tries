@@ -14,7 +14,8 @@ import com.tomgibara.streams.WriteStream;
 
 /**
  * <p>
- * A data structure that stores its elements in a byte based trie.
+ * A data structure that stores its elements in a byte based trie. Instances are
+ * initially obtained from {@link Tries}.
  *
  * <p>
  * The trie, any sub-tries, and other views are all backed by the same nodes;
