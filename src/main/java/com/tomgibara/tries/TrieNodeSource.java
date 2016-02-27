@@ -75,7 +75,15 @@ public interface TrieNodeSource  {
 	static TrieNodeSource forCompactLookups() {
 		return CompactTrieNodes.SOURCE;
 	}
-	
+
+	/**
+	 * Whether the node source supports counting.
+	 * 
+	 * @return true if node counting is supported, false otherwise
+	 */
+
+	boolean isCountingSupported();
+
 	/**
 	 * Creates a new empty node structure.
 	 * 

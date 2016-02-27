@@ -366,10 +366,13 @@ public class Tries<E> {
 	 * indexed tries.
 	 * 
 	 * @return tries with indexed elements
+	 * @throws IllegalStateException
+	 *             if the configured node source does not support counting
 	 * @see IndexedTrie
 	 */
 
 	public IndexedTries<E> indexed() {
+		if (!nodeSource.isCountingSupported()) throw new IllegalStateException("counting not supported");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	

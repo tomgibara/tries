@@ -82,6 +82,7 @@ public class IndexedTries<E> extends Tries<E> {
 	@Override
 	public IndexedTries<E> nodeSource(TrieNodeSource nodeSource) {
 		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
+		if (!nodeSource.isCountingSupported()) throw new IllegalStateException("counting not supported");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	

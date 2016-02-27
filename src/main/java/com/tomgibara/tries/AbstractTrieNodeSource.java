@@ -28,6 +28,9 @@ import com.tomgibara.streams.StreamException;
 
 abstract class AbstractTrieNodeSource implements TrieNodeSource {
 
+	@Override
+	public boolean isCountingSupported() { return true; }
+	
 	public abstract AbstractTrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint);
 	
 	@Override

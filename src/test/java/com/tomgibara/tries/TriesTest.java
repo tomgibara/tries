@@ -18,8 +18,11 @@ package com.tomgibara.tries;
 
 import static com.tomgibara.tries.TrieTest.bytes;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
+
+import com.tomgibara.streams.StreamDeserializer;
 
 public class TriesTest {
 
@@ -35,4 +38,50 @@ public class TriesTest {
 		assertTrue(trie.contains(bytes("bookie")));
 	}
 	
+	@Test
+	public void testNonCounting() {
+		Tries<byte[]> tries = Tries.bytes().nodeSource(new NonCountedNodeSource());
+		tries.newTrie();
+		try {
+			tries.indexed();
+			fail();
+		} catch (IllegalStateException e) {
+			/* expected */
+		}
+		try {
+			tries.indexed(true);
+		} catch (IllegalStateException e) {
+			/* expected */
+		}
+		tries = Tries.bytes().nodeSource(TrieNodeSource.forSpeed()).indexed();
+		try {
+			tries.nodeSource(new NonCountedNodeSource());
+		} catch (IllegalStateException e) {
+			/* expected */
+		}
+	}
+	
+	class NonCountedNodeSource implements TrieNodeSource {
+
+		private TrieNodeSource source = TrieNodeSource.forSpeed();
+		
+		@Override
+		public boolean isCountingSupported() { return false; }
+
+		@Override
+		public TrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
+			return source.newNodes(byteOrder, counting, capacityHint);
+		}
+
+		@Override
+		public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
+			return source.copyNodes(nodes, counting, capacityHint);
+		}
+
+		@Override
+		public StreamDeserializer<TrieNodes> deserializer(ByteOrder byteOrder, boolean counting, int capacityHint) {
+			return source.deserializer(byteOrder, counting, capacityHint);
+		}
+		
+	}
 }
