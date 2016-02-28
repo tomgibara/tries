@@ -106,18 +106,6 @@ abstract class AbstractTrieNode implements TrieNode {
 	@Override
 	public void delete() { }
 
-	@Override
-	public void writeNodes(WriteStream stream) {
-		CountingStream counter = new CountingStream();
-		doWriteNodes(counter);
-		// each node writes two bytes
-		int count = counter.count() >> 1;
-		// write number of nodes
-		stream.writeInt(count);
-		// write nodes
-		doWriteNodes(stream);
-	}
-
 	// package scoped methods
 
 	// any current sibling becomes sibling of new sibling
@@ -130,75 +118,24 @@ abstract class AbstractTrieNode implements TrieNode {
 
 	abstract void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings);
 	
-	private void writeNode(WriteStream stream) {
+	void writeNode(WriteStream stream, int mask) {
 		stream.writeByte(getValue());
-		stream.writeByte(flags());
-		if (hasChild()) getChild().writeNode(stream);
-		if (hasSibling()) getSibling().writeNode(stream);
+		stream.writeByte((byte) (flags() & mask));
+	}
+	
+	void writeNodes(WriteStream stream) {
+		stream.writeByte(getValue());
+		stream.writeByte((byte) flags());
+		if (hasChild()) getChild().writeNodes(stream);
+		if (hasSibling()) getSibling().writeNodes(stream);
 	}
 
-	byte flags() {
+	int flags() {
 		int flags = 0;
 		if (isTerminal()) flags |= FLAG_TERMINAL;
 		if (hasSibling()) flags |= FLAG_SIBLING;
 		if (hasChild()) flags |= FLAG_CHILD;
-		return (byte) flags;
-	}
-	private void doWriteNodes(WriteStream stream) {
-		// root always written with zero value
-		stream.writeByte((byte) 0);
-		stream.writeByte(flags());
-		if (hasChild()) getChild().writeNode(stream);
-		// sibling of root never written
+		return flags;
 	}
 
-	//TODO move to streams package?
-	private static class CountingStream implements WriteStream {
-
-		private int count = 0;
-		
-		public int count() {
-			return count;
-		}
-		
-		@Override
-		public void writeByte(byte v) { count ++; }
-		
-		@Override
-		public void writeBytes(byte[] bs) { count += bs.length; }
-		
-		@Override
-		public void writeBytes(byte[] bs, int off, int len) { count += len; }
-		
-		@Override
-		public void writeInt(int v) { count += 4; }
-		
-		@Override
-		public void writeBoolean(boolean v) { count += 1; }
-		
-		@Override
-		public void writeShort(short v) { count += 2; }
-		
-		@Override
-		public void writeLong(long v) { count += 8; }
-		
-		@Override
-		public void writeFloat(float v) { count += 4; }
-		
-		@Override
-		public void writeDouble(double v) { count += 8; }
-		
-		@Override
-		public void writeChar(char v) { count += 2; }
-		
-		@Override
-		public void writeChars(char[] cs) { count += 4; }
-		
-		@Override
-		public void writeChars(char[] cs, int off, int len) { count += len; }
-		
-		@Override
-		public void writeChars(CharSequence cs) { count += 4 + cs.length(); }
-		
-	}
 }

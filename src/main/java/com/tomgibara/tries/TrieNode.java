@@ -16,7 +16,6 @@
  */
 package com.tomgibara.tries;
 
-import com.tomgibara.streams.WriteStream;
 
 /**
  * <p>
@@ -216,25 +215,4 @@ interface TrieNode {
 
 	boolean isDangling();
 
-	// io
-	
-	/**
-	 * <p>
-	 * Writes all of the nodes descendant nodes (its child and all of its
-	 * child's children and siblings) to the supplied stream. This node will
-	 * serve as the root node of the recorded trie, as such its value should not
-	 * be recorded, since it is a component of the subtrie rooted at this node.
-	 * 
-	 * <p>
-	 * The data written to the stream may be organized in any format suited to
-	 * the {@link TrieNodes} implementation, so long as the data may be read by
-	 * the deserializer supplied by
-	 * {@link TrieNodeSource#deserializer(ByteOrder, boolean, int)}.
-	 * 
-	 * @param stream
-	 *            the stream to populate
-	 * @see TrieNodeSource#deserializer(ByteOrder, boolean, int)
-	 */
-	
-	void writeNodes(WriteStream stream);
 }

@@ -46,18 +46,20 @@ abstract class AbstractTrieNodeSource implements TrieNodeSource {
 		List<AbstractTrieNode> siblings = new ArrayList<>();
 		return stream -> {
 			int count = stream.readInt();
-			nodes.ensureExtraCapacity(count);
-			byte rootValue = stream.readByte();
-			if (rootValue != 0) throw new StreamException("zero root value expected");
-			int flags = stream.readByte();
-			AbstractTrieNode root = nodes.root();
-			if ((flags & FLAG_TERMINAL) != 0) root.setTerminal(true);
-			if ((flags & FLAG_SIBLING) != 0) throw new StreamException("unexpected root sibling");
-			if ((flags & FLAG_CHILD) != 0) root.readChild(stream, siblings);
-			while (!siblings.isEmpty()) {
-				siblings.remove(siblings.size() - 1).readSibling(stream, siblings);
+			if (count > 0) {
+				nodes.ensureExtraCapacity(count);
+				byte rootValue = stream.readByte();
+				if (rootValue != 0) throw new StreamException("zero root value expected");
+				int flags = stream.readByte();
+				AbstractTrieNode root = nodes.root();
+				if ((flags & FLAG_TERMINAL) != 0) root.setTerminal(true);
+				if ((flags & FLAG_SIBLING) != 0) throw new StreamException("unexpected root sibling");
+				if ((flags & FLAG_CHILD) != 0) root.readChild(stream, siblings);
+				while (!siblings.isEmpty()) {
+					siblings.remove(siblings.size() - 1).readSibling(stream, siblings);
+				}
+				nodes.readComplete();
 			}
-			nodes.readComplete();
 			return nodes;
 		};
 	}

@@ -936,6 +936,29 @@ public abstract class TrieTest {
 	}
 
 	@Test
+	public void testSubTrieSerial() {
+		Tries<String> tries = Tries.strings(ASCII).nodeSource(getNodeSource());
+		Trie<String> trie = tries.newTrie();
+		trie.add("eggplant");
+		trie.add("eggnog");
+		trie.add("eggcorn");
+		trie.add("oval");
+		trie.add("ovary");
+
+		testSubTrieSerial(tries, trie.subTrie("egg"));
+		testSubTrieSerial(tries, trie.subTrie("eggplant"));
+		testSubTrieSerial(tries, trie.subTrie(""));
+		testSubTrieSerial(tries, trie.subTrie("egglant"));
+	}
+
+	private void testSubTrieSerial(Tries<String> tries, Trie<String> s) {
+		StreamBytes bytes = Streams.bytes();
+		s.writeTo(bytes.writeStream());
+		Trie<String> t = tries.readTrie(bytes.readStream());
+		assertEquals(s.asSet(), t.asSet());
+	}
+
+	@Test
 	public void testIndexOf() {
 		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
 		assertEquals(-1, trie.indexOf(""));

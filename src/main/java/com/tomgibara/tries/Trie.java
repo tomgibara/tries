@@ -36,6 +36,12 @@ import com.tomgibara.streams.WriteStream;
  * <p>
  * The trie, any sub-tries, and other views are all backed by the same nodes;
  * any concurrent access to these must be externally synchronized.
+ * 
+ * <p>
+ * Note that no specific notion of equality is not defined for Tries; two tries
+ * are equal only if they are the same object. To make equality judgements based
+ * on tries as collections of elements use {@link Trie#asSet()} or
+ * {@link IndexedTrie#asList()}.
  *
  * @author Tom Gibara
  *
@@ -50,7 +56,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	// statics
 	
-	private final byte[] NO_PREFIX = {};
+	private static final byte[] NO_PREFIX = {};
+	private static final TrieNode[] NO_STACK = {};
 	
 	private static byte[] toPrefix(TrieSerialization<?> s) {
 		return Arrays.copyOf(s.buffer(), s.length());
@@ -489,7 +496,21 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	public void writeTo(WriteStream stream) {
 		if (stream == null) throw new IllegalArgumentException("null stream");
-		root().writeNodes(stream);
+		if (isEmpty()) {
+			nodes.writeTo(stream, NO_STACK, 0);
+		} else {
+			// need the stack including the root
+			byte[] bytes = prefix;
+			int length = prefix.length;
+			TrieNode[] stack = new TrieNode[length + 1];
+			TrieNode node = nodes.root();
+			stack[0] = node;
+			for (int i = 0; i < length; i++) {
+				node = node.findChild(bytes[i]);
+				stack[i + 1] = node;
+			}
+			nodes.writeTo(stream, stack, stack.length);
+		}
 	}
 	
 	// mutability methods
@@ -524,9 +545,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	
 	TrieNode root() {
 		long latest = nodes.invalidations();
-		if (prefix.length == 0 || invalidations == latest) return root;
+		if (invalidations == latest) return root;
 		invalidations = latest;
-		root = findRoot(prefix, prefix.length);
+		root = prefix.length == 0 ? nodes.root() : findRoot(prefix, prefix.length);
 		return root;
 	}
 	
@@ -650,7 +671,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	class NodeIterator implements Iterator<E> {
 
 		final TrieSerialization<E> serial = serialization.resetCopy();
-		TrieNode[] stack = new TrieNode[serial.buffer().length];
+		TrieNode[] stack = new TrieNode[serial.capacity()];
 		TrieNode next;
 		private E previous = null;
 		private boolean removed = false;
@@ -725,7 +746,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 					}
 					serial.pop();
 					length--;
-					if (length == prefix.length) {
+					// note may be less than prefix length if former element was the prefix
+					if (length <= prefix.length) {
 						next = null;
 						return;
 					}

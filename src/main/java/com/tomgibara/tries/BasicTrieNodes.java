@@ -23,6 +23,7 @@ import static com.tomgibara.tries.AbstractTrieNode.FLAG_TERMINAL;
 import java.util.List;
 
 import com.tomgibara.streams.ReadStream;
+import com.tomgibara.streams.WriteStream;
 
 
 class BasicTrieNodes extends AbstractTrieNodes {
@@ -120,7 +121,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	public long invalidations() {
 		return invalidations;
 	}
-	
+
 	@Override
 	void dump() {
 		// TODO Auto-generated method stub
@@ -130,7 +131,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
 		adopt((BasicNode) ours, theirs);
 	}
-	
+
 	@Override
 	void readComplete() {
 		root.computeCounts();

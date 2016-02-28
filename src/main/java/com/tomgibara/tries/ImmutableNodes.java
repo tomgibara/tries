@@ -140,6 +140,10 @@ class ImmutableNodes implements TrieNodes {
 		return nodes.invalidations();
 	}
 
+	public void writeTo(WriteStream stream, TrieNode[] stack, int length) {
+		nodes.writeTo(stream, stack, length);
+	}
+	
 	// private helper methods
 	
 	ImmNode wrap(TrieNode node) {
@@ -259,12 +263,7 @@ class ImmutableNodes implements TrieNodes {
 		public void delete() {
 			node.delete();
 		}
-		
-		@Override
-		public void writeNodes(WriteStream stream) {
-			node.writeNodes(stream);
-		}
-		
+
 	}
 	
 }
