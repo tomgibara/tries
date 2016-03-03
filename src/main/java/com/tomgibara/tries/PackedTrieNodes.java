@@ -157,6 +157,11 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
+	public TrieNodePath newPath(int capacity) {
+		return new PackedPath(this, capacity);
+	}
+	
+	@Override
 	public void incCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
@@ -783,4 +788,11 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	}
 
+	private class PackedPath extends AbstractTrieNodePath {
+
+		PackedPath(TrieNodes nodes, int capacity) {
+			super(nodes, capacity);
+		}
+		
+	}
 }

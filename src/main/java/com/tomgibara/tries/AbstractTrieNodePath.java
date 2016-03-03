@@ -2,14 +2,14 @@ package com.tomgibara.tries;
 
 import com.tomgibara.streams.WriteStream;
 
-class DefaultTrieNodePath implements TrieNodePath {
+abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	private final TrieNodes nodes;
 	private final TrieNode[] stack;
 	private TrieNode head;
 	private int length = 1;
 	
-	DefaultTrieNodePath(TrieNodes nodes, int capacity) {
+	AbstractTrieNodePath(TrieNodes nodes, int capacity) {
 		this.nodes = nodes;
 		stack = new TrieNode[capacity + 1];
 		stack[0] = head = nodes.root();

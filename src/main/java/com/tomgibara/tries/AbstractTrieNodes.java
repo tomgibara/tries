@@ -24,11 +24,6 @@ abstract class AbstractTrieNodes implements TrieNodes {
 	private static final int MASK_CHILD_OR_TERMINAL = AbstractTrieNode.FLAG_CHILD | AbstractTrieNode.FLAG_TERMINAL;
 	
 	@Override
-	public TrieNodePath newPath(int capacity) {
-		return new DefaultTrieNodePath(this, capacity);
-	}
-
-	@Override
 	public void writeTo(WriteStream stream, TrieNode[] stack, int length) {
 		CountingStream counter = new CountingStream();
 		writeNodes(counter, stack, length);

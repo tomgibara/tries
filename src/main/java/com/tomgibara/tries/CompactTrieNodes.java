@@ -126,6 +126,11 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
+	public TrieNodePath newPath(int capacity) {
+		return new CompactPath(this, capacity);
+	}
+
+	@Override
 	public void incCounts(TrieNode[] stack, int length) {
 		if (!counting) return;
 		if (length == 0) return;
@@ -1012,8 +1017,15 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			}
 			return count;
 		}
-		
 
+	}
+
+	private class CompactPath extends AbstractTrieNodePath {
+
+		CompactPath(TrieNodes nodes, int capacity) {
+			super(nodes, capacity);
+		}
+		
 	}
 
 }

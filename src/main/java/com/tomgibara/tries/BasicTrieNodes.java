@@ -93,6 +93,11 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
+	public TrieNodePath newPath(int capacity) {
+		return new BasicPath(this, capacity);
+	}
+
+	@Override
 	public void incCounts(TrieNode[] stack, int length) {
 		int rootCount = root.getCount();
 		for (int i = 0; i < length; i++) {
@@ -331,4 +336,13 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		}
 		
 	}
+
+	private class BasicPath extends AbstractTrieNodePath {
+
+		BasicPath(TrieNodes nodes, int capacity) {
+			super(nodes, capacity);
+		}
+		
+	}
+
 }
