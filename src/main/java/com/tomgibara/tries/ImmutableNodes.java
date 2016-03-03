@@ -205,11 +205,6 @@ class ImmutableNodes implements TrieNodes {
 		}
 
 		@Override
-		public boolean removeChild(TrieNode child) {
-			return node.removeChild(unwrap(child));
-		}
-
-		@Override
 		public int getCount() {
 			return node.getCount();
 		}

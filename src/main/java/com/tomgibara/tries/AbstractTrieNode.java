@@ -118,6 +118,15 @@ abstract class AbstractTrieNode implements TrieNode {
 		}
 	}
 	
+	/**
+	 * Removes the supplied node from the list of child nodes of this node.
+	 * 
+	 * @param child a child node of this node
+	 * @return true iff the node was a child and was removed
+	 */
+	//TODO DOC
+	abstract boolean removeChild(TrieNode child);
+
 	// any current sibling becomes sibling of new sibling
 	abstract AbstractTrieNode insertSibling(byte value);
 

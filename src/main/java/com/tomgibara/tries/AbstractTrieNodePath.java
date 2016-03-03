@@ -59,8 +59,8 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 		// so if the node has a child, there must be terminations further along the tree
 		if (length > 1 && !head.hasChild()) {
 			int i = length - 2;
-			TrieNode child = head;
-			TrieNode parent = null;
+			AbstractTrieNode child = head;
+			AbstractTrieNode parent = null;
 			for (; i >= 1; i--) {
 				parent = stack[i];
 				if (parent.isTerminal() || parent.getChild().hasSibling()) break;

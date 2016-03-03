@@ -169,15 +169,6 @@ interface TrieNode {
 	// mutation
 
 	/**
-	 * Removes the supplied node from the list of child nodes of this node.
-	 * 
-	 * @param child a child node of this node
-	 * @return true iff the node was a child and was removed
-	 */
-	
-	boolean removeChild(TrieNode child);
-
-	/**
 	 * This method is called on a node to signal that any associated storage may
 	 * be released by the managing {@link TrieNodes}. This method will only be
 	 * called on detached nodes and indicates the node will not be reattached to
