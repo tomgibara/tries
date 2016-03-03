@@ -104,16 +104,6 @@ class ImmutableNodes implements TrieNodes {
 		return new ImmutableTrieNodePath(nodes.newPath(capacity));
 	}
 	
-//	@Override
-//	public int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
-//		int len = nodes.populate(unwrap(root), values, length, stack, referrers);
-//		for (int i = 0; i < len; i++) {
-//			stack[i] = wrap(stack[i]);
-//			referrers[i] = wrap(referrers[i]);
-//		}
-//		return len;
-//	}
-
 	@Override
 	public void compact() {
 		// no-op
@@ -184,11 +174,6 @@ class ImmutableNodes implements TrieNodes {
 			return wrap(node.getSibling());
 		}
 
-//		@Override
-//		public boolean isSibling(TrieNode node) {
-//			return this.node.isSibling(unwrap(node));
-//		}
-
 		@Override
 		public boolean hasChild() {
 			return node.hasChild();
@@ -198,11 +183,6 @@ class ImmutableNodes implements TrieNodes {
 		public TrieNode getChild() {
 			return wrap(node.getChild());
 		}
-		
-//		@Override
-//		public boolean isChild(TrieNode node) {
-//			return this.node.isChild(node);
-//		}
 
 		@Override
 		public TrieNode getLastChild() {
@@ -220,20 +200,10 @@ class ImmutableNodes implements TrieNodes {
 		}
 
 		@Override
-		public TrieNode findOrInsertChild(byte value) {
-			return imm();
-		}
-
-		@Override
 		public int countToChild(byte value) {
 			return node.countToChild(value);
 		}
 
-//		@Override
-//		public boolean remove(TrieNode childOrSibling) {
-//			return node.remove(unwrap(childOrSibling));
-//		}
-		
 		@Override
 		public boolean removeChild(TrieNode child) {
 			return node.removeChild(unwrap(child));

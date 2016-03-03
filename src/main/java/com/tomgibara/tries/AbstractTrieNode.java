@@ -75,22 +75,7 @@ abstract class AbstractTrieNode implements TrieNode {
 		return child;
 	}
 	
-	@Override
-	public AbstractTrieNode findOrInsertChild(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		AbstractTrieNode child = getChild();
-		if (child == null) return insertChild(value);
-		AbstractTrieNode previous = null;
-		while (true) {
-			int c = order.compare(child.getValue(), value);
-			if (c == 0) return child;
-			if (c > 0) return previous == null ? insertChild(value) : previous.insertSibling(value);
-			if (!child.hasSibling()) return child.insertSibling(value);
-			previous = child;
-			child = child.getSibling();
-		}
-	}
-	
+
 	@Override
 	public int countToChild(byte value) {
 		ByteOrder order = nodes().byteOrder();
@@ -108,6 +93,31 @@ abstract class AbstractTrieNode implements TrieNode {
 
 	// package scoped methods
 
+	/**
+	 * Returns the child node of this node with the specified value. If at the
+	 * time of the method call no such node exists, a new child node with the
+	 * given value is added to this node. Thus this method never returns null.
+	 * 
+	 * @param value
+	 *            a node value
+	 * @return a child node with the specified value
+	 */
+	//TODO DOC
+	AbstractTrieNode findOrInsertChild(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		AbstractTrieNode child = getChild();
+		if (child == null) return insertChild(value);
+		AbstractTrieNode previous = null;
+		while (true) {
+			int c = order.compare(child.getValue(), value);
+			if (c == 0) return child;
+			if (c > 0) return previous == null ? insertChild(value) : previous.insertSibling(value);
+			if (!child.hasSibling()) return child.insertSibling(value);
+			previous = child;
+			child = child.getSibling();
+		}
+	}
+	
 	// any current sibling becomes sibling of new sibling
 	abstract AbstractTrieNode insertSibling(byte value);
 

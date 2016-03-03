@@ -85,9 +85,6 @@ interface TrieNode {
 
 	TrieNode getSibling();
 	
-//	// only needed by remove method
-//	boolean isSibling(TrieNode node);
-	
 	// child
 
 	/**
@@ -109,9 +106,6 @@ interface TrieNode {
 	 */
 
 	TrieNode getChild();
-	
-//	// just for symmetry with sibling methods
-//	boolean isChild(TrieNode node);
 	
 	// child navigation
 	
@@ -173,20 +167,6 @@ interface TrieNode {
 	int countToChild(byte value);
 
 	// mutation
-
-//	boolean remove(TrieNode childOrSibling);
-	
-	/**
-	 * Returns the child node of this node with the specified value. If at the
-	 * time of the method call no such node exists, a new child node with the
-	 * given value is added to this node. Thus this method never returns null.
-	 * 
-	 * @param value
-	 *            a node value
-	 * @return a child node with the specified value
-	 */
-
-	TrieNode findOrInsertChild(byte value);
 
 	/**
 	 * Removes the supplied node from the list of child nodes of this node.
