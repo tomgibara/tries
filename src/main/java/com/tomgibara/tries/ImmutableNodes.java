@@ -105,6 +105,11 @@ class ImmutableNodes implements TrieNodes {
 		return imm();
 	}
 
+	@Override
+	public TrieNodePath newPath(int capacity) {
+		return new ImmutableTrieNodePath(nodes.newPath(capacity));
+	}
+	
 //	@Override
 //	public int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
 //		int len = nodes.populate(unwrap(root), values, length, stack, referrers);
@@ -143,7 +148,7 @@ class ImmutableNodes implements TrieNodes {
 	public void writeTo(WriteStream stream, TrieNode[] stack, int length) {
 		nodes.writeTo(stream, stack, length);
 	}
-	
+
 	// private helper methods
 	
 	ImmNode wrap(TrieNode node) {

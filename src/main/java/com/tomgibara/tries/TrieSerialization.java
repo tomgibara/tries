@@ -107,12 +107,18 @@ public interface TrieSerialization<E> {
 
 	int length();
 
+	// reduces length, never grows
+	default void trim(int newLength) {
+		for (int i = length(); i > newLength; i --) pop();
+
+	}
+	
 	/**
 	 * Sets the length to zero, leaving the buffer capacity unchanged.
 	 */
 
 	default void reset() {
-		for (int i = length(); i > 0; i --) pop();
+		trim(0);
 	}
 
 	/**

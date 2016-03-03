@@ -160,6 +160,11 @@ public class Tries<E> {
 		}
 
 		@Override
+		public void trim(int newLength) {
+			this.length = newLength;
+		}
+		
+		@Override
 		public void reset() {
 			length = 0;
 		}

@@ -120,6 +120,7 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	//TODO could remove this?
 	TrieNode newNode(byte value);
 	
+	TrieNodePath newPath(int capacity);
 
 //	default int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
 //		ByteOrder byteOrder = byteOrder();
@@ -244,7 +245,7 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	 */
 	
 	void writeTo(WriteStream stream, TrieNode[] stack, int length);
-	
+
 	// mutability
 	
 	default TrieNodes immutableView() {

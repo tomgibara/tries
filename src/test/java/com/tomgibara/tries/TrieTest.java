@@ -431,19 +431,21 @@ public abstract class TrieTest {
 		long previous = -1L;
 		for (Iterator<Long> i = trie.iterator(); i.hasNext(); ) {
 			long value = i.next();
+			//
 //			describe("COUNT " + count + " HEX: " + Long.toHexString(value));
 //			if (!trie.contains(value)) {
 //				long sub = 0L;
 //				long sup = -1L;
 //				for (Long v : trie) {
-//					if (v <= value && v > sub) {
+//					if (v <= value) {
 //						sub = v;
 //					} else {
 //						sup = v; break;
 //					}
 //				}
-//				describe("SUB: " + Long.toHexString(sub) + " < " + value + " < " + Long.toHexString(sup));
+//				describe("SUB: " + Long.toHexString(sub) + " < " + Long.toHexString(value) + " < " + Long.toHexString(sup));
 //			}
+			//
 			assertTrue(trie.contains(value));
 			count ++;
 			assertTrue(value > previous);

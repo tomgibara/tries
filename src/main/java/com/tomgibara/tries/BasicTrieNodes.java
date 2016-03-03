@@ -289,7 +289,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 
 		@Override
 		public String toString() {
-			String str = Integer.toHexString(value);
+			String str = Integer.toHexString(value & 0xff);
 			return (str.length() == 1 ? "0" : "") + str + (terminal ? "." : "") + " (" + count + ")";
 		}
 		
