@@ -64,19 +64,6 @@ abstract class AbstractTrieNode implements TrieNode {
 	}
 
 	@Override
-	public AbstractTrieNode findChildOrNext(byte value) {
-		ByteOrder order = nodes().byteOrder();
-		AbstractTrieNode child = getChild();
-		while (child != null) {
-			int c = order.compare(child.getValue(), value);
-			if (c >= 0) break;
-			child = child.getSibling();
-		}
-		return child;
-	}
-	
-
-	@Override
 	public int countToChild(byte value) {
 		ByteOrder order = nodes().byteOrder();
 		int count = isTerminal() ? 1 : 0;
@@ -116,6 +103,28 @@ abstract class AbstractTrieNode implements TrieNode {
 			previous = child;
 			child = child.getSibling();
 		}
+	}
+	
+	/**
+	 * Finds a child node of this node with the specified value, or returns the
+	 * child node with the next highest node value, or null if no such node
+	 * exists.
+	 * 
+	 * @param value
+	 *            a node value
+	 * @return the child node with the specified value, or the child node with
+	 *         the least value exceeding the specified value, or null
+	 */
+	//TODO DOC
+	AbstractTrieNode findChildOrNext(byte value) {
+		ByteOrder order = nodes().byteOrder();
+		AbstractTrieNode child = getChild();
+		while (child != null) {
+			int c = order.compare(child.getValue(), value);
+			if (c >= 0) break;
+			child = child.getSibling();
+		}
+		return child;
 	}
 	
 	/**

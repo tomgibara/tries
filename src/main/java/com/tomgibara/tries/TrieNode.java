@@ -129,19 +129,6 @@ interface TrieNode {
 
 	TrieNode findChild(byte value);
 
-	/**
-	 * Finds a child node of this node with the specified value, or returns the
-	 * child node with the next highest node value, or null if no such node
-	 * exists.
-	 * 
-	 * @param value
-	 *            a node value
-	 * @return the child node with the specified value, or the child node with
-	 *         the least value exceeding the specified value, or null
-	 */
-
-	TrieNode findChildOrNext(byte value);
-
 	// counting
 
 	/**

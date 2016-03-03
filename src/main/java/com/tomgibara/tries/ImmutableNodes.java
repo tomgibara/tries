@@ -195,11 +195,6 @@ class ImmutableNodes implements TrieNodes {
 		}
 
 		@Override
-		public TrieNode findChildOrNext(byte value) {
-			return wrap(node.findChildOrNext(value));
-		}
-
-		@Override
 		public int countToChild(byte value) {
 			return node.countToChild(value);
 		}
