@@ -135,6 +135,4 @@ public interface TrieNodePath {
 	//TODO DOC
 	void writeTo(WriteStream stream);
 
-	//TODO TEMPORARY
-	TrieNode[] stack();
 }

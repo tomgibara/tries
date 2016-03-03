@@ -14,11 +14,6 @@ public class ImmutableTrieNodePath implements TrieNodePath {
 		this.path = path;
 	}
 
-	@Override
-	public TrieNode[] stack() {
-		return path.stack();
-	}
-	
 	public int capacity() {
 		return path.capacity();
 	}

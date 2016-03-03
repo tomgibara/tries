@@ -301,21 +301,28 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	private class BasicPath extends AbstractTrieNodePath {
 
 		BasicPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, capacity);
+			super(nodes, new BasicNode[capacity + 1]);
 		}
 		
 		@Override
 		public void incrementCounts() {
+			BasicNode[] stack = stack();
 			for (int i = 0; i < length; i++) {
-				((BasicNode) stack[i]).count ++;
+				stack[i].count ++;
 			}
 		}
 		
 		@Override
 		public void decrementCounts() {
+			BasicNode[] stack = stack();
 			for (int i = 0; i < length; i++) {
-				((BasicNode) stack[i]).count --;
+				stack[i].count --;
 			}
+		}
+		
+		@Override
+		BasicNode[] stack() {
+			return (BasicNode[]) stack;
 		}
 	}
 

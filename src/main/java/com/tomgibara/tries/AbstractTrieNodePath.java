@@ -9,17 +9,12 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	AbstractTrieNode head;
 	int length = 1;
 	
-	AbstractTrieNodePath(AbstractTrieNodes nodes, int capacity) {
+	AbstractTrieNodePath(AbstractTrieNodes nodes, AbstractTrieNode[] stack) {
 		this.nodes = nodes;
-		stack = new AbstractTrieNode[capacity + 1];
+		this.stack = stack;
 		stack[0] = head = nodes.root();
 	}
 
-	@Override
-	public TrieNode[] stack() {
-		return stack;
-	}
-	
 	@Override
 	public int capacity() {
 		return stack.length - 1;
@@ -218,6 +213,10 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 		stream.writeInt(count);
 		// write nodes
 		nodes.writeNodes(stream, stack, length);
+	}
+	
+	TrieNode[] stack() {
+		return stack;
 	}
 	
 	// inner classes

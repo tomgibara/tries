@@ -957,7 +957,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	private class CompactPath extends AbstractTrieNodePath {
 
 		CompactPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, capacity);
+			super(nodes, new CompactNode[capacity + 1]);
 		}
 
 		@Override
@@ -980,17 +980,23 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		public void decrementCounts() {
 			if (!counting) return;
 			if (length == 0) return;
-			CompactNode lastNode = (CompactNode) stack[length - 1];
+			CompactNode[] stack = stack();
+			CompactNode lastNode = stack[length - 1];
 			int last = lastNode.index;
 			int previous = last;
 			for (int i = length - 1; i >= 0; i--) {
-				CompactNode node = (CompactNode) stack[i];
+				CompactNode node = stack[i];
 				int index = node.index;
 				if (index == previous) continue;
 				if (index != 0) node.adjustCount(-1);
 				previous = index;
 			}
 			if (last != 0) root.adjustCount(-1);
+		}
+		
+		@Override
+		CompactNode[] stack() {
+			return (CompactNode[]) stack;
 		}
 	}
 

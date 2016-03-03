@@ -725,17 +725,18 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	private class PackedPath extends AbstractTrieNodePath {
 
 		PackedPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, capacity);
+			super(nodes, new PackedNode[capacity + 1]);
 		}
 
 		@Override
 		public void incrementCounts() {
 			if (!counting) return;
 			if (length == 0) return;
-			int last = ((PackedNode) stack[length - 1]).index;
+			PackedNode[] stack = stack();
+			int last = stack[length - 1].index;
 			int previous = last;
 			for (int i = length - 1; i >= 0; i--) {
-				PackedNode node = (PackedNode) stack[i];
+				PackedNode node = stack[i];
 				int index = node.index;
 				if (index == previous) continue;
 				node.adjustCount(1);
@@ -748,17 +749,23 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public void decrementCounts() {
 			if (!counting) return;
 			if (length == 0) return;
-			PackedNode lastNode = (PackedNode) stack[length - 1];
+			PackedNode[] stack = stack();
+			PackedNode lastNode = stack[length - 1];
 			int last = lastNode.index;
 			int previous = last;
 			for (int i = length - 1; i >= 0; i--) {
-				PackedNode node = (PackedNode) stack[i];
+				PackedNode node = stack[i];
 				int index = node.index;
 				if (index == previous) continue;
 				if (index != 0) node.adjustCount(-1);
 				previous = index;
 			}
 			if (last != 0) root.adjustCount(-1);
+		}
+		
+		@Override
+		PackedNode[] stack() {
+			return (PackedNode[]) stack;
 		}
 	}
 }
