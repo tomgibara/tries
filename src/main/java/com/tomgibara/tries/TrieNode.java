@@ -35,14 +35,6 @@ interface TrieNode {
 	// attributes
 
 	/**
-	 * The tree of nodes to which this node belongs.
-	 * 
-	 * @return the tree containing this node.
-	 */
-
-	TrieNodes nodes();
-
-	/**
 	 * The byte value at this node
 	 * 
 	 * @return the node's value
@@ -153,17 +145,6 @@ interface TrieNode {
 
 	int countToChild(byte value);
 
-	// mutation
-
-	/**
-	 * This method is called on a node to signal that any associated storage may
-	 * be released by the managing {@link TrieNodes}. This method will only be
-	 * called on detached nodes and indicates the node will not be reattached to
-	 * the tree. In many possible implementations, this will be a no-op.
-	 */
-
-	void delete();
-
 	// convenience
 	
 	/**
@@ -173,4 +154,6 @@ interface TrieNode {
 
 	boolean isDangling();
 
+	//TODO DOC
+	boolean isCounting();
 }

@@ -175,7 +175,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	
 	@Override
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
-		adopt((CompactNode) ours, theirs, theirs.nodes().isCounting());
+		adopt((CompactNode) ours, theirs, theirs.isCounting());
 	}
 	
 	@Override
@@ -362,12 +362,12 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 
 		// attributes
-		
+
 		@Override
-		public CompactTrieNodes nodes() {
-			return CompactTrieNodes.this;
+		public boolean isCounting() {
+			return counting;
 		}
-		
+
 		@Override
 		public byte getValue() {
 			return getChildValue(ordinal);
@@ -417,39 +417,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
 		}
-		
-//		@Override
-//		public boolean isChild(TrieNode node) {
-//			CompactNode n = (CompactNode) node;
-//			if (n.ordinal != 0) { // node is packed
-//				// packed in the same node and successors
-//				return n.index == this.index && n.ordinal == this.ordinal + 1;
-//			} else {
-//				// this is the only/last node and the child index matches
-//				return this.ordinal + 1 == getValueCount() && n.index == getChildIndex();
-//			}
-//		}
-		
-//		@Override
-//		public boolean remove(TrieNode childOrSibling) {
-//			CompactNode n = (CompactNode) childOrSibling;
-//			if (index == n.index && n.ordinal == ordinal + 1) {
-//				// note, truncates packed descendants
-//				setValueCount(ordinal + 1);
-//				setChild(null);
-//				return true;
-//			}
-//			if (getChildIndex() == n.index) {
-//				setChildIndex(n.getSiblingIndex());
-//				return true;
-//			}
-//			if (getSiblingFlag() && getSiblingIndex() == n.index) {
-//				setSibling(n.getSibling());
-//				return true;
-//			}
-//			return false;
-//		}
-		
+
 		@Override
 		public boolean removeChild(TrieNode child) {
 			if (child == null) return false;
@@ -522,7 +490,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public CompactNode findChild(byte value) {
-			ByteOrder order = nodes().byteOrder();
+			ByteOrder order = byteOrder();
 			CompactNode child = getChild();
 			if (child == null) return null;
 			while (true) {
@@ -538,7 +506,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		
 		@Override
 		public CompactNode findChildOrNext(byte value) {
-			ByteOrder order = nodes().byteOrder();
+			ByteOrder order = byteOrder();
 			CompactNode child = getChild();
 			if (child == null) return null;
 			while (true) {
@@ -557,7 +525,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			CompactNode child = getChild();
 			if (child == null) return insertChild(value);
 			CompactNode previous = null;
-			ByteOrder order = nodes().byteOrder();
+			ByteOrder order = byteOrder();
 			while (true) {
 				// first see if child has compact siblings
 				int count = child.getCompactCount();
@@ -646,6 +614,10 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 		// package scoped implementations
 
+		CompactTrieNodes nodes() {
+			return CompactTrieNodes.this;
+		}
+		
 		CompactNode insertChild(byte value) {
 			return insertChild(value, false);
 		}
@@ -786,7 +758,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		private CompactNode findCompactSibling(byte value) {
 			int count = getCompactCount();
 			if (count <= 0) return null;
-			ByteOrder order = nodes().byteOrder();
+			ByteOrder order = byteOrder();
 			// binary search
 			if (BINARY_SEARCH) {
 				int from = index;
@@ -819,7 +791,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		private CompactNode findCompactSiblingOrNext(byte value) {
 			int count = getCompactCount();
 			if (count <= 0) return null;
-			ByteOrder order = nodes().byteOrder();
+			ByteOrder order = byteOrder();
 			// binary search
 			if (BINARY_SEARCH) {
 				int from = index;

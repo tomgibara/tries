@@ -131,7 +131,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		if (child != null) adopt( ours.insertChild(child.getValue()), child);
 		// resolve counting
 		int count;
-		if (theirs.nodes().isCounting()) {
+		if (theirs.isCounting()) {
 			count = theirs.getCount();
 		} else {
 			count = ours.isTerminal() ? 1 : 0;
@@ -172,11 +172,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		public BasicTrieNodes nodes() {
-			return BasicTrieNodes.this;
-		}
-		
-		@Override
 		public byte getValue() {
 			return value;
 		}
@@ -211,11 +206,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			return sibling;
 		}
 
-//		@Override
-//		public boolean isSibling(TrieNode node) {
-//			return sibling == node;
-//		}
-
 		@Override
 		public BasicNode getChild() {
 			return child;
@@ -228,26 +218,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			setChild(child);
 			return child;
 		}
-		
-//		@Override
-//		public boolean isChild(TrieNode node) {
-//			return child == node;
-//		}
 
-//		@Override
-//		public boolean remove(TrieNode childOrSibling) {
-//			BasicNode node = (BasicNode) childOrSibling;
-//			if (childOrSibling == child) {
-//				setChild(node.getSibling());
-//				return true;
-//			}
-//			if (childOrSibling == sibling) {
-//				setSibling(node.getSibling());
-//				return true;
-//			}
-//			return false;
-//		}
-		
 		@Override
 		public boolean removeChild(TrieNode child) {
 			BasicNode c = this.child;
@@ -277,6 +248,15 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		public String toString() {
 			String str = Integer.toHexString(value & 0xff);
 			return (str.length() == 1 ? "0" : "") + str + (terminal ? "." : "") + " (" + count + ")";
+		}
+
+		@Override
+		public boolean isCounting() {
+			return true;
+		}
+		
+		BasicTrieNodes nodes() {
+			return BasicTrieNodes.this;
 		}
 		
 		void setSibling(BasicNode sibling) {

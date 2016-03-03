@@ -91,7 +91,7 @@ class ImmutableNodes implements TrieNodes {
 
 	@Override
 	public TrieNode root() {
-		return wrap(nodes.root());
+		return nodes.root();
 	}
 
 	@Override
@@ -119,96 +119,4 @@ class ImmutableNodes implements TrieNodes {
 		return nodes.invalidations();
 	}
 
-	// private helper methods
-	
-	ImmNode wrap(TrieNode node) {
-		return node == null ? null : new ImmNode(node);
-	}
-
-	TrieNode unwrap(TrieNode node) {
-		return node == null ? null : ((ImmNode) node).node;
-	}
-
-	// inner classes
-	
-	private class ImmNode implements TrieNode {
-
-		private final TrieNode node;
-		
-		public ImmNode(TrieNode node) {
-			this.node = node;
-		}
-
-		@Override
-		public TrieNodes nodes() {
-			return ImmutableNodes.this;
-		}
-		
-		@Override
-		public byte getValue() {
-			return node.getValue();
-		}
-
-		@Override
-		public boolean isTerminal() {
-			return node.isTerminal();
-		}
-
-		@Override
-		public boolean isDangling() {
-			return node.isDangling();
-		}
-
-		@Override
-		public void setTerminal(boolean terminal) {
-			node.setTerminal(terminal);
-		}
-
-		@Override
-		public boolean hasSibling() {
-			return node.hasSibling();
-		}
-
-		@Override
-		public TrieNode getSibling() {
-			return wrap(node.getSibling());
-		}
-
-		@Override
-		public boolean hasChild() {
-			return node.hasChild();
-		}
-
-		@Override
-		public TrieNode getChild() {
-			return wrap(node.getChild());
-		}
-
-		@Override
-		public TrieNode getLastChild() {
-			return wrap(node.getLastChild());
-		}
-
-		@Override
-		public TrieNode findChild(byte value) {
-			return wrap(node.findChild(value));
-		}
-
-		@Override
-		public int countToChild(byte value) {
-			return node.countToChild(value);
-		}
-
-		@Override
-		public int getCount() {
-			return node.getCount();
-		}
-
-		@Override
-		public void delete() {
-			node.delete();
-		}
-
-	}
-	
 }

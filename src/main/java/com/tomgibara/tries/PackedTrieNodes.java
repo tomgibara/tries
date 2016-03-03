@@ -206,7 +206,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	
 	@Override
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
-		adopt((PackedNode)ours, theirs, theirs.nodes().isCounting());
+		adopt((PackedNode)ours, theirs, theirs.isCounting());
 	}
 	
 	@Override
@@ -386,12 +386,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 
 		// attributes
-		
-		@Override
-		public PackedTrieNodes nodes() {
-			return PackedTrieNodes.this;
-		}
-		
+
 		@Override
 		public byte getValue() {
 			return getChildValue(ordinal);
@@ -410,8 +405,13 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			setTerminals(terminals);
 		}
 
+		@Override
+		public boolean isCounting() {
+			return counting;
+		}
+
 		// sibling
-		
+
 		@Override
 		public boolean hasSibling() {
 			return getSiblingFlag();
@@ -544,6 +544,10 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 		// package scoped implementations
 
+		PackedTrieNodes nodes() {
+			return PackedTrieNodes.this;
+		}
+		
 		@Override
 		PackedNode insertChild(byte value) {
 			PackedNode existingChild = separateChild();

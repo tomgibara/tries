@@ -75,9 +75,6 @@ abstract class AbstractTrieNode implements TrieNode {
 		return count;
 	}
 	
-	@Override
-	public void delete() { }
-
 	// package scoped methods
 
 	/**
@@ -127,6 +124,23 @@ abstract class AbstractTrieNode implements TrieNode {
 		return child;
 	}
 	
+	/**
+	 * This method is called on a node to signal that any associated storage may
+	 * be released by the managing {@link TrieNodes}. This method will only be
+	 * called on detached nodes and indicates the node will not be reattached to
+	 * the tree. In many possible implementations, this will be a no-op.
+	 */
+	//TODO DOC
+	void delete() { }
+
+	/**
+	 * The tree of nodes to which this node belongs.
+	 * 
+	 * @return the tree containing this node.
+	 */
+	//TODO DOC
+	abstract AbstractTrieNodes nodes();
+
 	/**
 	 * Removes the supplied node from the list of child nodes of this node.
 	 * 
