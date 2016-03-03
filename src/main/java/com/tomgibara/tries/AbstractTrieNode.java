@@ -117,7 +117,7 @@ abstract class AbstractTrieNode implements TrieNode {
 	abstract void readChild(ReadStream stream, List<AbstractTrieNode> awaitingSiblings);
 
 	abstract void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings);
-	
+
 	void writeNode(WriteStream stream, int mask) {
 		stream.writeByte(getValue());
 		stream.writeByte((byte) (flags() & mask));

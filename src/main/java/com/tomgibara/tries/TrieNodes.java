@@ -109,17 +109,6 @@ interface TrieNodes extends Mutability<TrieNodes> {
 		/* a no-op for many possible implementations */
 	}
 
-	/**
-	 * Creates a new node with the specified value.
-	 * 
-	 * @param value
-	 *            the byte value of the new node
-	 * 
-	 * @return a new node containing the specified value
-	 */
-	//TODO could remove this?
-	TrieNode newNode(byte value);
-	
 	TrieNodePath newPath(int capacity);
 
 	/**

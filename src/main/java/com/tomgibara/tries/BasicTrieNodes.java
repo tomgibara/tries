@@ -23,7 +23,6 @@ import static com.tomgibara.tries.AbstractTrieNode.FLAG_TERMINAL;
 import java.util.List;
 
 import com.tomgibara.streams.ReadStream;
-import com.tomgibara.streams.WriteStream;
 
 
 class BasicTrieNodes extends AbstractTrieNodes {

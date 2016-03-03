@@ -27,6 +27,8 @@ abstract class AbstractTrieNodes implements TrieNodes {
 
 	abstract void dump();
 
+	abstract AbstractTrieNode newNode(byte value);
+	
 	abstract void adopt(AbstractTrieNode ours, TrieNode theirs);
 	
 	// called when reading has been finished

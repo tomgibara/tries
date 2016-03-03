@@ -16,7 +16,6 @@
  */
 package com.tomgibara.tries;
 
-import com.tomgibara.streams.WriteStream;
 
 class ImmutableNodes implements TrieNodes {
 
@@ -98,11 +97,6 @@ class ImmutableNodes implements TrieNodes {
 	@Override
 	public void ensureExtraCapacity(int extraCapacity) {
 		return; // no-op
-	}
-
-	@Override
-	public TrieNode newNode(byte value) {
-		return imm();
 	}
 
 	@Override
