@@ -4,14 +4,14 @@ import com.tomgibara.streams.WriteStream;
 
 abstract class AbstractTrieNodePath implements TrieNodePath {
 
-	final TrieNodes nodes;
-	final TrieNode[] stack;
-	TrieNode head;
+	final AbstractTrieNodes nodes;
+	final AbstractTrieNode[] stack;
+	AbstractTrieNode head;
 	int length = 1;
 	
-	AbstractTrieNodePath(TrieNodes nodes, int capacity) {
+	AbstractTrieNodePath(AbstractTrieNodes nodes, int capacity) {
 		this.nodes = nodes;
-		stack = new TrieNode[capacity + 1];
+		stack = new AbstractTrieNode[capacity + 1];
 		stack[0] = head = nodes.root();
 	}
 
@@ -76,7 +76,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	@Override
 	public boolean walkValue(byte value) {
-		TrieNode node = head.findChild(value);
+		AbstractTrieNode node = head.findChild(value);
 		if (node == null) return false;
 		stack[length ++] = head = node;
 		return true;
@@ -102,21 +102,21 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	@Override
 	public TrieNode walkChild() {
-		TrieNode node = head.getChild();
+		AbstractTrieNode node = head.getChild();
 		if (node != null) stack[length++] = head = node;
 		return node;
 	}
 
 	@Override
 	public TrieNode walkSibling() {
-		TrieNode node = head.getSibling();
+		AbstractTrieNode node = head.getSibling();
 		if (node != null) stack[length-1] = head = node;
 		return node;
 	}
 
 	@Override
 	public TrieNode pop() {
-		TrieNode node = stack[--length];
+		AbstractTrieNode node = stack[--length];
 		head = length == 0 ? null : stack[length - 1];
 		return node;
 	}
@@ -210,7 +210,66 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	@Override
 	public void writeTo(WriteStream stream) {
-		nodes.writeTo(stream, stack, length);
+		CountingStream counter = new CountingStream();
+		nodes.writeNodes(counter, stack, length);
+		// each node writes two bytes
+		int count = counter.count() >> 1;
+		// write number of nodes
+		stream.writeInt(count);
+		// write nodes
+		nodes.writeNodes(stream, stack, length);
+	}
+	
+	// inner classes
+	
+	//TODO move to streams package?
+	private static class CountingStream implements WriteStream {
+
+		private int count = 0;
+		
+		public int count() {
+			return count;
+		}
+		
+		@Override
+		public void writeByte(byte v) { count ++; }
+		
+		@Override
+		public void writeBytes(byte[] bs) { count += bs.length; }
+		
+		@Override
+		public void writeBytes(byte[] bs, int off, int len) { count += len; }
+		
+		@Override
+		public void writeInt(int v) { count += 4; }
+		
+		@Override
+		public void writeBoolean(boolean v) { count += 1; }
+		
+		@Override
+		public void writeShort(short v) { count += 2; }
+		
+		@Override
+		public void writeLong(long v) { count += 8; }
+		
+		@Override
+		public void writeFloat(float v) { count += 4; }
+		
+		@Override
+		public void writeDouble(double v) { count += 8; }
+		
+		@Override
+		public void writeChar(char v) { count += 2; }
+		
+		@Override
+		public void writeChars(char[] cs) { count += 4; }
+		
+		@Override
+		public void writeChars(char[] cs, int off, int len) { count += len; }
+		
+		@Override
+		public void writeChars(CharSequence cs) { count += 4 + cs.length(); }
+		
 	}
 
 }

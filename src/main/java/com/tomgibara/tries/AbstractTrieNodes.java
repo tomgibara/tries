@@ -23,18 +23,6 @@ abstract class AbstractTrieNodes implements TrieNodes {
 	private static final int MASK_CHILD_ONLY = AbstractTrieNode.FLAG_CHILD;
 	private static final int MASK_CHILD_OR_TERMINAL = AbstractTrieNode.FLAG_CHILD | AbstractTrieNode.FLAG_TERMINAL;
 	
-	@Override
-	public void writeTo(WriteStream stream, TrieNode[] stack, int length) {
-		CountingStream counter = new CountingStream();
-		writeNodes(counter, stack, length);
-		// each node writes two bytes
-		int count = counter.count() >> 1;
-		// write number of nodes
-		stream.writeInt(count);
-		// write nodes
-		writeNodes(stream, stack, length);
-	}
-	
 	public abstract AbstractTrieNode root();
 
 	abstract void dump();
@@ -55,58 +43,6 @@ abstract class AbstractTrieNodes implements TrieNodes {
 		node.writeNode(stream, MASK_CHILD_OR_TERMINAL);
 		node = node.getChild();
 		if (node != null) node.writeNodes(stream);
-	}
-
-	// inner classes
-	
-	//TODO move to streams package?
-	private static class CountingStream implements WriteStream {
-
-		private int count = 0;
-		
-		public int count() {
-			return count;
-		}
-		
-		@Override
-		public void writeByte(byte v) { count ++; }
-		
-		@Override
-		public void writeBytes(byte[] bs) { count += bs.length; }
-		
-		@Override
-		public void writeBytes(byte[] bs, int off, int len) { count += len; }
-		
-		@Override
-		public void writeInt(int v) { count += 4; }
-		
-		@Override
-		public void writeBoolean(boolean v) { count += 1; }
-		
-		@Override
-		public void writeShort(short v) { count += 2; }
-		
-		@Override
-		public void writeLong(long v) { count += 8; }
-		
-		@Override
-		public void writeFloat(float v) { count += 4; }
-		
-		@Override
-		public void writeDouble(double v) { count += 8; }
-		
-		@Override
-		public void writeChar(char v) { count += 2; }
-		
-		@Override
-		public void writeChars(char[] cs) { count += 4; }
-		
-		@Override
-		public void writeChars(char[] cs, int off, int len) { count += len; }
-		
-		@Override
-		public void writeChars(CharSequence cs) { count += 4 + cs.length(); }
-		
 	}
 
 }

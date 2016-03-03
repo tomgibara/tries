@@ -757,7 +757,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	private class PackedPath extends AbstractTrieNodePath {
 
-		PackedPath(TrieNodes nodes, int capacity) {
+		PackedPath(AbstractTrieNodes nodes, int capacity) {
 			super(nodes, capacity);
 		}
 

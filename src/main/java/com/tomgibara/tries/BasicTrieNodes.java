@@ -321,7 +321,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 
 	private class BasicPath extends AbstractTrieNodePath {
 
-		BasicPath(TrieNodes nodes, int capacity) {
+		BasicPath(AbstractTrieNodes nodes, int capacity) {
 			super(nodes, capacity);
 		}
 		

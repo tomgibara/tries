@@ -64,9 +64,9 @@ abstract class AbstractTrieNode implements TrieNode {
 	}
 
 	@Override
-	public TrieNode findChildOrNext(byte value) {
+	public AbstractTrieNode findChildOrNext(byte value) {
 		ByteOrder order = nodes().byteOrder();
-		TrieNode child = getChild();
+		AbstractTrieNode child = getChild();
 		while (child != null) {
 			int c = order.compare(child.getValue(), value);
 			if (c >= 0) break;

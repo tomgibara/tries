@@ -152,37 +152,6 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	
 	long invalidations();
 	
-	/**
-	 * <p>
-	 * Serializes node data to a byte stream.
-	 * 
-	 * <p>
-	 * The stack represents a sequence of nodes beginning from the root. When
-	 * the stack contains only the root node, all nodes should be recorded in
-	 * the stream. When the stack contains nodes other than the root node, the
-	 * trie data written should be pruned such that these nodes
-	 * <em>but not their siblings or children</em> are be recorded in the
-	 * stream, with the exception of the last node's child which, if it exists,
-	 * should be recorded in the stream, together with all of its siblings and
-	 * children, and their descendants in turn. If the stack is empty (ie. if
-	 * the length is zero) this indicates that no node data should be recorded.
-	 * 
-	 * <p>
-	 * The data written to the stream may be organized in any format suited to
-	 * the {@link TrieNodes} implementation, so long as the data may be read by
-	 * the deserializer supplied by
-	 * {@link TrieNodeSource#deserializer(ByteOrder, boolean, int)}.
-	 * 
-	 * @param stream
-	 *            the stream to which node data should be written
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
-	 */
-	
-	void writeTo(WriteStream stream, TrieNode[] stack, int length);
-
 	// mutability
 	
 	default TrieNodes immutableView() {

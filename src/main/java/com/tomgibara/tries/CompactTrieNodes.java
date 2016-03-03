@@ -989,7 +989,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 	private class CompactPath extends AbstractTrieNodePath {
 
-		CompactPath(TrieNodes nodes, int capacity) {
+		CompactPath(AbstractTrieNodes nodes, int capacity) {
 			super(nodes, capacity);
 		}
 
