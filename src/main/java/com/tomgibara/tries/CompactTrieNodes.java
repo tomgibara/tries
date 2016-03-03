@@ -399,11 +399,6 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			return siblingIndex == 0 ? null : new CompactNode(siblingIndex);
 		}
 		
-//		@Override
-//		public boolean isSibling(TrieNode node) {
-//			return getSiblingFlag() && getSiblingIndex() == ((CompactNode) node).index;
-//		}
-		
 		// child
 		
 		public CompactNode getChild() {

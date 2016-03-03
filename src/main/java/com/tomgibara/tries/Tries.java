@@ -127,10 +127,6 @@ public class Tries<E> {
 			buffer = new byte[capacity];
 		}
 		
-//		BaseSerialization(BaseSerialization<E> that) {
-//			this.buffer = new byte[that.buffer.length];
-//		}
-//		
 		@Override
 		public byte[] buffer() {
 			return buffer;

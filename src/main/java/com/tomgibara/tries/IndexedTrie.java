@@ -113,35 +113,6 @@ public class IndexedTrie<E> extends Trie<E> {
 		boolean removed = doRemove(path);
 		assert(removed);
 		return serialization.get();
-
-//		TrieNode[] stack = new TrieNode[ serialization.buffer().length ];
-//		int length = stackToRoot(stack);
-//		if (length != prefix.length) throw new IllegalArgumentException("index too large");
-//		TrieNode node = length == 0 ? nodes.root() : stack[length - 1]; // the logical root
-//		if (index >= node.getCount()) throw new IllegalArgumentException("index too large");
-//		nodes.ensureExtraCapacity(1);
-//		serialization.set(prefix);
-//		int count = node.getCount();
-//
-//		while (!node.isTerminal() || index != 0) {
-//			if (index < count) {
-//				if (node.isTerminal()) index--;
-//				node = node.getChild();
-//				serialization.push(node.getValue());
-//				stack[length++] = node;
-//			} else {
-//				index -= count;
-//				node = node.getSibling();
-//				serialization.replace(node.getValue());
-//				stack[length - 1] = node;
-//			}
-//			count = node.getCount();
-//		}
-//
-//		if (index >= node.getCount()) return null;
-//		boolean removed = doRemove(stack, length);
-//		assert(removed);
-//		return serialization.get();
 	}
 
 	/**
@@ -372,42 +343,6 @@ public class IndexedTrie<E> extends Trie<E> {
 			sync(false);
 		}
 		
-//		private void sync(boolean strict) {
-//			if (index < 0) throw new IllegalArgumentException("negative index");
-//			next = root();
-//			int size = next == null ? 0 : next.getCount();
-//			if (index == size) {
-//				next = null;
-//				return;
-//			} else if (index > size) {
-//				if (strict) {
-//					index = size;
-//					next = null;
-//					return;
-//				} else {
-//					throw new IllegalArgumentException("index too large");
-//				}
-//			}
-//			int count = next.getCount();
-//			serial.set(prefix);
-//
-//			int i = index;
-//			while (!next.isTerminal() || i != 0) {
-//				if (i < count) {
-//					if (next.isTerminal()) i--;
-//					next = next.getChild();
-//					serial.push(next.getValue());
-//					stack[serial.length() - 1] = next;
-//				} else {
-//					i -= count;
-//					next = next.getSibling();
-//					serial.replace(next.getValue());
-//					stack[serial.length() - 1] = next;
-//				}
-//				count = next.getCount();
-//			}
-//		}
-
 		private void sync(boolean strict) {
 			if (index < 0) throw new IllegalArgumentException("negative index");
 			path.reset();

@@ -496,25 +496,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 *            the stream to which the trie elements are to be written
 	 */
 
-//	public void writeTo(WriteStream stream) {
-//		if (stream == null) throw new IllegalArgumentException("null stream");
-//		if (isEmpty()) {
-//			nodes.writeTo(stream, NO_STACK, 0);
-//		} else {
-//			// need the stack including the root
-//			byte[] bytes = prefix;
-//			int length = prefix.length;
-//			TrieNode[] stack = new TrieNode[length + 1];
-//			TrieNode node = nodes.root();
-//			stack[0] = node;
-//			for (int i = 0; i < length; i++) {
-//				node = node.findChild(bytes[i]);
-//				stack[i + 1] = node;
-//			}
-//			nodes.writeTo(stream, stack, stack.length);
-//		}
-//	}
-	
 	public void writeTo(WriteStream stream) {
 		if (stream == null) throw new IllegalArgumentException("null stream");
 		serialization.set(prefix);
@@ -564,18 +545,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return root;
 	}
 	
-//	int stackToRoot(TrieNode[] stack) {
-//		byte[] bytes = prefix;
-//		int length = prefix.length;
-//		TrieNode node = nodes.root();
-//		for (int i = 0; i < length; i++) {
-//			node = node.findChild(bytes[i]);
-//			if (node == null) return i;
-//			stack[i] = node;
-//		}
-//		return length;
-//	}
-
 	// overridden to allow indexed try to compute root index
 	TrieNode findRoot(byte[] bytes, int length) {
 		return find(bytes, length);
@@ -600,39 +569,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			throw e;
 		}
 	}
-	
-//	boolean doRemove(TrieNode[] stack, int length) {
-//		if (length == 0) {
-//			TrieNode root = nodes.root();
-//			if (!root.isTerminal()) return false;
-//			nodes.decCounts(stack, length);
-//			root.setTerminal(false);
-//			return true;
-//		}
-//		TrieNode node = stack[length - 1];
-//		if (!node.isTerminal()) return false; // not present
-//		nodes.decCounts(stack, length);
-//		node.setTerminal(false);
-//		// we do no pruning if the node has a child
-//		// because our tree can have no dangling nodes (except possibly the root)
-//		// so if the node has a child, there must be terminations further along the tree
-//		if (!node.hasChild()) {
-//			int i = length - 2;
-//			TrieNode child = node;
-//			TrieNode parent = null;
-//			for (; i >= 0; i--) {
-//				parent = stack[i];
-//				if (parent.isTerminal() || parent.getChild().hasSibling()) break;
-//				child = parent;
-//			}
-//			if (i < 0) parent = nodes.root();
-//			boolean removed = parent.removeChild(child);
-//			assert(removed); // we know the child is there
-//			// finally, delete any detached nodes
-//			for (int j = length - 1; j > i ; j--) stack[j].delete();
-//		}
-//		return true;
-//	}
 
 	boolean doRemove(TrieNodePath path) {
 		//TODO could combine into a single method terminate(boolean)
@@ -672,17 +608,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return node == null ? false : node.isTerminal();
 	}
 
-//	private boolean remove(byte[] bytes, int length) {
-//		nodes.ensureExtraCapacity(1);
-//		TrieNodePath path = nodes.newPath(length + 1);
-//		if (length > 0) {
-//			for (int i = 0; i < length; i++) {
-//				if (!path.walkValue(bytes[i])) return false;
-//			}
-//		}
-//		return doRemove(path);
-//	}
-	
 	// inner classes
 	
 	class NodeIterator implements Iterator<E> {
@@ -746,34 +671,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			path.first(serial);
 			if (!path.isEmpty()) advance();
 		}
-		
-//		private void advance() {
-//			int length = serial.length();
-//			outer: do {
-//				if (next.hasChild()) {
-//					next = next.getChild();
-//					serial.push(next.getValue());
-//					stack[length++] = next;
-//					continue outer;
-//				}
-//				while (length > 0) {
-//					if (next.hasSibling()) {
-//						next = next.getSibling();
-//						serial.replace(next.getValue());
-//						stack[length - 1] = next;
-//						continue outer;
-//					}
-//					serial.pop();
-//					length--;
-//					// note may be less than prefix length if former element was the prefix
-//					if (length <= prefix.length) {
-//						next = null;
-//						return;
-//					}
-//					next = stack[length - 1];
-//				}
-//			} while (!next.isTerminal());
-//		}
 
 		private void advance() {
 			path.advance(serial, prefix.length);
@@ -786,37 +683,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			invalidations = latest;
 		}
 		
-//		private void sync() {
-//			int length = serial.length();
-//			byte[] buffer = serial.buffer();
-//			
-//			next = nodes.root();
-//			for (int i = 0; i < length; i++) {
-//				byte value = buffer[i];
-//				next = next.findChildOrNext(value);
-//				if (next == null) {
-//					serial.trim(i);
-//					for (;i > 0; i--) {
-//						next = stack[i - 1];
-//						next = stack[i - 1] = next.getSibling();
-//						if (next != null) {
-//							serial.replace(next.getValue());
-//							return;
-//						}
-//						serial.pop();
-//					}
-//					return;
-//				}
-//				stack[i] = next;
-//				byte v = next.getValue();
-//				if (v != value) {
-//					serial.trim(i);
-//					serial.push(v);
-//					return;
-//				}
-//			}
-//		}
-
 	}
 
 	private class TrieSet extends AbstractSet<E> {

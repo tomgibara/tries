@@ -423,11 +423,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			return siblingIndex == 0 ? null : new PackedNode(siblingIndex);
 		}
 		
-//		@Override
-//		public boolean isSibling(TrieNode node) {
-//			return getSiblingFlag() && getSiblingIndex() == ((PackedNode) node).index;
-//		}
-		
 		// child
 		
 		public PackedNode getChild() {
@@ -441,38 +436,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
 		}
-		
-//		@Override
-//		public boolean isChild(TrieNode node) {
-//			PackedNode n = (PackedNode) node;
-//			if (n.ordinal != 0) { // node is packed
-//				// packed in the same node and successors
-//				return n.index == this.index && n.ordinal == this.ordinal + 1;
-//			} else {
-//				// this is the only/last node and the child index matches
-//				return this.ordinal + 1 == getValueCount() && n.index == getChildIndex();
-//			}
-//		}
-		
-//		@Override
-//		public boolean remove(TrieNode childOrSibling) {
-//			PackedNode n = (PackedNode) childOrSibling;
-//			if (index == n.index && n.ordinal == ordinal + 1) {
-//				// note, truncates packed descendants
-//				setValueCount(ordinal + 1);
-//				setChild(null);
-//				return true;
-//			}
-//			if (getChildIndex() == n.index) {
-//				setChildIndex(n.getSiblingIndex());
-//				return true;
-//			}
-//			if (getSiblingFlag() && getSiblingIndex() == n.index) {
-//				setSibling(n.getSibling());
-//				return true;
-//			}
-//			return false;
-//		}
 		
 		@Override
 		public boolean removeChild(TrieNode child) {
