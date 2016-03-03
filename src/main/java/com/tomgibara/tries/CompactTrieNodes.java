@@ -131,39 +131,6 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public void incCounts(TrieNode[] stack, int length) {
-		if (!counting) return;
-		if (length == 0) return;
-		int last = ((CompactNode) stack[length - 1]).index;
-		int previous = last;
-		for (int i = length - 1; i >= 0; i--) {
-			CompactNode node = (CompactNode) stack[i];
-			int index = node.index;
-			if (index == previous) continue;
-			node.adjustCount(1);
-			previous = index;
-		}
-		if (previous != 0 && last != 0) root.adjustCount(1);
-	}
-	
-	@Override
-	public void decCounts(TrieNode[] stack, int length) {
-		if (!counting) return;
-		if (length == 0) return;
-		CompactNode lastNode = (CompactNode) stack[length - 1];
-		int last = lastNode.index;
-		int previous = last;
-		for (int i = length - 1; i >= 0; i--) {
-			CompactNode node = (CompactNode) stack[i];
-			int index = node.index;
-			if (index == previous) continue;
-			if (index != 0) node.adjustCount(-1);
-			previous = index;
-		}
-		if (last != 0) root.adjustCount(-1);
-	}
-
-	@Override
 	public void compact() {
 		compact(nodeCount, counting);
 	}
@@ -1025,7 +992,39 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		CompactPath(TrieNodes nodes, int capacity) {
 			super(nodes, capacity);
 		}
-		
+
+		@Override
+		public void incrementCounts() {
+			if (!counting) return;
+			if (length == 0) return;
+			int last = ((CompactNode) stack[length - 1]).index;
+			int previous = last;
+			for (int i = length - 1; i >= 0; i--) {
+				CompactNode node = (CompactNode) stack[i];
+				int index = node.index;
+				if (index == previous) continue;
+				node.adjustCount(1);
+				previous = index;
+			}
+			if (previous != 0 && last != 0) root.adjustCount(1);
+		}
+
+		@Override
+		public void decrementCounts() {
+			if (!counting) return;
+			if (length == 0) return;
+			CompactNode lastNode = (CompactNode) stack[length - 1];
+			int last = lastNode.index;
+			int previous = last;
+			for (int i = length - 1; i >= 0; i--) {
+				CompactNode node = (CompactNode) stack[i];
+				int index = node.index;
+				if (index == previous) continue;
+				if (index != 0) node.adjustCount(-1);
+				previous = index;
+			}
+			if (last != 0) root.adjustCount(-1);
+		}
 	}
 
 }

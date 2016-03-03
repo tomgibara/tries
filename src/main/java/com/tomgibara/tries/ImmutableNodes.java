@@ -121,16 +121,6 @@ class ImmutableNodes implements TrieNodes {
 //	}
 
 	@Override
-	public void incCounts(TrieNode[] stack, int length) {
-		imm();
-	}
-
-	@Override
-	public void decCounts(TrieNode[] stack, int length) {
-		imm();
-	}
-
-	@Override
 	public void compact() {
 		// no-op
 	}

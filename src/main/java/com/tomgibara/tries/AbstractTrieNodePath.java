@@ -4,10 +4,10 @@ import com.tomgibara.streams.WriteStream;
 
 abstract class AbstractTrieNodePath implements TrieNodePath {
 
-	private final TrieNodes nodes;
-	private final TrieNode[] stack;
-	private TrieNode head;
-	private int length = 1;
+	final TrieNodes nodes;
+	final TrieNode[] stack;
+	TrieNode head;
+	int length = 1;
 	
 	AbstractTrieNodePath(TrieNodes nodes, int capacity) {
 		this.nodes = nodes;
@@ -52,11 +52,6 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void decrementCounts() {
-		nodes.decCounts(stack, length);
-	}
-
-	@Override
 	public void prune() {
 		head.setTerminal(false);
 		// we do no pruning if the node has a child
@@ -77,11 +72,6 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			// finally, delete any detached nodes
 			for (int j = length - 1; j > i ; j--) stack[j].delete();
 		}
-	}
-
-	@Override
-	public void incrementCounts() {
-		nodes.incCounts(stack, length);
 	}
 
 	@Override
@@ -222,4 +212,5 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	public void writeTo(WriteStream stream) {
 		nodes.writeTo(stream, stack, length);
 	}
+
 }

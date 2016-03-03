@@ -98,24 +98,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public void incCounts(TrieNode[] stack, int length) {
-		int rootCount = root.getCount();
-		for (int i = 0; i < length; i++) {
-			((BasicNode) stack[i]).count ++;
-		}
-		root.count = rootCount + 1;
-	}
-
-	@Override
-	public void decCounts(TrieNode[] stack, int length) {
-		int rootCount = root.getCount();
-		for (int i = 0; i < length; i++) {
-			((BasicNode) stack[i]).count --;
-		}
-		root.count = rootCount - 1;
-	}
-
-	@Override
 	public void clear() {
 		root.child = null;
 		root.sibling = null;
@@ -343,6 +325,19 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			super(nodes, capacity);
 		}
 		
+		@Override
+		public void incrementCounts() {
+			for (int i = 0; i < length; i++) {
+				((BasicNode) stack[i]).count ++;
+			}
+		}
+		
+		@Override
+		public void decrementCounts() {
+			for (int i = 0; i < length; i++) {
+				((BasicNode) stack[i]).count --;
+			}
+		}
 	}
 
 }

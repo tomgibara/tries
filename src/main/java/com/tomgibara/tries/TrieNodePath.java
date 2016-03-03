@@ -24,13 +24,47 @@ public interface TrieNodePath {
 	//TODO should return node?
 	void push(byte value);
 	
-	// decCounts()
+	/**
+	 * <p>
+	 * Decrements the child count of the indicated nodes. Non-counting trees may
+	 * ignore this method call.
+	 * 
+	 * <p>
+	 * Only the counts of the first <code>length</code> nodes should be
+	 * decremented. The stack may or may not contain the root node. In either
+	 * case, the tree must ensure that the root node count is incremented
+	 * exactly once.
+	 * 
+	 * @param stack
+	 *            an array of nodes
+	 * @param length
+	 *            the number of nodes comprising the stack
+	 */
+
+	//TODO DOC
 	void decrementCounts();
 	
 	// as per logic in doRemove
 	void prune();
 	
-	// incCounts
+	/**
+	 * <p>
+	 * Increments the child count of the indicated nodes. Non-counting trees may
+	 * ignore this method call.
+	 * 
+	 * <p>
+	 * Only the counts of the first <code>length</code> nodes should be
+	 * incremented. The stack may or may not contain the root node. In either
+	 * case, the tree must ensure that the root node count is incremented
+	 * exactly once.
+	 * 
+	 * @param stack
+	 *            an array of nodes
+	 * @param length
+	 *            the number of nodes comprising the stack
+	 */
+
+	//TODO DOC
 	void incrementCounts();
 	
 	// findChild()

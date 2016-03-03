@@ -122,69 +122,6 @@ interface TrieNodes extends Mutability<TrieNodes> {
 	
 	TrieNodePath newPath(int capacity);
 
-//	default int populate(TrieNode root, byte[] values, int length, TrieNode[] stack, TrieNode[] referrers) {
-//		ByteOrder byteOrder = byteOrder();
-//		TrieNode node = root;
-//		TrieNode referrer = null;
-//		outer: for (int i = 0; i < length; i++) {
-//			byte b = values[i];
-//			TrieNode child = node.getChild();
-//			if (child == null) return i;
-//			referrer = node;
-//			while (true) {
-//				int c = byteOrder.compare(child.getValue(), b);
-//				if (c == 0) {
-//					node = child;
-//					stack[i] = node;
-//					referrers[i] = referrer;
-//					continue outer;
-//				}
-//				if (c > 0 || !child.hasSibling()) return i;
-//				referrer = child;
-//				child = child.getSibling();
-//			}
-//		}
-//		return length;
-//	}
-
-	/**
-	 * <p>
-	 * Increments the child count of the indicated nodes. Non-counting trees may
-	 * ignore this method call.
-	 * 
-	 * <p>
-	 * Only the counts of the first <code>length</code> nodes should be
-	 * incremented. The stack may or may not contain the root node. In either
-	 * case, the tree must ensure that the root node count is incremented
-	 * exactly once.
-	 * 
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
-	 */
-
-	void incCounts(TrieNode[] stack, int length);
-	
-	/**
-	 * <p>
-	 * Decrements the child count of the indicated nodes. Non-counting trees may
-	 * ignore this method call.
-	 * 
-	 * <p>
-	 * Only the counts of the first <code>length</code> nodes should be
-	 * decremented. The stack may or may not contain the root node. In either
-	 * case, the tree must ensure that the root node count is incremented
-	 * exactly once.
-	 * 
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
-	 */
-
-	void decCounts(TrieNode[] stack, int length);
-
 	/**
 	 * Instructs the tree that node storage should be compacted. The tree should
 	 * make a best effort to organise its nodes to optimize for space and/or
