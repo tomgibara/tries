@@ -88,31 +88,40 @@ public interface TrieNodePath {
 	 * Advances to the child node of head node with the specified value. If at
 	 * the time of the method call no such node exists, a new child node with
 	 * the given value is added to the head. Thus this method always advances
-	 * the path.
+	 * the path. In cases where new nodes are created, the implementation may
+	 * assume that the last node push onto the path will be explicitly
+	 * terminated with a call to {@link #terminate(boolean)}
 	 * 
 	 * @param value
 	 *            a node value
 	 */
 
 	void push(byte value);
-	
+
 	/**
-	 * Decrements the child count of all of the nodes in this path. Non-counting
-	 * trees may ignore this method call.
+	 * Changes the terminal state of the head node. In cases where the removal
+	 * of terminal status creates a dangling node, the implementation may assume
+	 * that the path will be explicitly pruned.
+	 * 
+	 * this method is expected to remove it (iteratively if necessary) to
+	 * eliminate any redundant nodes.
+	 * 
+	 * @param terminal
+	 *            whether the head should be terminal
+	 * @return true if the terminal status of the head was modified
+	 * @see TrieNode#isDangling()
+	 * @see #prune()
 	 */
 
-	void decrementCounts();
+	boolean terminate(boolean terminal);
+	
+	/**
+	 * Removes any dangling nodes in present in the path from the trie.
+	 * Implementations may assume that the head is not terminal.
+	 */
 
-	//TODO DOC
 	void prune();
-	
-	/**
-	 * Increments the child count of all of the nodes in this path. Non-counting
-	 * trees may ignore this method call.
-	 */
 
-	void incrementCounts();
-	
 	/**
 	 * Advances to the child node of head node with the specified value, if such
 	 * a node exists. Otherwise the path remains unchanged.

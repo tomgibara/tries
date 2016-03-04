@@ -2,7 +2,7 @@ package com.tomgibara.tries;
 
 import com.tomgibara.streams.WriteStream;
 
-public class ImmutableTrieNodePath implements TrieNodePath {
+public final class ImmutableTrieNodePath implements TrieNodePath {
 
 	private static final <T> T imm() {
 		throw new IllegalStateException("immutable");
@@ -23,6 +23,7 @@ public class ImmutableTrieNodePath implements TrieNodePath {
 		return path.isEmpty();
 	}
 
+	@Override
 	public int length() {
 		return path.length();
 	}
@@ -32,26 +33,27 @@ public class ImmutableTrieNodePath implements TrieNodePath {
 		path.reset();
 	}
 
+	@Override
 	public TrieNode head() {
 		return path.head();
 	}
 
+	@Override
 	public void push(byte value) {
 		imm();
 	}
 
-	public void decrementCounts() {
-		imm();
+	@Override
+	public boolean terminate(boolean terminal) {
+		return imm();
 	}
 
+	@Override
 	public void prune() {
 		imm();
 	}
-
-	public void incrementCounts() {
-		imm();
-	}
-
+	
+	@Override
 	public boolean walkValue(byte value) {
 		return path.walkValue(value);
 	}
@@ -61,18 +63,21 @@ public class ImmutableTrieNodePath implements TrieNodePath {
 		return path.walkCount(count);
 	}
 
+	@Override
 	public TrieNode walkChild() {
 		return path.walkChild();
 	}
 
+	@Override
 	public TrieNode walkSibling() {
 		return path.walkSibling();
 	}
 
+	@Override
 	public TrieNode pop() {
 		return path.pop();
 	}
-	
+
 	@Override
 	public void serialize(TrieSerialization<?> serialization) {
 		path.serialize(serialization);
@@ -97,4 +102,5 @@ public class ImmutableTrieNodePath implements TrieNodePath {
 	public void writeTo(WriteStream stream) {
 		path.writeTo(stream);
 	}
+
 }

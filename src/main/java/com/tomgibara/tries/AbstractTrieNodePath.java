@@ -47,8 +47,20 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
+	public boolean terminate(boolean terminal) {
+		if (head.isTerminal() == terminal) return false;
+		if (terminal) {
+			head.setTerminal(true);
+			incrementCounts();
+		} else {
+			decrementCounts();
+			head.setTerminal(false);
+		}
+		return true;
+	}
+
+	@Override
 	public void prune() {
-		head.setTerminal(false);
 		// we do no pruning if the node has a child
 		// because our tree can have no dangling nodes (except possibly the root)
 		// so if the node has a child, there must be terminations further along the tree
@@ -211,11 +223,27 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 		// write nodes
 		nodes.writeNodes(stream, stack, length);
 	}
+
+	// package scoped methods
 	
+	/*
+	 * Decrements the child count of all of the nodes in this path. Non-counting
+	 * trees may ignore this method call.
+	 */
+
+	abstract void decrementCounts();
+	/*
+	 * Increments the child count of all of the nodes in this path. Non-counting
+	 * trees may ignore this method call.
+	 */
+
+	abstract void incrementCounts();
+
+
 	TrieNode[] stack() {
 		return stack;
 	}
-	
+
 	// inner classes
 	
 	//TODO move to streams package?

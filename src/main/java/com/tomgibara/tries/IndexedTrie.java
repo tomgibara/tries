@@ -110,8 +110,9 @@ public class IndexedTrie<E> extends Trie<E> {
 		if (!path.deserialize(serialization) || index >= path.head().getCount()) throw new IllegalArgumentException("index too large"); // ie. root doesn't exist, and nor does any node below it, or there aren't enough children
 		if (!path.walkCount(index)) return null;
 		path.serialize(serialization);
-		boolean removed = doRemove(path);
+		boolean removed = path.terminate(false);
 		assert(removed);
+		path.prune();
 		return serialization.get();
 	}
 

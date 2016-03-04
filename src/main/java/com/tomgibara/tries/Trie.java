@@ -57,7 +57,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	// statics
 	
 	private static final byte[] NO_PREFIX = {};
-	private static final TrieNode[] NO_STACK = {};
 	
 	private static byte[] toPrefix(TrieSerialization<?> s) {
 		return Arrays.copyOf(s.buffer(), s.length());
@@ -208,7 +207,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		if (!serialization.startsWith(prefix)) return false;
 		TrieNodePath path = nodes.newPath(serialization.capacity());
 		if (!path.deserialize(serialization)) return false;
-		return doRemove(path);
+		boolean removed = path.terminate(false);
+		if (removed) path.prune();
+		return removed;
 	}
 
 	/**
@@ -570,15 +571,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		}
 	}
 
-	boolean doRemove(TrieNodePath path) {
-		//TODO could combine into a single method terminate(boolean)
-		if (!path.head().isTerminal()) return false;
-		path.decrementCounts();
-		path.prune();
-		return true;
-		
-	}
-
 	// private helper methods
 	
 	private boolean add(byte[] bytes, int length) {
@@ -587,11 +579,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		for (int i = 0; i < length; i++) {
 			path.push(bytes[i]);
 		}
-		TrieNode head = path.head();
-		if (head.isTerminal()) return false; // already present
-		head.setTerminal(true);
-		path.incrementCounts();
-		return true;
+		return path.terminate(true);
 	}
 
 	private TrieNode find(byte[] bytes, int length) {
@@ -688,11 +676,13 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	private class TrieSet extends AbstractSet<E> {
 		
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean contains(Object o) {
 			return serialization.isSerializable(o) && Trie.this.contains((E) o);
 		}
 		
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean remove(Object o) {
 			return serialization.isSerializable(o) && Trie.this.remove((E) o);
 		}
