@@ -188,7 +188,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void advance(TrieSerialization<?> serial, int prefixLength) {
+	public void advance(TrieSerialization<?> serial, int minimumLength) {
 		outer: do {
 			if (head.hasChild()) {
 				stack[length ++] = head = head.getChild();
@@ -204,7 +204,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 				serial.pop();
 				length --;
 				// note may be less than prefix length if former element was the prefix
-				if (serial.length() <= prefixLength) {
+				if (serial.length() <= minimumLength) {
 					length = 0;
 					head = null;
 					return;

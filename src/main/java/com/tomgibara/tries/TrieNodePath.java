@@ -184,7 +184,16 @@ public interface TrieNodePath {
 
 	TrieNode pop();
 
-	//TODO DOC
+	/**
+	 * <p>
+	 * Writes the byte values of the path nodes into a serialization. If the
+	 * serialization is not empty, it is assumed to match the initial path
+	 * segment.
+	 * 
+	 * @param serialization
+	 *            a serialization to populate
+	 */
+
 	void serialize(TrieSerialization<?> serialization);
 	
 	/**
@@ -194,8 +203,9 @@ public interface TrieNodePath {
 	 * returns false, otherwise true is returned.
 	 * 
 	 * <p>
-	 * In cases where this path already extends beyond the root node, the
-	 * serialization is assumed to match the initial length of the path.
+	 * In cases where this path already extends beyond the root node when this
+	 * method is called, the serialization may be assumed to match the initial
+	 * length of the path.
 	 * 
 	 * @param serialization
 	 *            a serialization to walk
@@ -205,11 +215,53 @@ public interface TrieNodePath {
 
 	boolean deserialize(TrieSerialization<?> serialization);
 
-	//TODO DOC
+	/**
+	 * <p>
+	 * Modifies the path so that its serialization matches the supplied
+	 * serialization. In the case where no such path exists, the path should be
+	 * modified so that its serialization is the next available serialization as
+	 * per the established byte order. If there is no </em>next</em>
+	 * serialization the path should become empty.
+	 * 
+	 * <p>
+	 * Where an match is not possible, the supplied serialization must be
+	 * mutated to match the final path state. In cases where this path already
+	 * extends beyond the root node when this method is called, the
+	 * serialization may be assumed to match the initial length of the path.
+	 * 
+	 * @param serialization
+	 *            a serialization
+	 */
+
 	void first(TrieSerialization<?> serialization);
 
-	//TODO DOC
-	void advance(TrieSerialization<?> serialization, int prefixLength);
+	/**
+	 * <p>
+	 * Advances the path to the next terminal node in traversal order. The
+	 * method is supplied with a serialization that matches the path. This
+	 * serialization be mutated so that it continues to match the path when this
+	 * method terminates.
+	 * 
+	 * <p>
+	 * A call to this method will never leave the head unchanged. In the case
+	 * where there is no subsequent terminal node, the path should return in an
+	 * empty state.
+	 * 
+	 * <p>
+	 * In some cases, this method will be called with a non-zero
+	 * <code>minimumLength</code>. In this case the path must not backtrack to a
+	 * length less than this value, instead it should return in an empty state.
+	 * 
+	 * @param serialization
+	 *            a serialization that matches the current path that is updated
+	 *            with path changes
+	 * 
+	 * @param minimumLength
+	 *            a length beyond which the path should not backtrack
+	 * @see #isEmpty()
+	 */
+
+	void advance(TrieSerialization<?> serialization, int minimumLength);
 
 	/**
 	 * <p>
