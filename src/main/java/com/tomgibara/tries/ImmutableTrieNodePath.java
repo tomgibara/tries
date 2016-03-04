@@ -64,12 +64,12 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public TrieNode walkChild() {
+	public boolean walkChild() {
 		return path.walkChild();
 	}
 
 	@Override
-	public TrieNode walkSibling() {
+	public boolean walkSibling() {
 		return path.walkSibling();
 	}
 

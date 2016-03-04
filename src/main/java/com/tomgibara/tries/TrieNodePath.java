@@ -154,9 +154,23 @@ public interface TrieNodePath {
 
 	boolean walkCount(int count);
 
-	TrieNode walkChild();
-	
-	TrieNode walkSibling();
+	/**
+	 * Advances to the child of the head, as returned by
+	 * {@link TrieNode#getChild()}, if it exists.
+	 * 
+	 * @return true if the path was advanced, false otherwise
+	 */
+
+	boolean walkChild();
+
+	/**
+	 * Changes the current head of the list to its sibling, as returned by
+	 * {@link TrieNode#getChild()}, if it exists.
+	 * 
+	 * @return true if the head was changed to its sibling, false otherwise
+	 */
+
+	boolean walkSibling();
 
 	/**
 	 * Shortens the path by removing the current head node. Callers are
@@ -170,6 +184,7 @@ public interface TrieNodePath {
 
 	TrieNode pop();
 
+	//TODO DOC
 	void serialize(TrieSerialization<?> serialization);
 	
 	/**

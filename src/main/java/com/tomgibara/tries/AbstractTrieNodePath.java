@@ -108,17 +108,19 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public TrieNode walkChild() {
+	public boolean walkChild() {
 		AbstractTrieNode node = head.getChild();
-		if (node != null) stack[length++] = head = node;
-		return node;
+		if (node == null) return false;
+		stack[length++] = head = node;
+		return true;
 	}
 
 	@Override
-	public TrieNode walkSibling() {
+	public boolean walkSibling() {
 		AbstractTrieNode node = head.getSibling();
-		if (node != null) stack[length-1] = head = node;
-		return node;
+		if (node == null) return false;
+		stack[length-1] = head = node;
+		return true;
 	}
 
 	@Override
