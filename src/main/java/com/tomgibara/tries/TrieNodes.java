@@ -17,7 +17,6 @@
 package com.tomgibara.tries;
 
 import com.tomgibara.fundament.Mutability;
-import com.tomgibara.streams.WriteStream;
 
 /**
  * <p>

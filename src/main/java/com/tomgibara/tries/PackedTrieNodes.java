@@ -305,14 +305,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		return ours;
 	}
 	
-	private void checkCounts(PackedNode ours, PackedNode theirs) {
-		if (ours == null && theirs == null) return;
-		if (ours == null || theirs == null) throw new IllegalStateException("Missing node " + ours + " " + theirs);
-		if (ours.getCount() != theirs.getCount()) throw new IllegalStateException("Different sizes between " + ours + " " + theirs + " ("+ours.getCount()+") ("+theirs.getCount()+")");
-		checkCounts(ours.getChild(), theirs.getChild());
-		checkCounts(ours.getSibling(), theirs.getSibling());
-	}
-	
 	private int count(PackedNode node, int count) {
 		if (node.isTerminal()) count ++;
 		if (node.hasChild()) count += count(node.getChild(), 0);
@@ -324,15 +316,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		int count = node.isTerminal() ? 1 : 0;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		return count;
-	}
-	
-	private boolean isFree(int index) {
-		for (int i = freeCount; i > 0; i--) {
-			int free = freeIndex;
-			if (index == free) return true;
-			free = data[freeIndex * nodeSize];
-		}
-		return false;
 	}
 	
 	private void compact(int newCapacity, boolean trustCount) {
@@ -347,9 +330,29 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		this.nodeCount = those.nodeCount;
 	}
 
-	private int compare(byte a, byte b) {
-		return byteOrder.compare(a, b);
+	// debug methods
+	
+	@SuppressWarnings("unused")
+	private void checkCounts(PackedNode ours, PackedNode theirs) {
+		if (ours == null && theirs == null) return;
+		if (ours == null || theirs == null) throw new IllegalStateException("Missing node " + ours + " " + theirs);
+		if (ours.getCount() != theirs.getCount()) throw new IllegalStateException("Different sizes between " + ours + " " + theirs + " ("+ours.getCount()+") ("+theirs.getCount()+")");
+		checkCounts(ours.getChild(), theirs.getChild());
+		checkCounts(ours.getSibling(), theirs.getSibling());
 	}
+	
+	@SuppressWarnings("unused")
+	private boolean isFree(int index) {
+		for (int i = freeCount; i > 0; i--) {
+			int free = freeIndex;
+			if (index == free) return true;
+			free = data[freeIndex * nodeSize];
+		}
+		return false;
+	}
+	
+
+
 
 	// inner classes
 	

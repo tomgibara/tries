@@ -67,6 +67,7 @@ public abstract class TrieTest {
 		if (DESCRIBE) System.out.println(str);
 	}
 
+	@SuppressWarnings("unused")
 	private static void check(Trie<?> trie) {
 		((Trie<?>) trie).check();
 	}

@@ -233,11 +233,13 @@ public class IndexedTrie<E> extends Trie<E> {
 		}
 		
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean contains(Object o) {
 			return serialization.isSerializable(o) && IndexedTrie.this.contains((E) o);
 		}
 		
 		@Override
+		@SuppressWarnings("unchecked")
 		public int indexOf(Object o) {
 			if (!serialization.isSerializable(o)) return -1;
 			serialization.set((E) o);
@@ -252,6 +254,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean remove(Object o) {
 			if (!serialization.isSerializable(o)) return false;
 			return IndexedTrie.this.remove((E) o);
