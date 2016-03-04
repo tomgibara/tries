@@ -1,6 +1,8 @@
 package com.tomgibara.tries;
 
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodePath;
 
 abstract class AbstractTrieNodePath implements TrieNodePath {
 

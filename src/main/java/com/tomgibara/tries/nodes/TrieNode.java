@@ -14,7 +14,9 @@
  * limitations under the License.
  *
  */
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
+
+import com.tomgibara.tries.ByteOrder;
 
 
 /**
@@ -35,7 +37,7 @@ package com.tomgibara.tries;
  *
  */
 
-interface TrieNode {
+public interface TrieNode {
 
 	// attributes
 

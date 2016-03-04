@@ -14,9 +14,12 @@
  * limitations under the License.
  *
  */
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
 
 import com.tomgibara.streams.StreamDeserializer;
+import com.tomgibara.tries.ByteOrder;
+import com.tomgibara.tries.Trie;
+import com.tomgibara.tries.Tries;
 
 /**
  * <p>
@@ -36,45 +39,6 @@ import com.tomgibara.streams.StreamDeserializer;
  */
 
 public interface TrieNodeSource  {
-
-	/**
-	 * Models trie nodes using a Java object for each node; this is fast, at
-	// the expense of a larger memory overhead than other implementations.
-	 * 
-	 * @return a source that provides generally good performance.
-	 */
-
-	static TrieNodeSource forSpeed() {
-		return BasicTrieNodes.SOURCE;
-	}
-	
-	/**
-	 * Models trie nodes using integers to reduce the memory overhead associated
-	 * with Java objects. To further reduce memory overhead there is additional
-	 * logic to byte-pack non-branching child sequences. This implementation
-	 * typically operates approximately half as fast as {@link #forSpeed()}
-	 * 
-	 * @return a source that stores reduces memory overhead
-	 */
-
-	static TrieNodeSource forCompactness() {
-		return PackedTrieNodes.SOURCE;
-	}
-
-	/**
-	 * Models trie nodes simiilarly to {@link #forCompactness()} with further
-	 * logic that linearizes siblings during compaction to enable binary
-	 * searches over successor nodes. This typically doubles the speed of
-	 * lookups over the {@link #forCompactness()} implementation at the expense
-	 * of doubling the time for removals.
-	 * 
-	 * @return a source that facilitates faster lookups over a compact memory
-	 *         representation
-	 */
-
-	static TrieNodeSource forCompactLookups() {
-		return CompactTrieNodes.SOURCE;
-	}
 
 	/**
 	 * Whether the node source supports counting.

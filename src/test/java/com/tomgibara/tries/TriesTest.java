@@ -23,12 +23,14 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import com.tomgibara.streams.StreamDeserializer;
+import com.tomgibara.tries.nodes.TrieNodeSource;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 public class TriesTest {
 
 	@Test
 	public void testBytes() {
-		Trie<byte[]> trie = Tries.bytes().newTrie();
+		Trie<byte[]> trie = Tries.serialBytes().newTrie();
 		trie.add(bytes("boo"));
 		trie.add(bytes("book"));
 		trie.add(bytes("bookie"));
@@ -40,7 +42,7 @@ public class TriesTest {
 	
 	@Test
 	public void testNonCounting() {
-		Tries<byte[]> tries = Tries.bytes().nodeSource(new NonCountedNodeSource());
+		Tries<byte[]> tries = Tries.serialBytes().nodeSource(new NonCountedNodeSource());
 		tries.newTrie();
 		try {
 			tries.indexed();
@@ -53,7 +55,7 @@ public class TriesTest {
 		} catch (IllegalStateException e) {
 			/* expected */
 		}
-		tries = Tries.bytes().nodeSource(TrieNodeSource.forSpeed()).indexed();
+		tries = Tries.serialBytes().nodeSource(Tries.sourceForSpeed()).indexed();
 		try {
 			tries.nodeSource(new NonCountedNodeSource());
 		} catch (IllegalStateException e) {
@@ -63,7 +65,7 @@ public class TriesTest {
 	
 	class NonCountedNodeSource implements TrieNodeSource {
 
-		private TrieNodeSource source = TrieNodeSource.forSpeed();
+		private TrieNodeSource source = Tries.sourceForSpeed();
 		
 		@Override
 		public boolean isCountingSupported() { return false; }

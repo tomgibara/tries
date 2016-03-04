@@ -23,6 +23,9 @@ import static com.tomgibara.tries.AbstractTrieNode.FLAG_TERMINAL;
 import java.util.List;
 
 import com.tomgibara.streams.ReadStream;
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodePath;
+import com.tomgibara.tries.nodes.TrieNodeSource;
 
 
 class BasicTrieNodes extends AbstractTrieNodes {

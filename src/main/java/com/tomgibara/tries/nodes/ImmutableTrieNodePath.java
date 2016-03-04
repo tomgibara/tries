@@ -1,6 +1,7 @@
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
 
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.TrieSerialization;
 
 public final class ImmutableTrieNodePath implements TrieNodePath {
 

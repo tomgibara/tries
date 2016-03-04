@@ -48,6 +48,7 @@ import com.tomgibara.streams.EndOfStreamException;
 import com.tomgibara.streams.ReadStream;
 import com.tomgibara.streams.StreamBytes;
 import com.tomgibara.streams.Streams;
+import com.tomgibara.tries.nodes.TrieNodeSource;
 
 public abstract class TrieTest {
 
@@ -159,7 +160,7 @@ public abstract class TrieTest {
 	
 	@Test
 	public void testIndexes() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		String s = "abcdedfgh";
 		for (int i = s.length(); i >= 0; i--) {
 			String t = s.substring(0,  i);
@@ -176,7 +177,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testDoubleInsertion() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		trie.add("acxxx");
 		dump("ADDED acxxx", trie);
 		trie.add("abc");
@@ -194,7 +195,7 @@ public abstract class TrieTest {
 	}
 
 	private void testStrings(boolean indexed) {
-		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -292,7 +293,7 @@ public abstract class TrieTest {
 		
 		describe("EXPECTED EMPTY");
 		
-		Trie<String> asciiTrie = Tries.strings(ASCII).nodeSource(getNodeSource()).newTrie();
+		Trie<String> asciiTrie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).newTrie();
 		try {
 			asciiTrie.add("\u00a9");
 			fail();
@@ -466,7 +467,7 @@ public abstract class TrieTest {
 	
 	@Test
 	public void testByteOrder() {
-		Trie<String> trie = Tries.strings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).nodeSource(getNodeSource()).newTrie();
+		Trie<String> trie = Tries.serialStrings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).nodeSource(getNodeSource()).newTrie();
 		assertFalse(trie.first().isPresent());
 		assertFalse(trie.last().isPresent());
 		trie.add("Apple");
@@ -490,7 +491,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testLiveIterator() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		assertTrue(trie.add("One"));
 		Iterator<String> i = trie.iterator();
 		assertEquals ("One", i.next());
@@ -521,7 +522,7 @@ public abstract class TrieTest {
 				strs[j] = randStr(r, 8);
 			}
 			describe("STRINGS: " + i + ":" + Arrays.asList(strs));
-			IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+			IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 			trie.addAll(Arrays.asList(strs));
 			for (String str : strs) {
 				dump("REMOVING " + str, trie);
@@ -546,7 +547,7 @@ public abstract class TrieTest {
 	}
 
 	private void testSubTries(boolean indexed) {
-		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie;
 		IndexedTrie<String> itrie;
 		if (indexed) {
@@ -610,7 +611,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testAsList() {
-		IndexedTrie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		List<String> list = trie.asList();
 		assertEquals(0, list.size());
 		assertTrue(list.isEmpty());
@@ -655,7 +656,7 @@ public abstract class TrieTest {
 	
 	@Test
 	public void testAsSet() {
-		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		Set<String> set = trie.asSet();
 		assertTrue(set.isEmpty());
 		set.add("Scott");
@@ -685,7 +686,7 @@ public abstract class TrieTest {
 	
 	@Test
 	public void testCaseInsensitive() {
-		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).byteOrder((a, b) -> {
+		IndexedTrie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).byteOrder((a, b) -> {
 			int ca = Character.toUpperCase(a & 0xff);
 			int cb = Character.toUpperCase(b & 0xff);
 			return ca - cb;
@@ -708,13 +709,13 @@ public abstract class TrieTest {
 
 	@Test
 	public void testLongPrefix() {
-		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
+		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		trie.subTrie("Some very long prefix which is almost certain to exceed the default capacity").iterator();
 	}
 	
 	@Test
 	public void testMutability() {
-		Trie<String> trie = Tries.strings(UTF8).nodeSource(getNodeSource()).newTrie();
+		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).newTrie();
 		trie.add("Moo");
 
 		Trie<String> iv = trie.immutableView();
@@ -745,7 +746,7 @@ public abstract class TrieTest {
 	@Ignore
 	public void commonWords() throws IOException {
 		List<String> words = readWords();
-		Trie<String> trie = Tries.strings(ASCII).newTrie();
+		Trie<String> trie = Tries.serialStrings(ASCII).newTrie();
 		trie.addAll(words);
 		trie.compactStorage();
 		System.out.println(trie.size() + " words require " + trie.storageSizeInBytes() + " bytes");
@@ -766,14 +767,14 @@ public abstract class TrieTest {
 
 	@Test
 	public void testCopy() {
-		testCopy(TrieNodeSource.forSpeed());
-		testCopy(TrieNodeSource.forCompactness());
-		testCopy(TrieNodeSource.forCompactLookups());
+		testCopy(Tries.sourceForSpeed());
+		testCopy(Tries.sourceForCompactness());
+		testCopy(Tries.sourceForCompactLookups());
 	}
 
 	private void testCopy(TrieNodeSource source) {
 		List<String> strs = asList("One", "Once", "Onto", "Ontology", "Two");
-		Tries<String> tries = Tries.strings(ASCII).byteOrder(ByteOrder.UNSIGNED).nodeSource(source);
+		Tries<String> tries = Tries.serialStrings(ASCII).byteOrder(ByteOrder.UNSIGNED).nodeSource(source);
 		Trie<String> trie = tries.newTrie();
 		trie.addAll(strs);
 		IndexedTrie<String> indexed = tries.indexed().newTrie();
@@ -811,7 +812,7 @@ public abstract class TrieTest {
 	@Test
 	public void testRemoveAtIndex() {
 		Function<List<String>, List<String>> arrange = list -> list.stream().sorted().distinct().collect(Collectors.toList());
-		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
 		List<String> words = asList("There was a young lady of Niger who smiled as she rode on a tiger They returned from the ride with the lady inside and the smile on the face of the tiger".split("\\s+"));
 
 		{ // check basic removal
@@ -847,7 +848,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testAsBytes() {
-		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie = tries.newTrie();
 		Trie<byte[]> bytes = trie.asBytesTrie();
 		assertTrue(bytes.isEmpty());
@@ -868,7 +869,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testSubTrieAtPrefix() {
-		Tries<String> tries = Tries.strings(UTF8).nodeSource(getNodeSource());
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
 		Trie<String> t = tries.newTrie();
 		t.subTrieAtPrefix(new byte[128]); // check that long prefix is handled okay
 		Trie<String> s = t.subTrieAtPrefix(new byte[] {65});
@@ -894,7 +895,7 @@ public abstract class TrieTest {
 	}
 
 	private void testSerialization(boolean indexed) {
-		Tries<String> tries = Tries.strings(ASCII).nodeSource(getNodeSource()).indexed(indexed);
+		Tries<String> tries = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).indexed(indexed);
 
 		// test empty
 		Trie<String> empty = tries.newTrie();
@@ -940,7 +941,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testSubTrieSerial() {
-		Tries<String> tries = Tries.strings(ASCII).nodeSource(getNodeSource());
+		Tries<String> tries = Tries.serialStrings(ASCII).nodeSource(getNodeSource());
 		Trie<String> trie = tries.newTrie();
 		trie.add("eggplant");
 		trie.add("eggnog");
@@ -963,7 +964,7 @@ public abstract class TrieTest {
 
 	@Test
 	public void testIndexOf() {
-		IndexedTrie<String> trie = Tries.strings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
+		IndexedTrie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).indexed().newTrie();
 		assertEquals(-1, trie.indexOf(""));
 		assertEquals(-1, trie.indexOf("absent"));
 		trie.add("");

@@ -27,6 +27,9 @@ import java.util.Set;
 import com.tomgibara.fundament.Mutability;
 import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodePath;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 /**
  * <p>

@@ -25,6 +25,8 @@ import java.util.List;
 
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamException;
+import com.tomgibara.tries.nodes.TrieNodeSource;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 abstract class AbstractTrieNodeSource implements TrieNodeSource {
 

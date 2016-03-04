@@ -14,9 +14,11 @@
  * limitations under the License.
  *
  */
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
 
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.ByteOrder;
+import com.tomgibara.tries.TrieSerialization;
 
 /**
  * <p>

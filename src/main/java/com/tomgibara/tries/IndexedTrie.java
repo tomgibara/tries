@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodePath;
+import com.tomgibara.tries.nodes.TrieNodes;
+
 /**
  * <p>
  * A trie that can efficiently return the index of any element. Elements are

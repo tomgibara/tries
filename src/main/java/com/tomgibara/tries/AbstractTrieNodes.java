@@ -17,6 +17,8 @@
 package com.tomgibara.tries;
 
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 abstract class AbstractTrieNodes implements TrieNodes {
 

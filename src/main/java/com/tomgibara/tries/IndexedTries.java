@@ -20,6 +20,8 @@ import java.util.Comparator;
 
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.streams.ReadStream;
+import com.tomgibara.tries.nodes.TrieNodeSource;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 /**
  * A class for creating {@link IndexedTrie} instances. Instances of this class

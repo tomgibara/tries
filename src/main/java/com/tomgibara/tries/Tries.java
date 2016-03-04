@@ -35,6 +35,8 @@ import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.Streams;
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.nodes.TrieNodeSource;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 /**
  * <p>
@@ -63,6 +65,13 @@ public class Tries<E> {
 	
 	private static final int DEFAULT_CAPACITY = 16;
 
+	// used for byte tries
+	static TrieSerialization<byte[]> newByteSerialization(int capacity) {
+		return new ByteSerialization(capacity);
+	}
+	
+	// serializers
+	
 	/**
 	 * Uses a serializer/deserializer pair to define a {@link TrieSerialization}
 	 * from which tries are defined.
@@ -94,7 +103,7 @@ public class Tries<E> {
 	 * @return tries containing strings
 	 */
 
-	public static Tries<String> strings(Charset charset) {
+	public static Tries<String> serialStrings(Charset charset) {
 		if (charset == null) throw new IllegalArgumentException("null charset");
 		return new Tries<>(() -> new StringSerialization(charset));
 	}
@@ -105,15 +114,51 @@ public class Tries<E> {
 	 * @return tries containing byte arrays
 	 */
 
-	public static Tries<byte[]> bytes() {
+	public static Tries<byte[]> serialBytes() {
 		return new Tries<>(() -> new ByteSerialization());
 	}
 
-	// used for byte tries
-	static TrieSerialization<byte[]> newByteSerialization(int capacity) {
-		return new ByteSerialization(capacity);
+	// node sources
+	
+	/**
+	 * Models trie nodes using a Java object for each node; this is fast, at
+	 * the expense of a larger memory overhead than other implementations.
+	 * 
+	 * @return a source that provides generally good performance.
+	 */
+
+	public static TrieNodeSource sourceForSpeed() {
+		return BasicTrieNodes.SOURCE;
 	}
 	
+	/**
+	 * Models trie nodes using integers to reduce the memory overhead associated
+	 * with Java objects. To further reduce memory overhead there is additional
+	 * logic to byte-pack non-branching child sequences. This implementation
+	 * typically operates approximately half as fast as {@link #sourceForSpeed()}
+	 * 
+	 * @return a source that stores reduces memory overhead
+	 */
+
+	public static TrieNodeSource sourceForCompactness() {
+		return PackedTrieNodes.SOURCE;
+	}
+
+	/**
+	 * Models trie nodes simiilarly to {@link #sourceForCompactness()} with further
+	 * logic that linearizes siblings during compaction to enable binary
+	 * searches over successor nodes. This typically doubles the speed of
+	 * lookups over the {@link #sourceForCompactness()} implementation at the expense
+	 * of doubling the time for removals.
+	 * 
+	 * @return a source that facilitates faster lookups over a compact memory
+	 *         representation
+	 */
+
+	public static TrieNodeSource sourceForCompactLookups() {
+		return CompactTrieNodes.SOURCE;
+	}
+
 	// inner classes
 	
 	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {

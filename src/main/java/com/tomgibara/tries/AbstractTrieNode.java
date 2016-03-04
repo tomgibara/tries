@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.tomgibara.streams.ReadStream;
 import com.tomgibara.streams.WriteStream;
+import com.tomgibara.tries.nodes.TrieNode;
 
 abstract class AbstractTrieNode implements TrieNode {
 

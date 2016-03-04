@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.tomgibara.streams.ReadStream;
+import com.tomgibara.tries.nodes.TrieNode;
+import com.tomgibara.tries.nodes.TrieNodePath;
+import com.tomgibara.tries.nodes.TrieNodeSource;
+import com.tomgibara.tries.nodes.TrieNodes;
 
 /*
  * Each node is organized into either 3 ints, or 4 (if counts are maintained).

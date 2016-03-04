@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.tomgibara.tries.nodes.TrieNodeSource;
+
 public class WordsTest {
 	
 	private static int reps = 50;
@@ -57,7 +59,7 @@ public class WordsTest {
 		String message = shuffle ? "Using " + sourceName + " with shuffled words" : "Using " + sourceName;
 		System.out.println(message);
 
-		Trie<String> trie = Tries.strings(Charset.forName("ASCII")).nodeSource(source).newTrie();
+		Trie<String> trie = Tries.serialStrings(Charset.forName("ASCII")).nodeSource(source).newTrie();
 		for (int count = 0; count < trials; count++) {
 			long insertTime = time(() -> trie.addAll(allWords));
 			trie.compactStorage();

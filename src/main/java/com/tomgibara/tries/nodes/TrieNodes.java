@@ -14,9 +14,12 @@
  * limitations under the License.
  *
  */
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
 
 import com.tomgibara.fundament.Mutability;
+import com.tomgibara.tries.ByteOrder;
+import com.tomgibara.tries.IndexedTrie;
+import com.tomgibara.tries.Trie;
 
 /**
  * <p>
@@ -44,7 +47,7 @@ import com.tomgibara.fundament.Mutability;
  * @see TrieNodeSource
  */
 
-interface TrieNodes extends Mutability<TrieNodes> {
+public interface TrieNodes extends Mutability<TrieNodes> {
 
 	/**
 	 * The byte order that specifies the ordering of child nodes.

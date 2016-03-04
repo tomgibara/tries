@@ -14,7 +14,9 @@
  * limitations under the License.
  *
  */
-package com.tomgibara.tries;
+package com.tomgibara.tries.nodes;
+
+import com.tomgibara.tries.ByteOrder;
 
 
 class ImmutableNodes implements TrieNodes {

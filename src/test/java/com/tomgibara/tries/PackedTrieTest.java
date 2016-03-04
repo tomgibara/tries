@@ -16,6 +16,8 @@
  */
 package com.tomgibara.tries;
 
+import com.tomgibara.tries.nodes.TrieNodeSource;
+
 public class PackedTrieTest extends TrieTest {
 
 	@Override
