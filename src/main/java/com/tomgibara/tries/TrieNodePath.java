@@ -18,90 +18,173 @@ package com.tomgibara.tries;
 
 import com.tomgibara.streams.WriteStream;
 
-// retires decCounts(), incCounts(), findOrInsertChild, removeChild, delete, Nodes.writeTo
+/**
+ * <p>
+ * Implementations of this interface record a sequence of nodes from the root of
+ * the trie to some other node in the trie. The interface is designed to
+ * accommodate traversal and mutation in trees without back-references.
+ * 
+ * <p>
+ * All paths have a fixed capacity, which is the greatest distance that the path
+ * may extend from the root. In the interests of performance, implementators are
+ * invited to assume that this limit will never be exceeded and that, in
+ * general, no invalid calls will be ever be made on the interface.
+ * 
+ * @author Tom Gibara
+ *
+ */
+
 public interface TrieNodePath {
 
-	// if length is 0
+	/**
+	 * Whether the path is empty.
+	 * 
+	 * @return true if the path length is zero, false otherwise.
+	 */
+
 	boolean isEmpty();
 	
-	// number of nodes that can be stored in addition to the root
+	/**
+	 * The number of nodes that can be stored in addition to the root.
+	 * 
+	 * @return the maximum number of times the path may be advanced from the
+	 *         root.
+	 */
+
 	int capacity();
 	
-	// starts at 1, containing root - may become empty
+	/**
+	 * The number of nodes in the path. This is initially one since all paths
+	 * begin at the root. However, the length may legitimately fall to zero if
+	 * the root is <em>popped</em> from the path. This condition may be used to
+	 * indicate certain states.
+	 * 
+	 * @return the number of nodes in the path, may be zero, never negative.
+	 * @see #pop
+	 */
+
 	int length();
 	
-	// sets length to 1 and head to root
+	/**
+	 * Sets the length of the path to one. After a call to this method, the path
+	 * will consist of a single node: the root.
+	 */
+
 	void reset();
-	
-	// head of the path, may be null if root is popped
+
+	/**
+	 * The head of the path. This is the last node appended to the path. The
+	 * head of the path may also change when the former head is popped from the
+	 * path. Initially the head of a path is the trie root. The head may become
+	 * null if the root is popped from the path.
+	 * 
+	 * @return the node furthest from the root, may be null if the root has been
+	 *         popped from the path
+	 */
+
 	TrieNode head();
 	
-	// findOrInsertChild()
-	//TODO should return node?
+	/**
+	 * Advances to the child node of head node with the specified value. If at
+	 * the time of the method call no such node exists, a new child node with
+	 * the given value is added to the head. Thus this method always advances
+	 * the path.
+	 * 
+	 * @param value
+	 *            a node value
+	 */
+
 	void push(byte value);
 	
 	/**
-	 * <p>
-	 * Decrements the child count of the indicated nodes. Non-counting trees may
-	 * ignore this method call.
-	 * 
-	 * <p>
-	 * Only the counts of the first <code>length</code> nodes should be
-	 * decremented. The stack may or may not contain the root node. In either
-	 * case, the tree must ensure that the root node count is incremented
-	 * exactly once.
-	 * 
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
+	 * Decrements the child count of all of the nodes in this path. Non-counting
+	 * trees may ignore this method call.
 	 */
 
-	//TODO DOC
 	void decrementCounts();
-	
-	// as per logic in doRemove
+
+	//TODO DOC
 	void prune();
 	
 	/**
-	 * <p>
-	 * Increments the child count of the indicated nodes. Non-counting trees may
-	 * ignore this method call.
-	 * 
-	 * <p>
-	 * Only the counts of the first <code>length</code> nodes should be
-	 * incremented. The stack may or may not contain the root node. In either
-	 * case, the tree must ensure that the root node count is incremented
-	 * exactly once.
-	 * 
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
+	 * Increments the child count of all of the nodes in this path. Non-counting
+	 * trees may ignore this method call.
 	 */
 
-	//TODO DOC
 	void incrementCounts();
 	
-	// findChild()
-	//TODO should return node?
+	/**
+	 * Advances to the child node of head node with the specified value, if such
+	 * a node exists. Otherwise the path remains unchanged.
+	 * 
+	 * @param value
+	 *            the value of the child to advance towards
+	 *
+	 * @return true if such child existed, false if the path remained unchanged
+	 */
+
 	boolean walkValue(byte value);
 
+	/**
+	 * <p>
+	 * Advances the path over the indicated number of terminating nodes in depth
+	 * first order. As a result of calling this method, the path will generally
+	 * advance further into the tree by walking children and siblings, but the
+	 * method should not backtrack: it should advance as far as it can, and if
+	 * the specified count was not achieved, it should return false.
+	 * 
+	 * <p>
+	 * Implementators can expect that this method will only be called on tries
+	 * that support accelerated node counts.
+	 * 
+	 * @param count
+	 *            the number of terminating nodes to walk over
+	 * @return whether the count was achieved
+	 * @see TrieNodes#isCounting()
+	 */
+
 	boolean walkCount(int count);
-	
+
 	TrieNode walkChild();
 	
 	TrieNode walkSibling();
-	
-	// cannot pop root
+
+	/**
+	 * Shortens the path by removing the current head node. Callers are
+	 * permitted to pop the root node to create an empty path. At this point
+	 * this method will return null and no futher modifications may be attempted
+	 * to this path.
+	 * 
+	 * @return the path node furthest from the root, possibly null
+	 * @see #head()
+	 */
+
 	TrieNode pop();
 
 	void serialize(TrieSerialization<?> serialization);
 	
+	/**
+	 * <p>
+	 * Advances the path by walking the head through each byte value of the
+	 * serialization in turn. If at any point, no such child exists, the method
+	 * returns false, otherwise true is returned.
+	 * 
+	 * <p>
+	 * In cases where this path already extends beyond the root node, the
+	 * serialization is assumed to match the initial length of the path.
+	 * 
+	 * @param serialization
+	 *            a serialization to walk
+	 * @return true if a path matching the serialization was produced, false
+	 *         otherwise
+	 */
+
 	boolean deserialize(TrieSerialization<?> serialization);
-	
+
+	//TODO DOC
 	void first(TrieSerialization<?> serialization);
 
+	//TODO DOC
 	void advance(TrieSerialization<?> serialization, int prefixLength);
 
 	/**
@@ -109,10 +192,9 @@ public interface TrieNodePath {
 	 * Serializes node data to a byte stream.
 	 * 
 	 * <p>
-	 * The stack represents a sequence of nodes beginning from the root. When
-	 * the stack contains only the root node, all nodes should be recorded in
-	 * the stream. When the stack contains nodes other than the root node, the
-	 * trie data written should be pruned such that these nodes
+	 * When the path contains only the root node, all nodes should be recorded
+	 * in the stream. When the path extends beyond the root node, the trie data
+	 * written should be pruned such that these nodes
 	 * <em>but not their siblings or children</em> are be recorded in the
 	 * stream, with the exception of the last node's child which, if it exists,
 	 * should be recorded in the stream, together with all of its siblings and
@@ -127,12 +209,8 @@ public interface TrieNodePath {
 	 * 
 	 * @param stream
 	 *            the stream to which node data should be written
-	 * @param stack
-	 *            an array of nodes
-	 * @param length
-	 *            the number of nodes comprising the stack
 	 */
-	//TODO DOC
+
 	void writeTo(WriteStream stream);
 
 }

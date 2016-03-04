@@ -23,6 +23,10 @@ package com.tomgibara.tries;
  * instances of nodes may only be valid between successive invalidations.
  * 
  * <p>
+ * Node instances may only be used to access Trie data. Any mutations must be
+ * performed via a {@link TrieNodePath}.
+ * 
+ * <p>
  * Note that in the documentation for this class, comparisons of node values are
  * always in the context of the {@link ByteOrder} applied to the
  * {@link TrieNodes} containing the node and its children.
@@ -30,6 +34,7 @@ package com.tomgibara.tries;
  * @author Tom Gibara
  *
  */
+
 interface TrieNode {
 
 	// attributes
@@ -154,6 +159,19 @@ interface TrieNode {
 
 	boolean isDangling();
 
-	//TODO DOC
+	/**
+	 * <p>
+	 * Whether the {@link #getCount()} method on this node is accelerated (eg.
+	 * by storing and maintaining a count on the node itself).
+	 * 
+	 * <p>
+	 * All nodes are required to provide a count of their terminations. Any node
+	 * can do this iterating over its descendants, together with itself, and
+	 * counting the terminations. But some applications may need to know that a
+	 * faster implementation is provided.
+	 * 
+	 * @return whether node counts are fast
+	 */
+
 	boolean isCounting();
 }

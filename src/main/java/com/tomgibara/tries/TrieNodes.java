@@ -109,6 +109,20 @@ interface TrieNodes extends Mutability<TrieNodes> {
 		/* a no-op for many possible implementations */
 	}
 
+	/**
+	 * <p>
+	 * Creates a new path that can traverse the trie. If the trie is mutable,
+	 * the path may be used to modify the trie.
+	 * 
+	 * <p>
+	 * The new path will consist of a single node: the root of this trie.
+	 * 
+	 * @param capacity
+	 *            the maximum number of nodes that the path might be required to
+	 *            traverse, in addition to the root.
+	 * @return a new path
+	 */
+
 	TrieNodePath newPath(int capacity);
 
 	/**

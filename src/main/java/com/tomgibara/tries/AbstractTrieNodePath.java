@@ -118,7 +118,6 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	@Override
 	public void serialize(TrieSerialization<?> serialization) {
-		//TODO should persist bytes with nodes?
 		for (int i = serialization.length() + 1; i < length; i++) {
 			serialization.push(stack[i].getValue());
 		}
@@ -145,8 +144,6 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			head = head.findChildOrNext(value);
 			if (head == null) {
 				if (i == 0) {
-//					head = stack[length - 1];
-//					serial.reset();
 					head = null;
 					serial.reset();
 					length = 0;

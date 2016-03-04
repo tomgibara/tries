@@ -77,16 +77,6 @@ abstract class AbstractTrieNode implements TrieNode {
 	
 	// package scoped methods
 
-	/**
-	 * Returns the child node of this node with the specified value. If at the
-	 * time of the method call no such node exists, a new child node with the
-	 * given value is added to this node. Thus this method never returns null.
-	 * 
-	 * @param value
-	 *            a node value
-	 * @return a child node with the specified value
-	 */
-	//TODO DOC
 	AbstractTrieNode findOrInsertChild(byte value) {
 		ByteOrder order = nodes().byteOrder();
 		AbstractTrieNode child = getChild();
@@ -102,7 +92,7 @@ abstract class AbstractTrieNode implements TrieNode {
 		}
 	}
 	
-	/**
+	/*
 	 * Finds a child node of this node with the specified value, or returns the
 	 * child node with the next highest node value, or null if no such node
 	 * exists.
@@ -112,7 +102,7 @@ abstract class AbstractTrieNode implements TrieNode {
 	 * @return the child node with the specified value, or the child node with
 	 *         the least value exceeding the specified value, or null
 	 */
-	//TODO DOC
+
 	AbstractTrieNode findChildOrNext(byte value) {
 		ByteOrder order = nodes().byteOrder();
 		AbstractTrieNode child = getChild();
@@ -124,30 +114,30 @@ abstract class AbstractTrieNode implements TrieNode {
 		return child;
 	}
 	
-	/**
+	/*
 	 * This method is called on a node to signal that any associated storage may
 	 * be released by the managing {@link TrieNodes}. This method will only be
 	 * called on detached nodes and indicates the node will not be reattached to
 	 * the tree. In many possible implementations, this will be a no-op.
 	 */
-	//TODO DOC
+
 	void delete() { }
 
-	/**
+	/*
 	 * The tree of nodes to which this node belongs.
 	 * 
 	 * @return the tree containing this node.
 	 */
-	//TODO DOC
+
 	abstract AbstractTrieNodes nodes();
 
-	/**
+	/*
 	 * Removes the supplied node from the list of child nodes of this node.
 	 * 
 	 * @param child a child node of this node
 	 * @return true iff the node was a child and was removed
 	 */
-	//TODO DOC
+
 	abstract boolean removeChild(TrieNode child);
 
 	// any current sibling becomes sibling of new sibling
