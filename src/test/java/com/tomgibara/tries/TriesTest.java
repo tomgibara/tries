@@ -20,8 +20,11 @@ import static com.tomgibara.tries.TrieTest.bytes;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.math.BigInteger;
+
 import org.junit.Test;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.streams.StreamDeserializer;
 import com.tomgibara.tries.nodes.TrieNodeSource;
 import com.tomgibara.tries.nodes.TrieNodes;
@@ -84,6 +87,19 @@ public class TriesTest {
 		public StreamDeserializer<TrieNodes> deserializer(ByteOrder byteOrder, boolean counting, int capacityHint) {
 			return source.deserializer(byteOrder, counting, capacityHint);
 		}
-		
+
 	}
+
+	@Test
+	public void testAdaptedWith() {
+		Bijection<byte[], BigInteger> adapter = Bijection.fromFunctions(
+				byte[].class,             BigInteger.class,
+				bs -> new BigInteger(bs), bi -> bi.toByteArray()
+				);
+		Trie<BigInteger> ints = Tries.serialBytes().adaptedWith(adapter) .newTrie();
+		BigInteger bi = new BigInteger("395403948504000");
+		ints.add(bi);
+		assertTrue(ints.asBytesTrie().contains(bi.toByteArray()));
+	}
+
 }

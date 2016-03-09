@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.fundament.Mutability;
 import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.WriteStream;
@@ -437,7 +438,33 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			s.writeBytes(ts.buffer(), 0, ts.length());
 		};
 	}
-	
+
+	/**
+	 * <p>
+	 * Adapts the elements of the trie to produce a trie over a new type of
+	 * value. The domain of the bijection must match the type of value
+	 * serialized into the trie. The returned trie will contain values in the
+	 * range of the bijection.
+	 * 
+	 * <p>
+	 * The returned object is a live view of this trie. mutations to either with
+	 * will be reflected in the other. The returned trie will be mutable if and
+	 * only if this trie is mutable.
+	 * 
+	 * @param adapter
+	 *            the bijective mapping that transforms the trie elements
+	 * 
+	 * @return a trie over the range of the adapter
+	 * @see Tries#adaptedWith(Bijection)
+	 */
+
+	public <F> Trie<F> asAdaptedWith(Bijection<E, F> adapter) {
+		if (adapter == null) throw new IllegalArgumentException("null adapter");
+		TrieSerialization<E> s = serialization.resetCopy();
+		s.set(prefix);
+		return new Trie<>(s.adapt(adapter), nodes);
+	}
+
 	/**
 	 * Exposes a the trie elements as a set. The returned object is a live view
 	 * of this trie. mutations to either with will be reflected in the other.

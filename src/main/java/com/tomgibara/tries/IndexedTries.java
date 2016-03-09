@@ -18,6 +18,7 @@ package com.tomgibara.tries;
 
 import java.util.Comparator;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.streams.ReadStream;
 import com.tomgibara.tries.nodes.TrieNodeSource;
@@ -88,6 +89,13 @@ public class IndexedTries<E> extends Tries<E> {
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	
+	@Override
+	public <F> IndexedTries<F> adaptedWith(Bijection<E, F> adapter) {
+		if (adapter == null) throw new IllegalArgumentException("null adapter");
+		Producer<TrieSerialization<F>> adapted = () -> serialProducer.produce().adapt(adapter);
+		return new IndexedTries<>(adapted, byteOrder, nodeSource, capacityHint);
+	}
+
 	/*
 	@Override
 	public IndexedTries<E> capacityHint(int capacityHint) {

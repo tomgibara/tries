@@ -27,6 +27,7 @@ import java.nio.charset.CoderResult;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.fundament.Producer;
 import com.tomgibara.storage.Stores;
 import com.tomgibara.streams.ReadStream;
@@ -480,6 +481,22 @@ public class Tries<E> {
 	public Tries<E> nodeSource(TrieNodeSource nodeSource) {
 		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
+	}
+
+	/**
+	 * Applies an adapter to the serialization used for the tries to create a
+	 * tries over the range of the adapter.
+	 * 
+	 * @param adapter
+	 *            a bijective mapping over the trie elements
+	 * @return tries adapted to store values in the range of the adapter
+	 * @see Trie#asAdaptedWith(Bijection)
+	 */
+
+	public <F> Tries<F> adaptedWith(Bijection<E, F> adapter) {
+		if (adapter == null) throw new IllegalArgumentException("null adapter");
+		Producer<TrieSerialization<F>> adapted = () -> serialProducer.produce().adapt(adapter);
+		return new Tries<>(adapted, byteOrder, nodeSource, capacityHint);
 	}
 
 	/*  TG: viability TBD

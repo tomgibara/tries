@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.tries.nodes.TrieNode;
 import com.tomgibara.tries.nodes.TrieNodePath;
 import com.tomgibara.tries.nodes.TrieNodes;
@@ -149,6 +150,14 @@ public class IndexedTrie<E> extends Trie<E> {
 
 	public List<E> asList() {
 		return new TrieList();
+	}
+
+	@Override
+	public <F> IndexedTrie<F> asAdaptedWith(Bijection<E, F> adapter) {
+		if (adapter == null) throw new IllegalArgumentException("null adapter");
+		TrieSerialization<E> s = serialization.resetCopy();
+		s.set(prefix);
+		return new IndexedTrie<>(s.adapt(adapter), nodes);
 	}
 
 	@Override

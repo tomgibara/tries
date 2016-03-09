@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.storage.Stores;
 import com.tomgibara.streams.EndOfStreamException;
 import com.tomgibara.streams.ReadStream;
@@ -972,6 +974,23 @@ public abstract class TrieTest {
 		trie.add("present");
 		assertEquals(1, trie.indexOf("present"));
 		assertEquals(-2, trie.indexOf("absent"));
+	}
+
+	@Test
+	public void testAdaptedWith() {
+		Bijection<byte[], BigInteger> adapter = Bijection.fromFunctions(
+				byte[].class,             BigInteger.class,
+				bs -> new BigInteger(bs), bi -> bi.toByteArray()
+				);
+		Trie<byte[]> trie = Tries.serialBytes().newTrie();
+		trie.add(new byte[] {127});
+		trie.add(new byte[] {20, 100});
+		Trie<BigInteger> ints = trie.asAdaptedWith(adapter);
+		assertTrue(ints.contains(BigInteger.valueOf(127)));
+		assertTrue(ints.contains(BigInteger.valueOf(20 * 256 + 100)));
+		BigInteger bi = new BigInteger("395403948504000");
+		ints.add(bi);
+		assertTrue(trie.contains(bi.toByteArray()));
 	}
 
 }

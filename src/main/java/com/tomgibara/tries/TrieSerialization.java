@@ -18,6 +18,7 @@ package com.tomgibara.tries;
 
 import java.util.Comparator;
 
+import com.tomgibara.fundament.Bijection;
 import com.tomgibara.fundament.Producer;
 
 /**
@@ -248,4 +249,19 @@ public interface TrieSerialization<E> {
 		return new Tries<E>(producer());
 	}
 
+	/**
+	 * Adapts this serialization using a bijective mapping over the values it
+	 * serializes. The returned serialization shares the same state (buffer,
+	 * length and capacity) as this buffer but applies the specified adapter to
+	 * its values post serialization, and disapplies the adapter
+	 * pre-serialization.
+	 * 
+	 * @param adapter
+	 *            an adapting bijection
+	 * @return a view of this serialization under the adapter
+	 */
+
+	default <F> TrieSerialization<F> adapt(Bijection<E, F> adapter) {
+		return new AdaptedSerialization<E, F>(this, adapter);
+	}
 }
