@@ -19,6 +19,7 @@ package com.tomgibara.tries;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -119,6 +120,10 @@ public class Tries<E> {
 		return new Tries<>(() -> new ByteSerialization());
 	}
 
+	public static Tries<Long> serialLongs() {
+		return new Tries<>(() -> new LongSerialization());
+	}
+	
 	// node sources
 	
 	/**
@@ -381,6 +386,63 @@ public class Tries<E> {
 		public TrieSerialization<byte[]> resetCopy(int capacity) {
 			return new ByteSerialization(capacity);
 		}
+	}
+	
+	private static class LongSerialization extends BaseSerialization<Long> {
+		
+		LongSerialization() {
+			super(8);
+		}
+
+		LongSerialization(int capacity) {
+			super(capacity);
+		}
+		
+		@Override
+		public boolean isSerializable(Object obj) {
+			return obj instanceof Long;
+		}
+
+		@Override
+		public void set(Long e) {
+			long v = e;
+			buffer[0] = (byte) (v >> 56);
+			buffer[1] = (byte) (v >> 48);
+			buffer[2] = (byte) (v >> 40);
+			buffer[3] = (byte) (v >> 32);
+			buffer[4] = (byte) (v >> 24);
+			buffer[5] = (byte) (v >> 16);
+			buffer[6] = (byte) (v >>  8);
+			buffer[7] = (byte) (v      );
+			length = 8;
+		}
+
+		@Override
+		public Long get() {
+			if (length < 8) throw new IllegalStateException("too few bytes");
+			long high =
+				((buffer[0]       ) << 24) |
+				((buffer[1] & 0xff) << 16) |
+				((buffer[2] & 0xff) <<  8) |
+				((buffer[3] & 0xff)      );
+			long low =
+					((buffer[4]       ) << 24) |
+					((buffer[5] & 0xff) << 16) |
+					((buffer[6] & 0xff) <<  8) |
+					((buffer[7] & 0xff)      );
+			return (high << 32) | low & 0xffffffffL;
+		}
+
+		@Override
+		public LongSerialization resetCopy(int capacity) {
+			return new LongSerialization(capacity);
+		}
+
+		@Override
+		public Comparator<Long> comparator(ByteOrder byteOrder) {
+			return byteOrder == ByteOrder.UNSIGNED ? (x,y) -> Long.compareUnsigned(x, y) : super.comparator(byteOrder);
+		}
+
 	}
 	
 	// fields

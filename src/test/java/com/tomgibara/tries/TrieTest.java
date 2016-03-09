@@ -327,7 +327,7 @@ public abstract class TrieTest {
 			} while (value < 0);
 			values[i] = value;
 		}
-		Tries<Long> tries = Tries.serial(Long.class, (v,s) -> s.writeLong(v), s -> s.readLong()).nodeSource(getNodeSource());
+		Tries<Long> tries = Tries.serialLongs().nodeSource(getNodeSource());
 		Trie<Long> trie;
 		IndexedTrie<Long> itrie;
 		if (indexed) {
