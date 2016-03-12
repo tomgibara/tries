@@ -993,4 +993,48 @@ public abstract class TrieTest {
 		assertTrue(trie.contains(bi.toByteArray()));
 	}
 
+	@Test
+	public void testRemoveFirst() {
+		Trie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).newTrie();
+
+		assertFalse(trie.removeFirst().isPresent());
+
+		assertTrue(trie.add("House"));
+		assertEquals("House", trie.removeFirst().get());
+		assertFalse(trie.removeFirst().isPresent());
+
+		assertTrue(trie.add("House"));
+		assertTrue(trie.add("Farmhouse"));
+		assertEquals("Farmhouse", trie.removeFirst().get());
+		assertEquals("House", trie.removeFirst().get());
+		assertFalse(trie.removeFirst().isPresent());
+
+		trie.add("");
+		assertEquals("", trie.removeFirst().get());
+		assertFalse(trie.removeFirst().isPresent());
+
+		trie.add("");
+		assertTrue(trie.add("House"));
+		assertEquals("", trie.removeFirst().get());
+		assertEquals("House", trie.removeFirst().get());
+		assertFalse(trie.removeFirst().isPresent());
+
+		Trie<String> sub = trie.subTrie("Ho");
+
+		assertFalse(sub.removeFirst().isPresent());
+
+		assertTrue(trie.add("Farmhouse"));
+		assertFalse(sub.removeFirst().isPresent());
+
+		assertTrue(trie.add("House"));
+		assertEquals("House", sub.removeFirst().get());
+		assertFalse(sub.removeFirst().isPresent());
+
+		trie.clear();
+		assertTrue(trie.add("House"));
+		assertTrue(trie.add("Hut"));
+		assertEquals("House", sub.removeFirst().get());
+		assertFalse(sub.contains("Hut"));
+		assertFalse(sub.removeFirst().isPresent());
+	}
 }

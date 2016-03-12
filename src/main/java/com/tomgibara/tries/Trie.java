@@ -388,6 +388,29 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	}
 
 	/**
+	 * Removes the first element of the trie, if it exists. The removed element
+	 * is returned as an optional.
+	 * 
+	 * @return the element removed, or empty
+	 * @see #first()
+	 */
+
+	public Optional<E> removeFirst() {
+		TrieNodePath path = nodes.newPath(serialization.capacity());
+		serialization.set(prefix);
+		path.first(serialization, prefix.length);
+		if (path.isEmpty()) return Optional.empty();
+		if (!path.head().isTerminal()) {
+			path.advance(serialization, prefix.length);
+		}
+		if (path.isEmpty()) return Optional.empty();
+		boolean removed = path.terminate(false);
+		assert(removed);
+		path.prune();
+		return Optional.of( serialization.get() );
+	}
+	
+	/**
 	 * Optionally, the first element of the trie, or empty. If it exists, this
 	 * is the element whose serialization comes first, with respect to the byte
 	 * order defined for the trie, or equivalently, the greatest element of the
