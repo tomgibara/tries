@@ -90,13 +90,13 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void first(TrieSerialization<?> serialization) {
-		path.first(serialization);
+	public void first(TrieSerialization<?> serialization, int minimumLength) {
+		path.first(serialization, minimumLength);
 	}
 
 	@Override
-	public void advance(TrieSerialization<?> serialization, int prefixLength) {
-		path.advance(serialization, prefixLength);
+	public void advance(TrieSerialization<?> serialization, int minimumLength) {
+		path.advance(serialization, minimumLength);
 	}
 
 	@Override

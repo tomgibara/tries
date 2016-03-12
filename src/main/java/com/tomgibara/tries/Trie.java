@@ -386,7 +386,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		}
 		return Optional.of(serialization.get());
 	}
-	
+
 	/**
 	 * Optionally, the first element of the trie, or empty. If it exists, this
 	 * is the element whose serialization comes first, with respect to the byte
@@ -648,7 +648,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 					serial.set(e);
 					if (!serial.startsWith(prefix)) throw new IllegalArgumentException("inital element not in sub-trie");
 				}
-				path.first(serial);
+				path.first(serial, prefix.length);
 				if (!path.isEmpty() && !path.head().isTerminal()) advance();
 			}
 		}
@@ -686,7 +686,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 				serial.set(previous);
 			}
 			path.reset();
-			path.first(serial);
+			path.first(serial, prefix.length);
 			if (!path.isEmpty()) advance();
 		}
 

@@ -231,11 +231,18 @@ public interface TrieNodePath {
 	 * extends beyond the root node when this method is called, the
 	 * serialization may be assumed to match the initial length of the path.
 	 * 
+	 * <p>
+	 * In some cases, this method will be called with a non-zero
+	 * <code>minimumLength</code>. In this case the path must not backtrack to a
+	 * length less than this value, instead it should return in an empty state.
+	 * 
 	 * @param serialization
 	 *            a serialization
+	 * @param minimumLength
+	 *            a length beyond which the path should not backtrack
 	 */
 
-	void first(TrieSerialization<?> serialization);
+	void first(TrieSerialization<?> serialization, int minimumLength);
 
 	/**
 	 * <p>

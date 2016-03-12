@@ -151,7 +151,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void first(TrieSerialization<?> serial) {
+	public void first(TrieSerialization<?> serial, int minimumLength) {
 		int len = serial.length();
 		byte[] buffer = serial.buffer();
 
@@ -159,31 +159,33 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			byte value = buffer[i];
 			head = head.findChildOrNext(value);
 			if (head == null) {
-				if (i == 0) {
-					head = null;
-					serial.reset();
-					length = 0;
-				} else {
-					serial.trim(i);
-					for (;i > 0; i--) {
-						head = stack[length - 1];
-						head = stack[length - 1] = head.getSibling();
-						if (head != null) {
-							serial.replace(head.getValue());
-							return;
-						}
-						serial.pop();
-						length--;
+				serial.trim(i);
+				for (;i > minimumLength; i--) {
+					head = stack[length - 1];
+					head = stack[length - 1] = head.getSibling();
+					if (head != null) {
+						serial.replace(head.getValue());
+						return;
 					}
+					serial.pop();
 					length--;
 				}
+				head = null;
+				serial.reset();
+				length = 0;
 				return;
 			}
 			stack[length++] = head;
 			byte v = head.getValue();
 			if (v != value) {
-				serial.trim(i);
-				serial.push(v);
+				if (i >= minimumLength) {
+					serial.trim(i);
+					serial.push(v);
+				} else {
+					head = null;
+					serial.reset();
+					length = 0;
+				}
 				return;
 			}
 		}
@@ -197,7 +199,12 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 				serial.push(head.getValue());
 				continue outer;
 			}
-			while (length > 1) {
+			if (length == 1) {
+				length = 0;
+				head = null;
+				return;
+			}
+			do {
 				if (head.hasSibling()) {
 					stack[length - 1] = head = head.getSibling();
 					serial.replace(head.getValue());
@@ -212,7 +219,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 					return;
 				}
 				head = stack[length - 1];
-			}
+			} while (length > 1);
 		} while (!head.isTerminal());
 	}
 
