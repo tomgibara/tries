@@ -396,20 +396,18 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 */
 
 	public Optional<E> removeFirst() {
+		if (isEmpty()) return Optional.empty();
 		TrieNodePath path = nodes.newPath(serialization.capacity());
 		serialization.set(prefix);
-		path.first(serialization, prefix.length);
-		if (path.isEmpty()) return Optional.empty();
-		if (!path.head().isTerminal()) {
-			path.advance(serialization, prefix.length);
-		}
-		if (path.isEmpty()) return Optional.empty();
+		path.deserialize(serialization);
+		while (!path.head().isTerminal() && path.walkChild());
+		path.serialize(serialization);
 		boolean removed = path.terminate(false);
 		assert(removed);
 		path.prune();
 		return Optional.of( serialization.get() );
 	}
-	
+
 	/**
 	 * Optionally, the first element of the trie, or empty. If it exists, this
 	 * is the element whose serialization comes first, with respect to the byte
@@ -432,6 +430,27 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		}
 		assert(node.isTerminal());
 		return Optional.of(serialization.get());
+	}
+
+	/**
+	 * Removes the last element of the trie, if it exists. The removed element
+	 * is returned as an optional.
+	 * 
+	 * @return the element removed, or empty
+	 * @see #last()
+	 */
+
+	public Optional<E> removeLast() {
+		if (isEmpty()) return Optional.empty();
+		TrieNodePath path = nodes.newPath(serialization.capacity());
+		serialization.set(prefix);
+		path.deserialize(serialization);
+		while (path.walkLastChild());
+		path.serialize(serialization);
+		boolean removed = path.terminate(false);
+		assert(removed);
+		path.prune();
+		return Optional.of( serialization.get() );
 	}
 
 	/**

@@ -166,6 +166,15 @@ public interface TrieNodePath {
 	boolean walkChild();
 
 	/**
+	 * Advances to the last child of the head, as returned by
+	 * {@link TrieNode#getLastChild()}, if it exists.
+	 * 
+	 * @return true if the path was advanced, false otherwise
+	 */
+
+	boolean walkLastChild();
+
+	/**
 	 * Changes the current head of the list to its sibling, as returned by
 	 * {@link TrieNode#getChild()}, if it exists.
 	 * 

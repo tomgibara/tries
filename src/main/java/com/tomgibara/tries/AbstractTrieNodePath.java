@@ -1,5 +1,7 @@
 package com.tomgibara.tries;
 
+import java.util.Arrays;
+
 import com.tomgibara.streams.WriteStream;
 import com.tomgibara.tries.nodes.TrieNode;
 import com.tomgibara.tries.nodes.TrieNodePath;
@@ -112,6 +114,14 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	@Override
 	public boolean walkChild() {
 		AbstractTrieNode node = head.getChild();
+		if (node == null) return false;
+		stack[length++] = head = node;
+		return true;
+	}
+
+	@Override
+	public boolean walkLastChild() {
+		AbstractTrieNode node = head.getLastChild();
 		if (node == null) return false;
 		stack[length++] = head = node;
 		return true;
@@ -235,6 +245,13 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 		nodes.writeNodes(stream, stack, length);
 	}
 
+	// object methods
+	
+	@Override
+	public String toString() {
+		return Arrays.asList(Arrays.copyOf(stack, length)).toString();
+	}
+	
 	// package scoped methods
 	
 	/*

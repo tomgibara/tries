@@ -70,6 +70,11 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
+	public boolean walkLastChild() {
+		return path.walkLastChild();
+	}
+
+	@Override
 	public boolean walkSibling() {
 		return path.walkSibling();
 	}
