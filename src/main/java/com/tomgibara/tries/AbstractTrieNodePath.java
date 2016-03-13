@@ -57,7 +57,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			head.setTerminal(true);
 			incrementCounts();
 		} else {
-			decrementCounts();
+			decrementCounts(-1);
 			head.setTerminal(false);
 		}
 		return true;
@@ -254,19 +254,24 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	
 	// package scoped methods
 	
+	void push(AbstractTrieNode node) {
+		stack[length ++] = head = node;
+	}
+	
 	/*
 	 * Decrements the child count of all of the nodes in this path. Non-counting
 	 * trees may ignore this method call.
 	 */
 
-	abstract void decrementCounts();
+	// called with -ve amount
+	abstract void decrementCounts(int adj);
+
 	/*
 	 * Increments the child count of all of the nodes in this path. Non-counting
 	 * trees may ignore this method call.
 	 */
 
 	abstract void incrementCounts();
-
 
 	TrieNode[] stack() {
 		return stack;

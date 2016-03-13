@@ -50,6 +50,11 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
+	public void dangle() {
+		imm();
+	}
+
+	@Override
 	public void prune() {
 		imm();
 	}

@@ -138,15 +138,6 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	}
 
 	/**
-	 * Removes all of the nodes from the tree, leaving only the root node.
-	 * In addition, the root node is stripped of any terminal status.
-	 * 
-	 * @see TrieNode#isTerminal()
-	 */
-	
-	void clear();
-	
-	/**
 	 * Returns the number of invalidations that have occurred on this tree. An
 	 * invalidation occurs when a structural change is made that invalidates one
 	 * or more node instances belonging to this tree. Note that many possible

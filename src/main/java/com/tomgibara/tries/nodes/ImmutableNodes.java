@@ -23,10 +23,6 @@ class ImmutableNodes implements TrieNodes {
 
 	// statics
 	
-	private static final <T> T imm() {
-		throw new IllegalStateException("immutable");
-	}
-
 	static ImmutableNodes nodes(TrieNodes nodes) {
 		return new ImmutableNodes(nodes);
 	}
@@ -109,11 +105,6 @@ class ImmutableNodes implements TrieNodes {
 	@Override
 	public void compact() {
 		// no-op
-	}
-
-	@Override
-	public void clear() {
-		imm();
 	}
 
 	@Override

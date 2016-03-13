@@ -171,18 +171,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public void clear() {
-		freeCount = 0;
-		freeIndex = -1;
-		nodeLimit = 1;
-		nodeCount = 1;
-		root.setTerminal(false);
-		root.setSibling(null);
-		root.setChild(null);
-		if (counting) root.setExternalCount(0);
-	}
-	
-	@Override
 	public long invalidations() {
 		return invalidations;
 	}
@@ -435,10 +423,9 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public PackedNode getChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd < getValueCount()) return new PackedNode(index, childOrd);
-			int childIndex = getChildIndex();
-			return childIndex == 0 ? null : new PackedNode(childIndex);
+			return getSeparateChild();
 		}
-		
+
 		@Override
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
@@ -577,6 +564,11 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			if (hasChild) node.readNode(stream, false, awaitingSiblings);
 		}
 
+		private PackedNode getSeparateChild() {
+			int childIndex = getChildIndex();
+			return childIndex == 0 ? null : new PackedNode(childIndex);
+		}
+		
 		private void separate() {
 			if (ordinal == 0 && getValueCount() == 1) return;
 			if (ordinal == 0) {
@@ -736,6 +728,37 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
+		public void dangle() {
+			// special case - we can dangle the root quickly
+			if (head == root) {
+				freeCount = 0;
+				freeIndex = -1;
+				nodeLimit = 1;
+				nodeCount = 1;
+				root.setTerminal(false);
+				root.setSibling(null);
+				root.setChild(null);
+				if (counting) root.setExternalCount(0);
+				return;
+			}
+			// regular case we unterminate, detach child, recursively delete, and update counts
+			PackedNode node = (PackedNode) head;
+			int count = node.getCount();
+			node.setTerminal(false);
+			PackedNode child = node.separateChild();
+			delete(child);
+			node.setChild(null);
+			pop(); decrementCounts(-count); push(node);
+		}
+
+		private void delete(PackedNode node) {
+			if (node == null) return;
+			delete( node.getSeparateChild() );
+			delete( node.getSibling()       );
+			node.delete();
+		}
+
+		@Override
 		public void incrementCounts() {
 			if (!counting) return;
 			if (length == 0) return;
@@ -753,7 +776,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		public void decrementCounts() {
+		public void decrementCounts(int adj) {
 			if (!counting) return;
 			if (length == 0) return;
 			PackedNode[] stack = stack();
@@ -764,15 +787,16 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				PackedNode node = stack[i];
 				int index = node.index;
 				if (index == previous) continue;
-				if (index != 0) node.adjustCount(-1);
+				if (index != 0) node.adjustCount(adj);
 				previous = index;
 			}
-			if (last != 0) root.adjustCount(-1);
+			if (last != 0) root.adjustCount(adj);
 		}
 		
 		@Override
 		PackedNode[] stack() {
 			return (PackedNode[]) stack;
 		}
+
 	}
 }

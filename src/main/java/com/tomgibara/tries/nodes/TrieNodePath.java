@@ -116,6 +116,17 @@ public interface TrieNodePath {
 	 */
 
 	boolean terminate(boolean terminal);
+
+	/**
+	 * Forces the head to dangle: removing any children and assigning it a
+	 * non-terminal status. The implementation may assume that the path will be
+	 * explicitly pruned.
+	 * 
+	 * @see TrieNode#isDangling()
+	 * @see #prune()
+	 */
+
+	void dangle();
 	
 	/**
 	 * Removes any dangling nodes in present in the path from the trie.

@@ -140,18 +140,6 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public void clear() {
-		freeCount = 0;
-		freeIndex = -1;
-		nodeLimit = 1;
-		nodeCount = 1;
-		root.setTerminal(false);
-		root.setSibling(null);
-		root.setChild(null);
-		if (counting) root.setExternalCount(0);
-	}
-	
-	@Override
 	public long invalidations() {
 		return invalidations;
 	}
@@ -408,10 +396,9 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		public CompactNode getChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd < getValueCount()) return new CompactNode(index, childOrd);
-			int childIndex = getChildIndex();
-			return childIndex == 0 ? null : new CompactNode(childIndex);
+			return getSeparateChild();
 		}
-		
+
 		@Override
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
@@ -689,6 +676,11 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			if (hasChild) node.readNode(stream, false, awaitingSiblings);
 		}
 
+		private CompactNode getSeparateChild() {
+			int childIndex = getChildIndex();
+			return childIndex == 0 ? null : new CompactNode(childIndex);
+		}
+		
 		private void separate() {
 			if (ordinal == 0 && getValueCount() == 1) return;
 			if (ordinal == 0) {
@@ -966,7 +958,38 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		public void incrementCounts() {
+		public void dangle() {
+			// special case - we can dangle the root quickly
+			if (head == root) {
+				freeCount = 0;
+				freeIndex = -1;
+				nodeLimit = 1;
+				nodeCount = 1;
+				root.setTerminal(false);
+				root.setSibling(null);
+				root.setChild(null);
+				if (counting) root.setExternalCount(0);
+				return;
+			}
+			// regular case we unterminate, detach child, recursively delete, and update counts
+			CompactNode node = (CompactNode) head;
+			int count = node.getCount();
+			node.setTerminal(false);
+			CompactNode child = node.separateChild();
+			delete(child);
+			node.setChild(null);
+			pop(); decrementCounts(-count); push(node);
+		}
+
+		private void delete(CompactNode node) {
+			if (node == null) return;
+			delete( node.getSeparateChild() );
+			delete( node.getSibling()       );
+			node.delete();
+		}
+
+		@Override
+		void incrementCounts() {
 			if (!counting) return;
 			if (length == 0) return;
 			int last = ((CompactNode) stack[length - 1]).index;
@@ -982,7 +1005,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		}
 
 		@Override
-		public void decrementCounts() {
+		void decrementCounts(int adj) {
 			if (!counting) return;
 			if (length == 0) return;
 			CompactNode[] stack = stack();
@@ -993,10 +1016,10 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				CompactNode node = stack[i];
 				int index = node.index;
 				if (index == previous) continue;
-				if (index != 0) node.adjustCount(-1);
+				if (index != 0) node.adjustCount(adj);
 				previous = index;
 			}
-			if (last != 0) root.adjustCount(-1);
+			if (last != 0) root.adjustCount(adj);
 		}
 		
 		@Override

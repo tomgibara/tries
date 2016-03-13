@@ -100,13 +100,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public void clear() {
-		root.child = null;
-		root.sibling = null;
-		root.count = 0;
-	}
-
-	@Override
 	public long invalidations() {
 		return invalidations;
 	}
@@ -306,9 +299,34 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		BasicPath(AbstractTrieNodes nodes, int capacity) {
 			super(nodes, new BasicNode[capacity + 1]);
 		}
-		
+
 		@Override
-		public void incrementCounts() {
+		public void dangle() {
+			if (head == root) {
+				root.child = null;
+				root.sibling = null;
+				root.count = 0;
+				return;
+			}
+
+			// set up
+			BasicNode[] stack = stack();
+			int len = length - 1;
+			BasicNode head = stack[len];
+			int count = head.count;
+			// dangle head
+			head.child = null;
+			head.sibling = null;
+			head.terminal = false;
+			head.count = 0;
+			// correct ancestor counts
+			for (int i = 0; i < len; i++) {
+				stack[i].count -= count;
+			}
+		}
+
+		@Override
+		void incrementCounts() {
 			BasicNode[] stack = stack();
 			for (int i = 0; i < length; i++) {
 				stack[i].count ++;
@@ -316,10 +334,10 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		}
 		
 		@Override
-		public void decrementCounts() {
+		void decrementCounts(int adj) {
 			BasicNode[] stack = stack();
 			for (int i = 0; i < length; i++) {
-				stack[i].count --;
+				stack[i].count += adj;
 			}
 		}
 		

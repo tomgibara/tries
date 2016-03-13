@@ -125,18 +125,25 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	/**
 	 * Removes all elements from the trie.
+	 * 
+	 * @return true if the trie was modified; false indicates the trie was
+	 * already empty
 	 */
 
-	public void clear() {
+	public boolean clear() {
+		// empty prefix is a special case, because root node is allowed to dangle
 		if (prefix.length == 0) {
-			nodes.clear();
-		} else {
-			//TODO optimize
-			for (Iterator<E> i = iterator(); i.hasNext(); i.remove()) i.next();
-			// ensure prefix is terminal
-			// then repeatedly remove child and eradicate it
-			// finally reset terminal status
+			if (nodes.root().isDangling()) return false;
+			nodes.newPath(0).dangle();
+			return true;
 		}
+
+		// regular case, root node - if it exists - cannot already dangle
+		TrieNodePath path = nodes.newPath(serialization.capacity());
+		serialization.set(prefix);
+		if (!path.deserialize(serialization)) return false; // root doesn't exist - trie must be empty
+		path.dangle();
+		return true;
 	}
 	
 	/**
@@ -397,9 +404,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	public Optional<E> removeFirst() {
 		if (isEmpty()) return Optional.empty();
-		TrieNodePath path = nodes.newPath(serialization.capacity());
-		serialization.set(prefix);
-		path.deserialize(serialization);
+		TrieNodePath path = rootPath();
 		while (!path.head().isTerminal() && path.walkChild());
 		path.serialize(serialization);
 		boolean removed = path.terminate(false);
@@ -442,9 +447,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	public Optional<E> removeLast() {
 		if (isEmpty()) return Optional.empty();
-		TrieNodePath path = nodes.newPath(serialization.capacity());
-		serialization.set(prefix);
-		path.deserialize(serialization);
+		TrieNodePath path = rootPath();
 		while (path.walkLastChild());
 		path.serialize(serialization);
 		boolean removed = path.terminate(false);
@@ -668,6 +671,13 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return node == null ? false : node.isTerminal();
 	}
 
+	private TrieNodePath rootPath() {
+		TrieNodePath path = nodes.newPath(serialization.capacity());
+		serialization.set(prefix);
+		path.deserialize(serialization);
+		return path;
+	}
+	
 	// inner classes
 	
 	class NodeIterator implements Iterator<E> {

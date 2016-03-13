@@ -1082,4 +1082,63 @@ public abstract class TrieTest {
 		assertFalse(sub.contains("Hut"));
 		assertFalse(sub.removeLast().isPresent());
 	}
+	
+	@Test
+	public void testClear() {
+		Trie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).newTrie();
+
+		assertTrue(trie.isEmpty());
+		assertFalse(trie.clear());
+		assertEquals(0, trie.size());
+
+		trie.add("Something");
+		assertFalse(trie.isEmpty());
+		assertTrue(trie.clear());
+		assertTrue(trie.isEmpty());
+		assertFalse(trie.iterator().hasNext());
+		assertEquals(0, trie.size());
+
+		trie.add("Something");
+		trie.add("Something else");
+		assertFalse(trie.isEmpty());
+		assertTrue(trie.clear());
+		assertTrue(trie.isEmpty());
+		assertFalse(trie.iterator().hasNext());
+		assertEquals(0, trie.size());
+
+		Trie<String> sub = trie.subTrie("Something");
+		assertTrue(sub.isEmpty());
+		assertFalse(sub.clear());
+		assertEquals(0, sub.size());
+
+		trie.add("Nothing");
+		assertTrue(sub.isEmpty());
+		assertFalse(sub.clear());
+		assertFalse(trie.isEmpty());
+		assertEquals("Nothing", trie.iterator().next());
+		assertEquals(1, trie.size());
+		assertEquals(0, sub.size());
+
+		trie.add("Something");
+		assertFalse(sub.isEmpty());
+		assertTrue(sub.clear());
+		assertTrue(sub.isEmpty());
+		assertFalse(sub.iterator().hasNext());
+		assertFalse(trie.isEmpty());
+		assertEquals("Nothing", trie.iterator().next());
+		assertEquals(1, trie.size());
+		assertEquals(0, sub.size());
+
+		trie.add("Something");
+		trie.add("Something else");
+		assertFalse(sub.isEmpty());
+		assertTrue(sub.clear());
+		assertTrue(sub.isEmpty());
+		assertFalse(sub.iterator().hasNext());
+		assertFalse(trie.isEmpty());
+		assertEquals("Nothing", trie.iterator().next());
+		assertEquals(1, trie.size());
+		assertEquals(0, sub.size());
+
+	}
 }
