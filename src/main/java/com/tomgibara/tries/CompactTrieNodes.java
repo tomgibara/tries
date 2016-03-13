@@ -871,6 +871,7 @@ class CompactTrieNodes extends AbstractTrieNodes {
 			} else {
 				data[offset] &= ~SIBLING_MASK;
 			}
+			invalidations ++;
 		}
 		
 		private int getSiblingIndex() {
