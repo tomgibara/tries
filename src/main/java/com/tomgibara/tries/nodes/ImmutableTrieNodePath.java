@@ -45,6 +45,11 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
+	public void push(TrieSerialization<?> serialization) {
+		imm();
+	}
+
+	@Override
 	public boolean terminate(boolean terminal) {
 		return imm();
 	}
@@ -90,23 +95,23 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void serialize(TrieSerialization<?> serialization) {
-		path.serialize(serialization);
+	public void serialize() {
+		path.serialize();
 	}
 
 	@Override
-	public boolean deserialize(TrieSerialization<?> serialization) {
-		return path.deserialize(serialization);
+	public boolean deserialize() {
+		return path.deserialize();
 	}
 
 	@Override
-	public void first(TrieSerialization<?> serialization, int minimumLength) {
-		path.first(serialization, minimumLength);
+	public void first(int minimumLength) {
+		path.first(minimumLength);
 	}
 
 	@Override
-	public void advance(TrieSerialization<?> serialization, int minimumLength) {
-		path.advance(serialization, minimumLength);
+	public void advance(int minimumLength) {
+		path.advance(minimumLength);
 	}
 
 	@Override

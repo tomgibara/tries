@@ -134,14 +134,15 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		// empty prefix is a special case, because root node is allowed to dangle
 		if (prefix.length == 0) {
 			if (nodes.root().isDangling()) return false;
-			nodes.newPath(0).dangle();
+			serialization.reset();
+			nodes.newPath(serialization).dangle();
 			return true;
 		}
 
 		// regular case, root node - if it exists - cannot already dangle
-		TrieNodePath path = nodes.newPath(serialization.capacity());
+		TrieNodePath path = nodes.newPath(serialization);
 		serialization.set(prefix);
-		if (!path.deserialize(serialization)) return false; // root doesn't exist - trie must be empty
+		if (!path.deserialize()) return false; // root doesn't exist - trie must be empty
 		path.dangle();
 		return true;
 	}
@@ -183,7 +184,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) throw new IllegalArgumentException("element not in sub-trie");
-		return add(serialization.buffer(), serialization.length());
+		return addSerialization();
 	}
 
 	/**
@@ -216,8 +217,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) return false;
-		TrieNodePath path = nodes.newPath(serialization.capacity());
-		if (!path.deserialize(serialization)) return false;
+		TrieNodePath path = nodes.newPath(serialization);
+		if (!path.deserialize()) return false;
 		boolean removed = path.terminate(false);
 		if (removed) path.prune();
 		return removed;
@@ -406,7 +407,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		if (isEmpty()) return Optional.empty();
 		TrieNodePath path = rootPath();
 		while (!path.head().isTerminal() && path.walkChild());
-		path.serialize(serialization);
+		path.serialize();
 		boolean removed = path.terminate(false);
 		assert(removed);
 		path.prune();
@@ -449,7 +450,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		if (isEmpty()) return Optional.empty();
 		TrieNodePath path = rootPath();
 		while (path.walkLastChild());
-		path.serialize(serialization);
+		path.serialize();
 		boolean removed = path.terminate(false);
 		assert(removed);
 		path.prune();
@@ -575,8 +576,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	public void writeTo(WriteStream stream) {
 		if (stream == null) throw new IllegalArgumentException("null stream");
 		serialization.set(prefix);
-		TrieNodePath path = nodes.newPath(serialization.capacity());
-		if (!path.deserialize(serialization) || path.head().isDangling()) {
+		TrieNodePath path = nodes.newPath(serialization);
+		if (!path.deserialize() || path.head().isDangling()) {
 			path.reset();
 			path.pop();
 		}
@@ -648,12 +649,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	// private helper methods
 	
-	private boolean add(byte[] bytes, int length) {
-		nodes.ensureExtraCapacity(length);
-		TrieNodePath path = nodes.newPath(length);
-		for (int i = 0; i < length; i++) {
-			path.push(bytes[i]);
-		}
+	private boolean addSerialization() {
+		TrieNodePath path = nodes.newPath(serialization);
+		path.push(serialization);
 		return path.terminate(true);
 	}
 
@@ -672,9 +670,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	}
 
 	private TrieNodePath rootPath() {
-		TrieNodePath path = nodes.newPath(serialization.capacity());
+		TrieNodePath path = nodes.newPath(serialization);
 		serialization.set(prefix);
-		path.deserialize(serialization);
+		path.deserialize();
 		return path;
 	}
 	
@@ -685,7 +683,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		final TrieSerialization<E> serial = serialization.resetCopy();
 		//TrieNode[] stack = new TrieNode[serial.capacity()];
 		//TrieNode next;
-		TrieNodePath path = nodes.newPath(serial.capacity());
+		TrieNodePath path = nodes.newPath(serial);
 		private E previous = null;
 		private boolean removed = false;
 		private long invalidations = nodes.invalidations();
@@ -700,7 +698,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 					serial.set(e);
 					if (!serial.startsWith(prefix)) throw new IllegalArgumentException("inital element not in sub-trie");
 				}
-				path.first(serial, prefix.length);
+				path.first(prefix.length);
 				if (!path.isEmpty() && !path.head().isTerminal()) advance();
 			}
 		}
@@ -738,12 +736,12 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 				serial.set(previous);
 			}
 			path.reset();
-			path.first(serial, prefix.length);
+			path.first(prefix.length);
 			if (!path.isEmpty()) advance();
 		}
 
 		private void advance() {
-			path.advance(serial, prefix.length);
+			path.advance(prefix.length);
 		}
 
 		private void checkInvalidations() {
@@ -789,7 +787,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 			if (!serialization.isSerializable(e)) return false;
 			serialization.set(e);
 			if (!serialization.startsWith(prefix)) return false;
-			return Trie.this.add(serialization.buffer(), serialization.length());
+			return Trie.this.addSerialization();
 		}
 
 		@Override

@@ -31,11 +31,15 @@ abstract class AbstractTrieNodes implements TrieNodes {
 
 	abstract AbstractTrieNode newNode(byte value);
 	
-	abstract void adopt(AbstractTrieNode ours, TrieNode theirs);
-	
+	abstract AbstractTrieNode[] newStack(int length);
+
 	// called when reading has been finished
 	abstract void readComplete();
 
+	abstract void ensureExtraCapacity(int extraCapacity);
+
+	abstract void adopt(AbstractTrieNode ours, TrieNode theirs);
+	
 	void writeNodes(WriteStream stream, TrieNode[] stack, int length) {
 		if (length == 0) return;
 		int last = length - 1;

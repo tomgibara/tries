@@ -145,14 +145,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public void ensureExtraCapacity(int extraCapacity) {
-		int free = (capacity - nodeLimit) + freeCount;
-		if (free >= extraCapacity) return;
-		extraCapacity = max(capacity, max(extraCapacity, 256));
-		compact(capacity + extraCapacity, counting);
-	}
-	
-	@Override
 	public PackedNode newNode(byte value) {
 		PackedNode n = newNode();
 		n.setChildValue(0, value);
@@ -161,8 +153,8 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public TrieNodePath newPath(int capacity) {
-		return new PackedPath(this, capacity);
+	public TrieNodePath newPath(TrieSerialization<?> serialization) {
+		return new PackedPath(this, serialization);
 	}
 	
 	@Override
@@ -194,6 +186,19 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	@Override
 	void dump() {
 		dump(System.out, 0, root);
+	}
+	
+	@Override
+	void ensureExtraCapacity(int extraCapacity) {
+		int free = (capacity - nodeLimit) + freeCount;
+		if (free >= extraCapacity) return;
+		extraCapacity = max(capacity, max(extraCapacity, 256));
+		compact(capacity + extraCapacity, counting);
+	}
+	
+	@Override
+	AbstractTrieNode[] newStack(int length) {
+		return new PackedNode[length];
 	}
 	
 	@Override
@@ -723,8 +728,8 @@ class PackedTrieNodes extends AbstractTrieNodes {
 
 	private class PackedPath extends AbstractTrieNodePath {
 
-		PackedPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, new PackedNode[capacity + 1]);
+		PackedPath(AbstractTrieNodes nodes, TrieSerialization<?> serialization) {
+			super(nodes, serialization);
 		}
 
 		@Override

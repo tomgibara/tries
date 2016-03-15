@@ -17,6 +17,7 @@
 package com.tomgibara.tries.nodes;
 
 import com.tomgibara.tries.ByteOrder;
+import com.tomgibara.tries.TrieSerialization;
 
 
 class ImmutableNodes implements TrieNodes {
@@ -93,20 +94,15 @@ class ImmutableNodes implements TrieNodes {
 	}
 
 	@Override
-	public void ensureExtraCapacity(int extraCapacity) {
-		return; // no-op
-	}
-
-	@Override
-	public TrieNodePath newPath(int capacity) {
-		return new ImmutableTrieNodePath(nodes.newPath(capacity));
-	}
-	
-	@Override
 	public void compact() {
 		// no-op
 	}
 
+	@Override
+	public TrieNodePath newPath(TrieSerialization<?> serialization) {
+		return new ImmutableTrieNodePath(nodes.newPath(serialization));
+	}
+	
 	@Override
 	public long invalidations() {
 		return nodes.invalidations();

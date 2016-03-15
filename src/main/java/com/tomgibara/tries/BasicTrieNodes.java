@@ -95,8 +95,8 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public TrieNodePath newPath(int capacity) {
-		return new BasicPath(this, capacity);
+	public TrieNodePath newPath(TrieSerialization<?> serialization) {
+		return new BasicPath(this, serialization);
 	}
 
 	@Override
@@ -117,6 +117,15 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	@Override
 	void readComplete() {
 		root.computeCounts();
+	}
+	
+	void ensureExtraCapacity(int extraCapacity) {
+		// no op
+	}
+	
+	@Override
+	AbstractTrieNode[] newStack(int length) {
+		return new BasicNode[length];
 	}
 	
 	private BasicNode adopt(BasicNode ours, TrieNode theirs) {
@@ -296,8 +305,8 @@ class BasicTrieNodes extends AbstractTrieNodes {
 
 	private class BasicPath extends AbstractTrieNodePath {
 
-		BasicPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, new BasicNode[capacity + 1]);
+		BasicPath(AbstractTrieNodes nodes, TrieSerialization<?> serialization) {
+			super(nodes, serialization);
 		}
 
 		@Override

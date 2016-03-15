@@ -9,13 +9,15 @@ import com.tomgibara.tries.nodes.TrieNodePath;
 abstract class AbstractTrieNodePath implements TrieNodePath {
 
 	final AbstractTrieNodes nodes;
+	final TrieSerialization<?> serialization;
 	final AbstractTrieNode[] stack;
 	AbstractTrieNode head;
 	int length = 1;
 	
-	AbstractTrieNodePath(AbstractTrieNodes nodes, AbstractTrieNode[] stack) {
+	AbstractTrieNodePath(AbstractTrieNodes nodes, TrieSerialization<?> serialization) {
 		this.nodes = nodes;
-		this.stack = stack;
+		this.serialization = serialization;
+		this.stack = nodes.newStack(serialization.capacity() + 1);
 		stack[0] = head = nodes.root();
 	}
 
@@ -48,6 +50,17 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	@Override
 	public void push(byte value) {
 		stack[length ++] = head = head.findOrInsertChild(value);
+	}
+	
+	@Override
+	public void push(TrieSerialization<?> serialization) {
+		byte[] buffer = serialization.buffer();
+		int len = serialization.length();
+
+		nodes.ensureExtraCapacity(len - length + 1);
+		for (int i = length - 1; i < len; i++) {
+			push(buffer[i]);
+		}
 	}
 
 	@Override
@@ -143,14 +156,14 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void serialize(TrieSerialization<?> serialization) {
+	public void serialize() {
 		for (int i = serialization.length() + 1; i < length; i++) {
 			serialization.push(stack[i].getValue());
 		}
 	}
 
 	@Override
-	public boolean deserialize(TrieSerialization<?> serialization) {
+	public boolean deserialize() {
 		byte[] buffer = serialization.buffer();
 		int len = serialization.length();
 
@@ -161,27 +174,27 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void first(TrieSerialization<?> serial, int minimumLength) {
-		int len = serial.length();
-		byte[] buffer = serial.buffer();
+	public void first(int minimumLength) {
+		int len = serialization.length();
+		byte[] buffer = serialization.buffer();
 
 		for (int i = length - 1; i < len; i++) {
 			byte value = buffer[i];
 			head = head.findChildOrNext(value);
 			if (head == null) {
-				serial.trim(i);
+				serialization.trim(i);
 				for (;i > minimumLength; i--) {
 					head = stack[length - 1];
 					head = stack[length - 1] = head.getSibling();
 					if (head != null) {
-						serial.replace(head.getValue());
+						serialization.replace(head.getValue());
 						return;
 					}
-					serial.pop();
+					serialization.pop();
 					length--;
 				}
 				head = null;
-				serial.reset();
+				serialization.reset();
 				length = 0;
 				return;
 			}
@@ -189,11 +202,11 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			byte v = head.getValue();
 			if (v != value) {
 				if (i >= minimumLength) {
-					serial.trim(i);
-					serial.push(v);
+					serialization.trim(i);
+					serialization.push(v);
 				} else {
 					head = null;
-					serial.reset();
+					serialization.reset();
 					length = 0;
 				}
 				return;
@@ -202,11 +215,11 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public void advance(TrieSerialization<?> serial, int minimumLength) {
+	public void advance(int minimumLength) {
 		outer: do {
 			if (head.hasChild()) {
 				stack[length ++] = head = head.getChild();
-				serial.push(head.getValue());
+				serialization.push(head.getValue());
 				continue outer;
 			}
 			if (length == 1) {
@@ -217,13 +230,13 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			do {
 				if (head.hasSibling()) {
 					stack[length - 1] = head = head.getSibling();
-					serial.replace(head.getValue());
+					serialization.replace(head.getValue());
 					continue outer;
 				}
-				serial.pop();
+				serialization.pop();
 				length --;
 				// note may be less than prefix length if former element was the prefix
-				if (serial.length() <= minimumLength) {
+				if (serialization.length() <= minimumLength) {
 					length = 0;
 					head = null;
 					return;

@@ -20,6 +20,7 @@ import com.tomgibara.fundament.Mutability;
 import com.tomgibara.tries.ByteOrder;
 import com.tomgibara.tries.IndexedTrie;
 import com.tomgibara.tries.Trie;
+import com.tomgibara.tries.TrieSerialization;
 
 /**
  * <p>
@@ -95,26 +96,10 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	TrieNode root();
 
 	/**
-	 * This method is called to provide the tree with an opportunity to allocate
-	 * new node storage. The method is guaranteed to be called prior to the
-	 * addition of nodes to the tree. This means that complete node
-	 * reorganizations that might invalidate existing node objects can be
-	 * avoided. Note that this may be a no-op for many possible tree
-	 * implementations.
-	 * 
-	 * @param extraCapacity
-	 *            the extra number of nodes that may be needed
-	 * @see #invalidations()
-	 */
-	
-	default void ensureExtraCapacity(int extraCapacity) {
-		/* a no-op for many possible implementations */
-	}
-
-	/**
 	 * <p>
 	 * Creates a new path that can traverse the trie. If the trie is mutable,
-	 * the path may be used to modify the trie.
+	 * the path may be used to modify the trie. Every trie is associated with a
+	 * serialization that can be used to generate or record a path.
 	 * 
 	 * <p>
 	 * The new path will consist of a single node: the root of this trie.
@@ -125,7 +110,7 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	 * @return a new path
 	 */
 
-	TrieNodePath newPath(int capacity);
+	TrieNodePath newPath(TrieSerialization<?> serialization);
 
 	/**
 	 * Instructs the tree that node storage should be compacted. The tree should

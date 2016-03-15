@@ -114,14 +114,6 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	public void ensureExtraCapacity(int extraCapacity) {
-		int free = (capacity - nodeLimit) + freeCount;
-		if (free >= extraCapacity) return;
-		extraCapacity = max(capacity, max(extraCapacity, 256));
-		compact(capacity + extraCapacity, counting);
-	}
-	
-	@Override
 	public CompactNode newNode(byte value) {
 		CompactNode n = newNode();
 		n.setChildValue(0, value);
@@ -130,8 +122,8 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	}
 	
 	@Override
-	public TrieNodePath newPath(int capacity) {
-		return new CompactPath(this, capacity);
+	public TrieNodePath newPath(TrieSerialization<?> serialization) {
+		return new CompactPath(this, serialization);
 	}
 
 	@Override
@@ -165,6 +157,19 @@ class CompactTrieNodes extends AbstractTrieNodes {
 		dump(System.out, 0, root);
 	}
 	
+	@Override
+	void ensureExtraCapacity(int extraCapacity) {
+		int free = (capacity - nodeLimit) + freeCount;
+		if (free >= extraCapacity) return;
+		extraCapacity = max(capacity, max(extraCapacity, 256));
+		compact(capacity + extraCapacity, counting);
+	}
+
+	@Override
+	AbstractTrieNode[] newStack(int length) {
+		return new CompactNode[length];
+	}
+
 	@Override
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
 		adopt((CompactNode) ours, theirs, theirs.isCounting());
@@ -953,8 +958,8 @@ class CompactTrieNodes extends AbstractTrieNodes {
 
 	private class CompactPath extends AbstractTrieNodePath {
 
-		CompactPath(AbstractTrieNodes nodes, int capacity) {
-			super(nodes, new CompactNode[capacity + 1]);
+		CompactPath(AbstractTrieNodes nodes, TrieSerialization<?> serialization) {
+			super(nodes, serialization);
 		}
 
 		@Override
