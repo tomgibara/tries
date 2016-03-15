@@ -56,8 +56,8 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	public void push(TrieSerialization<?> serialization) {
 		byte[] buffer = serialization.buffer();
 		int len = serialization.length();
-
-		nodes.ensureExtraCapacity(len - length + 1);
+		// extra +1 because insertion may require separation
+		nodes.ensureExtraCapacity(len - length + 1 + 1);
 		for (int i = length - 1; i < len; i++) {
 			push(buffer[i]);
 		}

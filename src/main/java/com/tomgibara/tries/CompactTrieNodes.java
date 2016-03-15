@@ -984,6 +984,8 @@ class CompactTrieNodes extends AbstractTrieNodes {
 				return;
 			}
 			// regular case we unterminate, detach child, recursively delete, and update counts
+			// separation requires a spare node
+			nodes.ensureExtraCapacity(1);
 			CompactNode node = (CompactNode) head;
 			int count = node.getCount();
 			node.setTerminal(false);

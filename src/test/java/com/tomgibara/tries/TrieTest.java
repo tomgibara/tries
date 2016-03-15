@@ -57,6 +57,7 @@ public abstract class TrieTest {
 	static final Charset UTF8 = Charset.forName("UTF8");
 	static final Charset ASCII = Charset.forName("ASCII");
 
+	private static final int ONE_MEG = 1024 * 1024;
 	private static final boolean DESCRIBE = false;
 	
 	private static void dump(String title, Trie<?> trie) {
@@ -1140,5 +1141,117 @@ public abstract class TrieTest {
 		assertEquals(1, trie.size());
 		assertEquals(0, sub.size());
 
+	}
+	
+	@Test
+	public void testCapacity() {
+		Tries<byte[]> tries = Tries.serialBytes().nodeSource(getNodeSource());
+		// applicability
+		if (tries.newTrie().availableCapacity() > ONE_MEG) return;
+		
+		{ // adding
+			Trie<byte[]> trie = tries.newTrie();
+			int c = trie.availableCapacity();
+			byte[] bs = new byte[c + 1];
+			assertTrue(trie.add(bs));
+			assertTrue(trie.contains(bs));
+		}
+		
+		{ // removing
+			Trie<byte[]> trie = tries.newTrie();
+			int tests = 2000;
+			int len = 8;
+			int size = 50;
+			Random r = new Random(0L);
+			for (int test = 0; test < tests; test++) {
+				String tstMsg = "test: " + test;
+				// create list of elements
+				List<byte[]> els = new ArrayList<byte[]>();
+				add: while (els.size() < size) {
+					byte[] bytes = new byte[r.nextInt(len + 1)];
+					r.nextBytes(bytes);
+					for (int j = 0; j < bytes.length; j++) bytes[j] &= 7;
+					for (int j = 0; j < els.size(); j++) {
+						if (Arrays.equals(els.get(j), bytes)) continue add;
+					}
+					els.add(bytes);
+				}
+				// add them into a trie
+				trie.addAll(els);
+				// remove them while compacted
+				for (int i = 0; i < size; i++) {
+					{ // compact
+						Object[] a1 = trie.asSet().toArray();
+						trie.compactStorage();
+						Object[] a2 = trie.asSet().toArray();
+						assertEquals(tstMsg, a1.length, a2.length);
+						for (int j = 0; j < a1.length; j++) {
+							assertTrue(tstMsg, Arrays.equals((byte[])a1[j], (byte[])a2[j]));
+						}
+					}
+					{ // remove
+						byte[] el = els.get(i);
+						String msg = "test: " + test + ", i: " + i + ", el: " + Arrays.toString(el);
+						assertTrue(msg, trie.remove(el));
+						assertFalse(msg, trie.contains(el));
+					}
+				}
+				// confirm trie is empty
+				assertTrue(tstMsg, trie.isEmpty());
+				assertFalse(tstMsg, trie.iterator().hasNext());
+			}
+		}
+		
+		{ // clearing
+			Trie<byte[]> trie = tries.newTrie();
+			int tests = 2000;
+			int len = 8;
+			int size = 50;
+			int attempts = 10;
+			Random r = new Random(0L);
+			for (int test = 0; test < tests; test++) {
+				String tstMsg = "test: " + test;
+				// create list of elements
+				List<byte[]> els = new ArrayList<byte[]>();
+				add: while (els.size() < size) {
+					byte[] bytes = new byte[r.nextInt(len + 1)];
+					r.nextBytes(bytes);
+					for (int j = 0; j < bytes.length; j++) bytes[j] &= 3;
+					for (int j = 0; j < els.size(); j++) {
+						if (Arrays.equals(els.get(j), bytes)) continue add;
+					}
+					els.add(bytes);
+				}
+				// add them into a trie
+				trie.addAll(els);
+				// clear at a random prefix while compacted
+				for (int i = 0; i < attempts; i++) {
+					{ // compact
+						Object[] a1 = trie.asSet().toArray();
+						trie.compactStorage();
+						Object[] a2 = trie.asSet().toArray();
+						assertEquals(tstMsg, a1.length, a2.length);
+						for (int j = 0; j < a1.length; j++) {
+							assertTrue(tstMsg, Arrays.equals((byte[])a1[j], (byte[])a2[j]));
+						}
+					}
+					// find a non-empty prefix
+					Trie<byte[]> sub;
+					do { // find a non-empty prefix
+						byte[] bytes = new byte[r.nextInt(len + 1)];
+						r.nextBytes(bytes);
+						for (int j = 0; j < bytes.length; j++) bytes[j] &= 3;
+						sub = trie.subTrie(bytes);
+					} while (sub.isEmpty());
+					// clear
+					int s = sub.size();
+					int t = trie.size();
+					assertTrue(sub.clear());
+					assertEquals(trie.size(), t - s);
+					// check if trie is too depleted to continue
+					if (t-s < 10) break;
+				}
+			}
+		}
 	}
 }
