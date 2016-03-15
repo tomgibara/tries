@@ -373,8 +373,8 @@ public class Tries<E> {
 				buffer = prefix.clone();
 			} else {
 				System.arraycopy(prefix, 0, buffer, 0, prefix.length);
-				length = prefix.length;
 			}
+			length = prefix.length;
 		}
 
 		@Override
