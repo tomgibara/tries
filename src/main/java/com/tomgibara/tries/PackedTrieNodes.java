@@ -184,11 +184,6 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	// package scoped methods
 
 	@Override
-	void dump() {
-		dump(System.out, 0, root);
-	}
-	
-	@Override
 	void ensureExtraCapacity(int extraCapacity) {
 		int free = (capacity - nodeLimit) + freeCount;
 		if (free >= extraCapacity) return;
@@ -213,6 +208,18 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	
 	void check(int count) {
 		check(root, count);
+	}
+	
+	// testing methods
+	
+	@Override
+	void dump() {
+		dump(System.out, 0, root);
+	}
+	
+	@Override
+	int availableCapacity() {
+		return capacity - nodeLimit + freeCount;
 	}
 	
 	// private helper methods

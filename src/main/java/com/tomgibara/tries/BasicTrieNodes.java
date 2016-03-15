@@ -105,11 +105,6 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	}
 
 	@Override
-	void dump() {
-		// TODO Auto-generated method stub
-	}
-	
-	@Override
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
 		adopt((BasicNode) ours, theirs);
 	}
@@ -127,6 +122,20 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	AbstractTrieNode[] newStack(int length) {
 		return new BasicNode[length];
 	}
+	
+	// testing methods
+	
+	@Override
+	void dump() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	int availableCapacity() {
+		return Integer.MAX_VALUE;
+	}
+	
+	// private helper methods
 	
 	private BasicNode adopt(BasicNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());

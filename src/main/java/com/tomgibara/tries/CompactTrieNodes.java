@@ -153,11 +153,6 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	// package scoped methods
 
 	@Override
-	void dump() {
-		dump(System.out, 0, root);
-	}
-	
-	@Override
 	void ensureExtraCapacity(int extraCapacity) {
 		int free = (capacity - nodeLimit) + freeCount;
 		if (free >= extraCapacity) return;
@@ -188,6 +183,18 @@ class CompactTrieNodes extends AbstractTrieNodes {
 	// faster than new PackedNode(index).getValue();
 	byte getSiblingValue(int index) {
 		return (byte)  data[index * nodeSize];
+	}
+	
+	// testing methods
+	
+	@Override
+	void dump() {
+		dump(System.out, 0, root);
+	}
+	
+	@Override
+	int availableCapacity() {
+		return capacity - nodeLimit + freeCount;
 	}
 	
 	// private helper methods

@@ -27,8 +27,6 @@ abstract class AbstractTrieNodes implements TrieNodes {
 	
 	public abstract AbstractTrieNode root();
 
-	abstract void dump();
-
 	abstract AbstractTrieNode newNode(byte value);
 	
 	abstract AbstractTrieNode[] newStack(int length);
@@ -53,4 +51,7 @@ abstract class AbstractTrieNodes implements TrieNodes {
 		if (node != null) node.writeNodes(stream);
 	}
 
+	// exposed for testing
+	abstract void dump();
+	abstract int availableCapacity();
 }

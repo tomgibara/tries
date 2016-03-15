@@ -638,6 +638,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 	void dump() { ((AbstractTrieNodes) nodes).dump(); }
 	
+	int availableCapacity() { return ((AbstractTrieNodes) nodes).availableCapacity(); }
+	
 	void check() {
 		try {
 			((PackedTrieNodes) nodes).check(root().getCount());
