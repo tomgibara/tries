@@ -131,18 +131,19 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 */
 
 	public boolean clear() {
-		// empty prefix is a special case, because root node is allowed to dangle
+		TrieNodePath path;
 		if (prefix.length == 0) {
+			// empty prefix is a special case, because root node is allowed to dangle
 			if (nodes.root().isDangling()) return false;
 			serialization.reset();
-			nodes.newPath(serialization).dangle();
-			return true;
+			path = nodes.newPath(serialization);
+		} else {
+			// regular case, root node - if it exists - cannot already dangle
+			path = nodes.newPath(serialization);
+			serialization.set(prefix);
+			if (!path.deserialize()) return false; // root doesn't exist - trie must be empty
 		}
 
-		// regular case, root node - if it exists - cannot already dangle
-		TrieNodePath path = nodes.newPath(serialization);
-		serialization.set(prefix);
-		if (!path.deserialize()) return false; // root doesn't exist - trie must be empty
 		path.dangle();
 		return true;
 	}
