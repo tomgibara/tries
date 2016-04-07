@@ -64,6 +64,11 @@ final class AdaptedSerialization<E,F> implements TrieSerialization<F> {
 	// serialization methods
 
 	@Override
+	public TrieSerialization<F> copy() {
+		return new AdaptedSerialization<>(serial.copy(), mapping);
+	}
+	
+	@Override
 	public TrieSerialization<F> resetCopy(int capacity) {
 		return new AdaptedSerialization<>(serial.resetCopy(), mapping);
 	}

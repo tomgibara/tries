@@ -19,7 +19,6 @@ package com.tomgibara.tries;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -169,13 +168,24 @@ public class Tries<E> {
 	
 	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {
 
-		byte[] buffer = new byte[16];
-		int length = 0;
+		byte[] buffer;
+		int length;
 
-		BaseSerialization() { }
+		BaseSerialization(byte[] buffer, int length) {
+			this.buffer = buffer;
+			this.length = length;
+		}
+		
+		BaseSerialization() {
+			this(new byte[16], 0);
+		}
 		
 		BaseSerialization(int capacity) {
-			buffer = new byte[capacity];
+			this(new byte[capacity], 0);
+		}
+		
+		BaseSerialization(BaseSerialization<E> that) {
+			this(that.buffer.clone(), that.buffer.length);
 		}
 		
 		@Override
@@ -265,6 +275,13 @@ public class Tries<E> {
 			this.serializer = that.serializer;
 			this.deserializer = that.deserializer;
 		}
+
+		private StreamSerialization(StreamSerialization<E> that) {
+			super(that);
+			this.type = that.type;
+			this.serializer = that.serializer;
+			this.deserializer = that.deserializer;
+		}
 		
 		@Override
 		public boolean isSerializable(Object obj) {
@@ -287,6 +304,11 @@ public class Tries<E> {
 		}
 
 		@Override
+		public TrieSerialization<E> copy() {
+			return new StreamSerialization<>(this);
+		}
+		
+		@Override
 		public StreamSerialization<E> resetCopy(int capacity) {
 			return new StreamSerialization<>(this, capacity);
 		}
@@ -300,8 +322,13 @@ public class Tries<E> {
 			encoder = charset.newEncoder();
 		}
 		
-		private  StringSerialization(StringSerialization that, int capacity) {
+		private StringSerialization(StringSerialization that, int capacity) {
 			super(capacity);
+			this.encoder = that.encoder;
+		}
+
+		private StringSerialization(StringSerialization that) {
+			super(that);
 			this.encoder = that.encoder;
 		}
 
@@ -348,6 +375,11 @@ public class Tries<E> {
 		}
 		
 		@Override
+		public TrieSerialization<String> copy() {
+			return new StringSerialization(this);
+		}
+		
+		@Override
 		public TrieSerialization<String> resetCopy(int capacity) {
 			return new StringSerialization(this, capacity);
 		}
@@ -360,6 +392,10 @@ public class Tries<E> {
 		
 		ByteSerialization(int capacity) {
 			super(capacity);
+		}
+
+		private ByteSerialization(ByteSerialization that) {
+			super(that);
 		}
 		
 		@Override
@@ -383,6 +419,11 @@ public class Tries<E> {
 		}
 		
 		@Override
+		public TrieSerialization<byte[]> copy() {
+			return new ByteSerialization(this);
+		}
+		
+		@Override
 		public TrieSerialization<byte[]> resetCopy(int capacity) {
 			return new ByteSerialization(capacity);
 		}
@@ -394,8 +435,12 @@ public class Tries<E> {
 			super(8);
 		}
 
-		LongSerialization(int capacity) {
+		private LongSerialization(int capacity) {
 			super(capacity);
+		}
+		
+		private LongSerialization(LongSerialization that) {
+			super(that);
 		}
 		
 		@Override
@@ -431,6 +476,11 @@ public class Tries<E> {
 					((buffer[6] & 0xff) <<  8) |
 					((buffer[7] & 0xff)      );
 			return (high << 32) | low & 0xffffffffL;
+		}
+
+		@Override
+		public TrieSerialization<Long> copy() {
+			return new LongSerialization(this);
 		}
 
 		@Override

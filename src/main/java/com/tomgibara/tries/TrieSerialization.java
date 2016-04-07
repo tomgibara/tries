@@ -123,6 +123,17 @@ public interface TrieSerialization<E> {
 	}
 
 	/**
+	 * Creates a new instance of the serialization with the same capacity and
+	 * the same length containing the same bytes. The returned object is a
+	 * detached copy: future modifications to either serialization are made
+	 * independently.
+	 * 
+	 * @return a detached copy of this serialization
+	 */
+	
+	TrieSerialization<E> copy();
+	
+	/**
 	 * Creates a new instance of the serialization with the same capacity but
 	 * zero length.
 	 * 
