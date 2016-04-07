@@ -203,7 +203,14 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		checkSerializable(e);
 		serialization.set(e);
 		if (!serialization.startsWith(prefix)) return false;
-		return contains(serialization.buffer(), serialization.length());
+		byte[] buffer = serialization.buffer();
+		int length = serialization.length();
+		TrieNode node = root();
+		for (int i = prefix.length; i < length; i++) {
+			node = node.findChild(buffer[i]);
+			if (node == null) return false;
+		}
+		return node.isTerminal();
 	}
 	
 	/**
@@ -674,7 +681,12 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	
 	// overridden to allow indexed try to compute root index
 	TrieNode findRoot(byte[] bytes, int length) {
-		return find(bytes, length);
+		TrieNode node = nodes.root();
+		for (int i = 0; i < length; i++) {
+			node = node.findChild(bytes[i]);
+			if (node == null) return null;
+		}
+		return node;
 	}
 
 	Trie<E> newTrie(TrieSerialization<E> s) {
@@ -705,20 +717,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		TrieNodePath path = nodes.newPath(serialization);
 		path.deserializeWithPush();
 		return path.terminate(true);
-	}
-
-	private TrieNode find(byte[] bytes, int length) {
-		TrieNode node = nodes.root();
-		for (int i = 0; i < length; i++) {
-			node = node.findChild(bytes[i]);
-			if (node == null) return null;
-		}
-		return node;
-	}
-
-	private boolean contains(byte[] bytes, int length) {
-		TrieNode node  = find(bytes, length);
-		return node == null ? false : node.isTerminal();
 	}
 
 	private TrieNodePath rootPath() {
