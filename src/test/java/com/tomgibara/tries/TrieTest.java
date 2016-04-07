@@ -101,6 +101,10 @@ public abstract class TrieTest {
 		return finish - start;
 	}
 
+	static List<String> strings(String... strs) {
+		return Arrays.asList(strs);
+	}
+	
 	static List<String> readWords() throws IOException {
 		List<String> words = new ArrayList<String>();
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(WordsTest.class.getResourceAsStream("/words.txt")))) {
@@ -1253,5 +1257,25 @@ public abstract class TrieTest {
 				}
 			}
 		}
+	}
+
+	@Test
+	public void testAncestors() {
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
+		Trie<String> trie = tries.newTrie();
+		assertEquals(strings(), trie.ancestors(""));
+		assertEquals(strings(), trie.ancestors("Snort"));
+		trie.add("");
+		assertEquals(strings(), trie.ancestors(""));
+		assertEquals(strings(""), trie.ancestors("Snort"));
+		trie.add("Flack");
+		assertEquals(strings(""), trie.ancestors("Flack"));
+		trie.add("Flacks");
+		assertEquals(strings("", "Flack"), trie.ancestors("Flacks"));
+		assertEquals(strings("", "Flack"), trie.ancestors("Flacka"));
+		assertEquals(strings("", "Flack", "Flacks"), trie.ancestors("Flackser"));
+		assertEquals(strings("Flack"), trie.subTrie("Flack").ancestors("Flacks"));
+		assertEquals(strings(), trie.subTrie("Flacks").ancestors("Flacks"));
+		assertEquals(strings(), trie.subTrie("Snort").ancestors("Snort"));
 	}
 }
