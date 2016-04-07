@@ -53,17 +53,6 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 	
 	@Override
-	public void push(TrieSerialization<?> serialization) {
-		byte[] buffer = serialization.buffer();
-		int len = serialization.length();
-		// extra +1 because insertion may require separation
-		nodes.ensureExtraCapacity(len - length + 1 + 1);
-		for (int i = length - 1; i < len; i++) {
-			push(buffer[i]);
-		}
-	}
-
-	@Override
 	public boolean terminate(boolean terminal) {
 		if (head.isTerminal() == terminal) return false;
 		if (terminal) {
@@ -163,7 +152,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public boolean deserialize() {
+	public boolean deserializeWithWalk() {
 		byte[] buffer = serialization.buffer();
 		int len = serialization.length();
 
@@ -171,6 +160,17 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 			if (!walkValue(buffer[i])) return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void deserializeWithPush() {
+		byte[] buffer = serialization.buffer();
+		int len = serialization.length();
+		// extra +1 because insertion may require separation
+		nodes.ensureExtraCapacity(len - length + 1 + 1);
+		for (int i = length - 1; i < len; i++) {
+			push(buffer[i]);
+		}
 	}
 
 	@Override

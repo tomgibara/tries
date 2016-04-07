@@ -112,7 +112,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		if (index < 0) throw new IllegalArgumentException("negative index");
 		serialization.set(prefix);
 		TrieNodePath path = nodes.newPath(serialization);
-		if (!path.deserialize() || index >= path.head().getCount()) throw new IllegalArgumentException("index too large"); // ie. root doesn't exist, and nor does any node below it, or there aren't enough children
+		if (!path.deserializeWithWalk() || index >= path.head().getCount()) throw new IllegalArgumentException("index too large"); // ie. root doesn't exist, and nor does any node below it, or there aren't enough children
 		if (!path.walkCount(index)) return null;
 		path.serialize();
 		boolean removed = path.terminate(false);
@@ -378,7 +378,7 @@ public class IndexedTrie<E> extends Trie<E> {
 				}
 			}
 			serial.set(prefix);
-			path.deserialize();
+			path.deserializeWithWalk();
 			path.walkCount(index);
 			path.serialize();
 		}

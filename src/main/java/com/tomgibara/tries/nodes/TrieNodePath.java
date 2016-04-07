@@ -32,8 +32,16 @@ import com.tomgibara.tries.TrieSerialization;
  * invited to assume that this limit will never be exceeded and that, in
  * general, no invalid calls will be ever be made on the interface.
  * 
+ * <p>
+ * Every path is 'linked' to a serialization with which it can be synchronized
+ * using the {@link #serialize()} method (to copy the path byte values to the
+ * serialization) or using the {@link #deserializeWithWalk()} and
+ * {@link #deserializeWithPush()} method (to advance the path using the byte
+ * values in the serialization). The methods {@link #first(int)} and
+ * {@link #advance(int)} also interact with the path's associated serialization.
+ * 
  * @author Tom Gibara
- *
+ * @see TrieSerialization
  */
 
 public interface TrieNodePath {
@@ -62,7 +70,7 @@ public interface TrieNodePath {
 	 * indicate certain states.
 	 * 
 	 * @return the number of nodes in the path, may be zero, never negative.
-	 * @see #pop
+	 * @see #pop()
 	 */
 
 	int length();
@@ -87,12 +95,12 @@ public interface TrieNodePath {
 	TrieNode head();
 	
 	/**
-	 * Advances to the child node of head node with the specified value. If at
-	 * the time of the method call no such node exists, a new child node with
-	 * the given value is added to the head. Thus this method always advances
-	 * the path. In cases where new nodes are created, the implementation may
-	 * assume that the last node push onto the path will be explicitly
-	 * terminated with a call to {@link #terminate(boolean)}
+	 * Advances to the child node with has the specified value. If at the time
+	 * of the method call no such node exists, a new child node with the given
+	 * value is added to the head. Thus this method always advances the path. In
+	 * cases where new nodes are created, the implementation may assume that the
+	 * last node push onto the path will be explicitly terminated with a call to
+	 * {@link #terminate(boolean)}
 	 * 
 	 * @param value
 	 *            a node value
@@ -100,15 +108,12 @@ public interface TrieNodePath {
 
 	void push(byte value);
 
-	void push(TrieSerialization<?> serialization);
-	
 	/**
+	 * <p>
 	 * Changes the terminal state of the head node. In cases where the removal
 	 * of terminal status creates a dangling node, the implementation may assume
-	 * that the path will be explicitly pruned.
-	 * 
-	 * this method is expected to remove it (iteratively if necessary) to
-	 * eliminate any redundant nodes.
+	 * that the path will be explicitly pruned. ie. this method is not expected
+	 * to automatically remove any nodes that are left dangling.
 	 * 
 	 * @param terminal
 	 *            whether the head should be terminal
@@ -219,7 +224,7 @@ public interface TrieNodePath {
 	
 	/**
 	 * <p>
-	 * Matches the path to its associated serialization by by walking the head
+	 * Matches the path to its associated serialization by walking the head
 	 * through each byte value of the associated serialization in turn. If at
 	 * any point, no such child exists, the method returns false, otherwise true
 	 * is returned.
@@ -231,10 +236,29 @@ public interface TrieNodePath {
 	 * 
 	 * @return true if a path matching the serialization was produced, false
 	 *         otherwise
+	 * @see #walkValue(byte)
 	 */
 
-	boolean deserialize();
+	boolean deserializeWithWalk();
 
+	/**
+	 * <p>
+	 * Matches the path to its associated serialization by pushing the byte
+	 * values it contains. The first byte pushed in a call to this
+	 * method will be the byte at index <code>length - 1</code> where
+	 * <code>length</code> is the length of the path when the method is called.
+	 * All subsequent bytes (up to the last byte in the serialization) will be
+	 * pushed onto the path.
+	 * 
+	 * <p>
+	 * No attempt is made to verify that the bytes at indices less than
+	 * <code>length -1</code> match the values of the nodes already in the path.
+	 * 
+	 * @see #push(byte)
+	 */
+
+	void deserializeWithPush();
+	
 	/**
 	 * <p>
 	 * Modifies the path so that it matches its associated serialization. In the

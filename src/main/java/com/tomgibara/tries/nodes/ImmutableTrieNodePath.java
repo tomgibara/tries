@@ -1,7 +1,6 @@
 package com.tomgibara.tries.nodes;
 
 import com.tomgibara.streams.WriteStream;
-import com.tomgibara.tries.TrieSerialization;
 
 public final class ImmutableTrieNodePath implements TrieNodePath {
 
@@ -41,11 +40,6 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 
 	@Override
 	public void push(byte value) {
-		imm();
-	}
-
-	@Override
-	public void push(TrieSerialization<?> serialization) {
 		imm();
 	}
 
@@ -100,10 +94,15 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	}
 
 	@Override
-	public boolean deserialize() {
-		return path.deserialize();
+	public boolean deserializeWithWalk() {
+		return path.deserializeWithWalk();
 	}
 
+	@Override
+	public void deserializeWithPush() {
+		imm();
+	}
+	
 	@Override
 	public void first(int minimumLength) {
 		path.first(minimumLength);
