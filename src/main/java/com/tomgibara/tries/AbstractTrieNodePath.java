@@ -156,7 +156,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 		byte[] buffer = serialization.buffer();
 		int len = serialization.length();
 
-		for (int i = 0; i < len; i++) {
+		for (int i = length - 1; i < len; i++) {
 			if (!walkValue(buffer[i])) return false;
 		}
 		return true;
