@@ -185,7 +185,7 @@ public class Tries<E> {
 		}
 		
 		BaseSerialization(BaseSerialization<E> that) {
-			this(that.buffer.clone(), that.buffer.length);
+			this(that.buffer.clone(), that.length);
 		}
 		
 		@Override
