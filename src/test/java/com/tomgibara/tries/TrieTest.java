@@ -1263,19 +1263,26 @@ public abstract class TrieTest {
 	public void testAncestors() {
 		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
 		Trie<String> trie = tries.newTrie();
-		assertEquals(strings(), trie.ancestors(""));
-		assertEquals(strings(), trie.ancestors("Snort"));
+		assertItEquals(strings(), trie.ancestors(""));
+		assertItEquals(strings(), trie.ancestors("Snort"));
 		trie.add("");
-		assertEquals(strings(), trie.ancestors(""));
-		assertEquals(strings(""), trie.ancestors("Snort"));
+		assertItEquals(strings(), trie.ancestors(""));
+		assertItEquals(strings(""), trie.ancestors("Snort"));
 		trie.add("Flack");
-		assertEquals(strings(""), trie.ancestors("Flack"));
+		assertItEquals(strings(""), trie.ancestors("Flack"));
 		trie.add("Flacks");
-		assertEquals(strings("", "Flack"), trie.ancestors("Flacks"));
-		assertEquals(strings("", "Flack"), trie.ancestors("Flacka"));
-		assertEquals(strings("", "Flack", "Flacks"), trie.ancestors("Flackser"));
-		assertEquals(strings("Flack"), trie.subTrie("Flack").ancestors("Flacks"));
-		assertEquals(strings(), trie.subTrie("Flacks").ancestors("Flacks"));
-		assertEquals(strings(), trie.subTrie("Snort").ancestors("Snort"));
+		assertItEquals(strings("", "Flack"), trie.ancestors("Flacks"));
+		assertItEquals(strings("", "Flack"), trie.ancestors("Flacka"));
+		assertItEquals(strings("", "Flack", "Flacks"), trie.ancestors("Flackser"));
+		assertItEquals(strings("Flack"), trie.subTrie("Flack").ancestors("Flacks"));
+		assertItEquals(strings(), trie.subTrie("Flacks").ancestors("Flacks"));
+		assertItEquals(strings(), trie.subTrie("Snort").ancestors("Snort"));
+	}
+	
+	private <E> void assertItEquals(List<E> expected, Iterator<E> it) {
+		if (expected.isEmpty()) assertFalse(it.hasNext());
+		ArrayList<E> list = new ArrayList<E>();
+		while (it.hasNext()) list.add(it.next());
+		assertEquals(expected, list);
 	}
 }

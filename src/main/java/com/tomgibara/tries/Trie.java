@@ -17,12 +17,10 @@
 package com.tomgibara.tries;
 
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +31,7 @@ import com.tomgibara.streams.StreamSerializer;
 import com.tomgibara.streams.WriteStream;
 import com.tomgibara.tries.nodes.TrieNode;
 import com.tomgibara.tries.nodes.TrieNodePath;
+import com.tomgibara.tries.nodes.TrieNodeSource;
 import com.tomgibara.tries.nodes.TrieNodes;
 
 /**
@@ -461,11 +460,51 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return Optional.of( serialization.get() );
 	}
 
-	public List<E> ancestors(E e) {
+	public Iterator<E> ancestors(E e) {
 		checkSerializable(e);
 		serialization.set(e);
-		if (!serialization.startsWith(prefix)) return Collections.emptyList();
-		return ancestors(serialization);
+		// if the trie prefix isn't a proper prefix of e, there can be no ancestors 
+		if (!serialization.startsWith(prefix) || serialization.length() == prefix.length) return Collections.emptyIterator();
+		return new Iterator<E>() {
+
+			TrieSerialization<E> serial = serialization.copy();
+			TrieSerialization<E> acc = serial.copy();
+			int index = prefix.length;
+			TrieNode node = root(); // always points to a terminal node
+			
+			{
+				acc.trim(index);
+				if (node != null && !node.isTerminal()) advance();
+			}
+
+			@Override
+			public boolean hasNext() {
+				return node != null;
+			}
+
+			@Override
+			public E next() {
+				if (node == null) throw new NoSuchElementException();
+				try {
+					return acc.get();
+				} finally {
+					advance();
+				}
+			}
+
+			private void advance() {
+				do {
+					if (index < serial.length() - 1) {
+						byte b = serial.buffer()[index ++];
+						acc.push(b);
+						node = node.findChild(b);
+					} else {
+						node = null;
+					}
+				} while (node != null && !node.isTerminal());
+			}
+
+		};
 	}
 
 	/**
@@ -680,33 +719,6 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	private boolean contains(byte[] bytes, int length) {
 		TrieNode node  = find(bytes, length);
 		return node == null ? false : node.isTerminal();
-	}
-
-	private List<E> ancestors(TrieSerialization<E> serial) {
-		// Use of two serializations here is unfortunate
-		TrieSerialization<E> acc = serial.copy();
-		acc.trim(prefix.length);
-		List<E> list = null;
-		byte[] buffer = serial.buffer();
-		int length = serial.length();
-		TrieNode node = root();
-		for (int i = prefix.length; node != null && i < length; i++) {
-			if (node.isTerminal()) {
-				if (list == null) {
-					list = Collections.singletonList(acc.get());
-				} else {
-					if (list.size() == 1) list = new ArrayList<E>(list);
-					list.add(acc.get());
-				}
-			}
-			byte b = buffer[i];
-			acc.push(b);
-			node = node.findChild(b);
-		}
-		// post process list
-		if (list == null) return Collections.emptyList();
-		if (list.size() == 1) return list; // must be a singleton, already immutable
-		return Collections.unmodifiableList(list);
 	}
 
 	private TrieNodePath rootPath() {
