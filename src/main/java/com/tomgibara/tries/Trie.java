@@ -467,6 +467,21 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		return Optional.of( serialization.get() );
 	}
 
+	/**
+	 * <p>
+	 * The ancestors of the specified element within the trie. If the element is
+	 * itself contained in the trie, it is not included in the list. The list
+	 * may be empty, but is never null.
+	 *
+	 * <p>
+	 * The first element of the returned list is the primogenitor of the
+	 * supplied element, with its parent last in the list.
+	 *
+	 * @param e
+	 *            a possible element of the trie
+	 * @return the element's ancestors within the trie
+	 */
+
 	public Iterator<E> ancestors(E e) {
 		checkSerializable(e);
 		serialization.set(e);
@@ -513,6 +528,15 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 
 		};
 	}
+
+	/**
+	 * Returns the specified element if it's contained in the trie, or the
+	 * element's parent, or empty.
+	 *
+	 * @param e
+	 *            a possible element of the trie
+	 * @return the element, or its parent, or empty
+	 */
 
 	public Optional<E> parentOrSelf(E e) {
 		checkSerializable(e);
