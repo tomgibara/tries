@@ -341,8 +341,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	/**
 	 * <p>
 	 * Returns a sub-trie that is rooted at the given element. The sub-trie will
-	 * contain all elements that are ancestors of the root, or the root itself.
-	 * The sub-trie will be mutable if and only if this trie is mutable.
+	 * contain all elements that are descendants of the root, or the root
+	 * itself. The sub-trie will be mutable if and only if this trie is mutable.
 	 * 
 	 * <p>
 	 * Note that the root must be a valid element for the trie, but it does not
