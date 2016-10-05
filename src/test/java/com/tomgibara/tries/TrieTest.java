@@ -1285,4 +1285,21 @@ public abstract class TrieTest {
 		while (it.hasNext()) list.add(it.next());
 		assertEquals(expected, list);
 	}
+
+	@Test
+	public void testParentOrSelf() {
+		Tries<String> tries = Tries.serialStrings(UTF8).nodeSource(getNodeSource());
+		Trie<String> trie = tries.newTrie();
+		assertFalse(trie.parentOrSelf("").isPresent());
+		assertFalse(trie.parentOrSelf("notempty").isPresent());
+		trie.add("Flam");
+		assertFalse(trie.parentOrSelf("Fla").isPresent());
+		assertEquals("Flam", trie.parentOrSelf("Flam").get());
+		assertEquals("Flam", trie.parentOrSelf("Flame").get());
+		trie.add("Flame");
+		assertEquals("Flame", trie.parentOrSelf("Flame").get());
+		assertEquals("Flam", trie.parentOrSelf("Flam").get());
+		assertEquals("Flam", trie.parentOrSelf("Flambe").get());
+		assertEquals("Flame", trie.parentOrSelf("Flamer").get());
+	}
 }

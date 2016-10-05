@@ -514,6 +514,25 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 		};
 	}
 
+	public Optional<E> parentOrSelf(E e) {
+		checkSerializable(e);
+		serialization.set(e);
+		if (!serialization.startsWith(prefix)) return Optional.empty();
+
+		byte[] buffer = serialization.buffer();
+		int length = serialization.length();
+		TrieNode node = root();
+		int limit = node.isTerminal() ? prefix.length : -1;
+		for (int i = prefix.length; i < length; i++) {
+			node = node.findChild(buffer[i]);
+			if (node == null) break;
+			if (node.isTerminal()) limit = i + 1;
+		}
+		if (limit == -1) return Optional.empty();
+		serialization.trim(limit);
+		return Optional.of(serialization.get());
+	}
+
 	/**
 	 * A comparator consistent with the element ordering in this trie. Each call
 	 * to this method creates a new comparator that is not threadsafe.
