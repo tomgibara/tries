@@ -82,8 +82,8 @@ public class SamplesTest {
 	public void testAdvanced() {
 		// create an adapter to avoid writing a dedicated serializer
 		Bijection<String, URI> adapter = Bijection.fromFunctions(
-				String.class,        URI.class,
-				s -> URI.create(s),  u -> u.toString()
+				String.class, URI.class,
+				URI::create,  URI::toString
 				);
 
 		// choose a node source which is compact and fast for lookups
