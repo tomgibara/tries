@@ -82,7 +82,9 @@ public class Tries<E> {
 	 * @param serializer
 	 *            writes objects of the specified type to a byte stream
 	 * @param deserializer
-	 *            reads objects of the spefified type from a byte stream
+	 *            reads objects of the specified type from a byte stream
+	 * @param <E>
+	 *            the type of values stored in the tries
 	 * @return tries based on the supplied serialization
 	 */
 
@@ -605,6 +607,9 @@ public class Tries<E> {
 	 * 
 	 * @param adapter
 	 *            a bijective mapping over the trie elements
+	 * @param <F>
+	 *            the type of the adapted elements
+	 * 
 	 * @return tries adapted to store values in the range of the adapter
 	 * @see Trie#asAdaptedWith(Bijection)
 	 */

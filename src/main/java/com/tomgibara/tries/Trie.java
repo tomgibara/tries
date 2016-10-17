@@ -599,6 +599,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 * 
 	 * @param adapter
 	 *            the bijective mapping that transforms the trie elements
+	 * @param <F>
+	 *            the new type
 	 * 
 	 * @return a trie over the range of the adapter
 	 * @see Tries#adaptedWith(Bijection)

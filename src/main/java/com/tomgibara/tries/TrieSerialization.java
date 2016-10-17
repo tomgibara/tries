@@ -148,6 +148,8 @@ public interface TrieSerialization<E> {
 	 * Creates a new instance of the serialization with the specified capacity
 	 * and zero length.
 	 * 
+	 * @param capacity
+	 *            the required capacity
 	 * @return a new serialization instance.
 	 */
 
@@ -269,6 +271,8 @@ public interface TrieSerialization<E> {
 	 * 
 	 * @param adapter
 	 *            an adapting bijection
+	 * @param <F>
+	 *            the type of values returned by the adapter
 	 * @return a view of this serialization under the adapter
 	 */
 

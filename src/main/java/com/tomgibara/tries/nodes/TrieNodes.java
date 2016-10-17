@@ -41,8 +41,7 @@ import com.tomgibara.tries.TrieSerialization;
  * 
  * <p>
  * Some tree implementations may invalidate nodes in response to structural
- * changes. This is managed via the {@link #ensureExtraCapacity(int)} and
- * {@link #invalidations()} methods.
+ * changes. This is managed via the {@link #invalidations()} method.
  * 
  * @author Tom Gibara
  * @see TrieNodeSource
@@ -61,7 +60,7 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	/**
 	 * Whether the nodes of this tree maintain a count their children.
 	 * 
-	 * @return
+	 * @return true if the tree maintains a counts of child nodes
 	 */
 
 	boolean isCounting();
@@ -104,9 +103,8 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	 * <p>
 	 * The new path will consist of a single node: the root of this trie.
 	 * 
-	 * @param capacity
-	 *            the maximum number of nodes that the path might be required to
-	 *            traverse, in addition to the root.
+	 * @param serialization
+	 *            the serialization to be associated with the path
 	 * @return a new path
 	 */
 

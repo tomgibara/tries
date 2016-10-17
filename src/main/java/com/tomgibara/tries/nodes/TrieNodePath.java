@@ -264,7 +264,7 @@ public interface TrieNodePath {
 	 * Modifies the path so that it matches its associated serialization. In the
 	 * case where no such path exists, the path should be modified so that its
 	 * serialization is the next available serialization as per the established
-	 * byte order. If there is no </em>next</em> serialization the path should
+	 * byte order. If there is no <em>next</em> serialization the path should
 	 * become empty.
 	 * 
 	 * <p>

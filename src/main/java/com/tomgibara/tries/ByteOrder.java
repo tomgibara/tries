@@ -83,7 +83,7 @@ public final class ByteOrder implements Serializable {
 	/**
 	 * Unsigned byte order. Comparisons between <code>a</code> and
 	 * <code>b</code> are equivalent to:
-	 * <code>Integer.compare(a & 0xff, b & 0xff)</code>.
+	 * <code>Integer.compare(a &amp; 0xff, b &amp; 0xff)</code>.
 	 */
 
 	public static final ByteOrder UNSIGNED = new ByteOrder(UNS);
@@ -99,7 +99,7 @@ public final class ByteOrder implements Serializable {
 	/**
 	 * Reverse unsigned byte order. Comparisons between <code>a</code> and
 	 * <code>b</code> are equivalent to:
-	 * <code>Integer.compare(b & 0xff, a & 0xff)</code>.
+	 * <code>Integer.compare(b &amp; 0xff, a &amp; 0xff)</code>.
 	 */
 
 	public static final ByteOrder REVERSE_UNSIGNED = new ByteOrder(RUN);
@@ -200,11 +200,13 @@ public final class ByteOrder implements Serializable {
 
 	/**
 	 * Compares two bytes. As per Java conventions, the method returns a
-	 * negative integer if <code>a < b</code>, zero if <code>a == b</code> and
-	 * a positive integer if <code>a > b</code>
+	 * negative integer if <code>a &lt; b</code>, zero if <code>a == b</code>
+	 * and a positive integer if <code>a &gt; b</code>
 	 * 
-	 * @param a any byte
-	 * @param b another byte
+	 * @param a
+	 *            any byte
+	 * @param b
+	 *            another byte
 	 * @return <code>a</code> compared to <code>b</code>
 	 */
 
