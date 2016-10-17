@@ -18,13 +18,13 @@ package com.tomgibara.tries;
 
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.SortedSet;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.Bits;
-import com.tomgibara.storage.Stores;
 
 /**
  * <p>
@@ -250,13 +250,11 @@ public final class ByteOrder implements Serializable {
 				break;
 			default:
 				// create bytes -128..127
-				byte[] bytes = new byte[256];
-				for (int i = 0; i < 256; i++) {
-					bytes[i] = (byte) (i - 128);
-				}
+				ByteList list = new ByteList();
 				// sort them
-				Stores.bytes(bytes).asList().sort(comparator);
+				list.sort(comparator);
 				// create a reverse lookup
+				byte[] bytes = list.bytes;
 				int index = 0;
 				byte p = bytes[0];
 				lookup[p & 0xff] = index;
@@ -377,4 +375,24 @@ public final class ByteOrder implements Serializable {
 			return lookup[a & 0xff] - lookup[b & 0xff];
 		}
 	}
+
+	private static final class ByteList extends AbstractList<Byte> {
+
+		final byte[] bytes = new byte[256];
+
+		ByteList() {
+			for (int i = 0; i < 256; i++) {
+				bytes[i] = (byte) (i - 128);
+			}
+		}
+
+		@Override public int size() { return 256; }
+		@Override public Byte get(int index) { return bytes[index]; }
+		@Override public Byte set(int index, Byte value) {
+			byte previous = bytes[index];
+			bytes[index] = value;
+			return previous;
+		}
+	}
+
 }

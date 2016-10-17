@@ -26,10 +26,10 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.StringJoiner;
 
 import com.tomgibara.fundament.Bijection;
 import com.tomgibara.fundament.Producer;
-import com.tomgibara.storage.Stores;
 import com.tomgibara.streams.ReadStream;
 import com.tomgibara.streams.StreamBytes;
 import com.tomgibara.streams.StreamDeserializer;
@@ -253,7 +253,11 @@ public class Tries<E> {
 
 		@Override
 		public String toString() {
-			return Stores.bytes(buffer).resizedCopy(length).asList().toString();
+			StringJoiner joiner = new StringJoiner(",", "[", "]");
+			for (int i = 0; i < length; i++) {
+				joiner.add(String.valueOf(buffer[i]));
+			}
+			return joiner.toString();
 		}
 	}
 		

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +46,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.tomgibara.fundament.Bijection;
-import com.tomgibara.storage.Stores;
 import com.tomgibara.streams.EndOfStreamException;
 import com.tomgibara.streams.ReadStream;
 import com.tomgibara.streams.StreamBytes;
@@ -104,7 +104,19 @@ public abstract class TrieTest {
 	static List<String> strings(String... strs) {
 		return Arrays.asList(strs);
 	}
-	
+
+	private static List<Long> longs(long... longs) {
+		return new AbstractList<Long>() {
+			@Override public int size() { return longs.length; }
+			@Override public Long get(int index) { return longs[index]; }
+			@Override public Long set(int index, Long value) {
+				long previous = longs[index];
+				longs[index] = value;
+				return previous;
+			}
+		};
+	}
+
 	static List<String> readWords() throws IOException {
 		List<String> words = new ArrayList<String>();
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(WordsTest.class.getResourceAsStream("/words.txt")))) {
@@ -351,7 +363,7 @@ public abstract class TrieTest {
 //			check(trie);
 //		});
 
-		trie.addAll(Stores.longs(values).asList());
+		trie.addAll(longs(values));
 
 		// advanced checking of indexing
 //		for (int i = 0; i < values.length; i++) {
@@ -401,7 +413,7 @@ public abstract class TrieTest {
 		}
 
 		{
-			Set<Long> set = new HashSet<>(Stores.longs(values).asList());
+			Set<Long> set = new HashSet<>(longs(values));
 			int count = 0;
 			for (Long value : trie) {
 				assertTrue(set.contains(value));
@@ -410,7 +422,7 @@ public abstract class TrieTest {
 			assertEquals(set.size(), count);
 		}
 		
-		Collections.shuffle(Stores.longs(values).asList(), r);
+		Collections.shuffle(longs(values), r);
 		Set<Long> watch = new HashSet<Long>();
 		for (int i = 0; i < 10000; i++) {
 			long value = values[i];
