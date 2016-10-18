@@ -143,8 +143,4 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 		return mutableCopy().immutableView();
 	}
 	
-	//TODO create basic node copy
-//	default TrieNodes mutableCopy() {
-//		
-//	}
 }

@@ -64,16 +64,17 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * 
  *  _HEAD_
  *  |76543210|76543210|76543210|76543210|
- *  |<-XVL1->|_____CNT|S_<-TR->|<-VALU->|
+ *  |<-VAL1->|_____CNT|S_<-TR->|<-VAL0->|
  *
- * _   = unused
- * S   = has sibling
- * TR  = terminator flags [0,5]
- * CNT = number of embedded children [0,5]
+ * _    = unused
+ * S    = has sibling
+ * TR   = terminator flags [0,5]
+ * CNT  = number of embedded children [0,5]
+ * VALn = node value
  *
  *  _SIBLING_OR_VALUES_
  *  |76543210|76543210|76543210|76543210|
- *  |<-XVL5->|<-XVL4->|<-XVL3->|<-XVL2->|
+ *  |<-VAL5->|<-VAL4->|<-VAL3->|<-VAL2->|
  */
 
 class PackedTrieNodes extends AbstractTrieNodes {

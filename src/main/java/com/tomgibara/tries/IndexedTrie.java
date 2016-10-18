@@ -31,8 +31,9 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * <p>
  * A trie that can efficiently return the index of any element. Elements are
  * ordered by the comparator associated with the trie; all valid indices are
- * positive and less than the size of the trie. Instances are initially obtained
- * from {@link IndexedTries}.
+ * positive and less than the size of the trie; the first element of the trie
+ * has an index of zero. Instances are initially obtained from
+ * {@link IndexedTries}.
  * 
  * <p>
  * The trie, any sub-tries, and other views are all backed by the same nodes;
@@ -142,8 +143,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	/**
 	 * The trie as a list. The list does not support adding elements, but does
 	 * supports removal if the trie is mutable. The returned object is a live
-	 * view of this trie. mutations to either with will be reflected in the
-	 * other.
+	 * view of this trie. mutations to either will be reflected in the other.
 	 * 
 	 * @return the trie as a list
 	 */

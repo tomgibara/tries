@@ -136,15 +136,15 @@ public interface TrieNodePath {
 	void dangle();
 	
 	/**
-	 * Removes any dangling nodes in present in the path from the trie.
+	 * Removes from the trie any dangling nodes present in the path.
 	 * Implementations may assume that the head is not terminal.
 	 */
 
 	void prune();
 
 	/**
-	 * Advances to the child node of head node with the specified value, if such
-	 * a node exists. Otherwise the path remains unchanged.
+	 * Advances to the child node (of the current head node) with the specified
+	 * value, if such a node exists. Otherwise the path remains unchanged.
 	 * 
 	 * @param value
 	 *            the value of the child to advance towards
@@ -194,7 +194,7 @@ public interface TrieNodePath {
 
 	/**
 	 * Changes the current head of the list to its sibling, as returned by
-	 * {@link TrieNode#getChild()}, if it exists.
+	 * {@link TrieNode#getSibling()}, if it exists.
 	 * 
 	 * @return true if the head was changed to its sibling, false otherwise
 	 */
@@ -204,7 +204,7 @@ public interface TrieNodePath {
 	/**
 	 * Shortens the path by removing the current head node. Callers are
 	 * permitted to pop the root node to create an empty path. At this point
-	 * this method will return null and no futher modifications may be attempted
+	 * this method will return null and no further modifications may be attempted
 	 * to this path.
 	 * 
 	 * @return the path node furthest from the root, possibly null

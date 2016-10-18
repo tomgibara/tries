@@ -341,8 +341,9 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	/**
 	 * <p>
 	 * Returns a sub-trie that is rooted at the given element. The sub-trie will
-	 * contain all elements that are descendants of the root, or the root
-	 * itself. The sub-trie will be mutable if and only if this trie is mutable.
+	 * contain all elements that are descendants of the specified root, and the
+	 * root itself if it's an element of this trie. The returned sub-trie will
+	 * be mutable if and only if this trie is mutable.
 	 * 
 	 * <p>
 	 * Note that the root must be a valid element for the trie, but it does not
@@ -409,7 +410,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 * Removes the first element of the trie, if it exists. The removed element
 	 * is returned as an optional.
 	 * 
-	 * @return the element removed, or empty
+	 * @return the element removed, or empty if there was no first element
 	 * @see #first()
 	 */
 
@@ -425,8 +426,8 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	}
 
 	/**
-	 * Optionally, the first element of the trie, or empty. If it exists, this
-	 * is the element whose serialization comes first, with respect to the byte
+	 * Optionally, the last element of the trie, or empty. If it exists, this
+	 * is the element whose serialization comes last, with respect to the byte
 	 * order defined for the trie, or equivalently, the greatest element of the
 	 * induced comparator.
 	 * 
@@ -452,7 +453,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 * Removes the last element of the trie, if it exists. The removed element
 	 * is returned as an optional.
 	 * 
-	 * @return the element removed, or empty
+	 * @return the element removed, or empty if there was no last element
 	 * @see #last()
 	 */
 

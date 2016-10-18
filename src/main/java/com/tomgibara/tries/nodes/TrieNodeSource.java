@@ -27,12 +27,6 @@ import com.tomgibara.tries.Tries;
  * {@link Tries#nodeSource(TrieNodeSource)} method to control how nodes are
  * managed for {@link Trie} instances it creates.
  * 
- * <p>
- * The interface also defines a number of 'standard' implementations that are
- * optimized for different scenarios. Other than their convenient availability
- * as part of this package, they are not distinguished from alternatively
- * defined sources that may better suite some applications.
- * 
  * @author Tom Gibara
  * @see TrieNodes
  * @see Tries
@@ -54,7 +48,7 @@ public interface TrieNodeSource  {
 	 * @param byteOrder
 	 *            the ordering to be applied to a node's direct descendants
 	 * @param counting
-	 *            whether the nodes are expected to provide efficient descendent
+	 *            whether the nodes are expected to provide efficient descendant
 	 *            counts
 	 * @param capacityHint
 	 *            hints at the number of nodes the trie may grow to contain
@@ -73,7 +67,7 @@ public interface TrieNodeSource  {
 	 *            the nodes to duplicate
 	 * @param counting
 	 *            whether the duplicated nodes are expected to provide efficient
-	 *            descendent counts
+	 *            descendant counts
 	 * @param capacityHint
 	 *            hints at the number of nodes the trie may grow to contain
 	 * @return a copy of the supplied nodes
@@ -90,7 +84,7 @@ public interface TrieNodeSource  {
 	 *            the byte order that was applied to the serialization
 	 * @param counting
 	 *            whether the reconstructed nodes are expected to provide
-	 *            efficient descendent counts
+	 *            efficient descendant counts
 	 * @param capacityHint
 	 *            hints at the number of nodes the trie may grow to contain
 	 * @return a tree of nodes restored from a byte stream

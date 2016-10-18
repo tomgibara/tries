@@ -18,7 +18,6 @@ package com.tomgibara.tries.nodes;
 
 import com.tomgibara.tries.ByteOrder;
 
-
 /**
  * <p>
  * A node in {@link TrieNodes} tree. Note that in some implementations,
@@ -140,7 +139,7 @@ public interface TrieNode {
 	int getCount();
 
 	/**
-	 * Identifies all of the child nodes with values not meeting or exceeding
+	 * Identifies all of the child nodes with values not meeting nor exceeding
 	 * the supplied value, and returns the sum of their counts, plus one if this
 	 * node is a terminating node.
 	 * 

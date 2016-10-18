@@ -49,8 +49,13 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * <p>
  * Instances of this class are immutable, and are safe for multithreaded use.
  * Methods to configure and customize the creation of tries are available. These
- * return new immutable instances of this class via a builder pattern.
+ * return new immutable instances of this class via chainable methods.
  * 
+ * <p>
+ * The class also defines a number of 'standard' {@link TrieNodeSource}
+ * implementations that are optimized for different scenarios. Other than their
+ * convenient availability as part of this package, they are not distinguished
+ * from alternatively defined sources that may better suite some applications.
  * 
  * @author Tom Gibara
  *
@@ -121,6 +126,12 @@ public class Tries<E> {
 		return new Tries<>(() -> new ByteSerialization());
 	}
 
+	/**
+	 * Creates tries that can store longs.
+	 * 
+	 * @return tries containing longs
+	 */
+
 	public static Tries<Long> serialLongs() {
 		return new Tries<>(() -> new LongSerialization());
 	}
@@ -152,7 +163,7 @@ public class Tries<E> {
 	}
 
 	/**
-	 * Models trie nodes simiilarly to {@link #sourceForCompactness()} with further
+	 * Models trie nodes similarly to {@link #sourceForCompactness()} with further
 	 * logic that linearizes siblings during compaction to enable binary
 	 * searches over successor nodes. This typically doubles the speed of
 	 * lookups over the {@link #sourceForCompactness()} implementation at the expense
@@ -641,7 +652,7 @@ public class Tries<E> {
 	}
 
 	/**
-	 * Creates a copy of an existing trie. The copy will be mutable of the
+	 * Creates a copy of an existing trie. The copy will be mutable if the
 	 * configured node source supports it. The trie being copied is not required
 	 * to have originated from an identically configured {@link Tries} instance
 	 * but <em>must</em> use a compatible serialization (this constraint is not

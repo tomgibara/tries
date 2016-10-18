@@ -116,7 +116,6 @@ public final class ByteOrder implements Serializable {
 	 * Derives a byte order from the ordering imposed by a comparator.
 	 * The supplied comparator must provide a consistent ordering.
 	 * 
-	 * 
 	 * @param comparator a consistent byte comparator
 	 * @return a byte order equivalent to the supplied comparator
 	 * @throws IllegalArgumentException if the comparator ordering is

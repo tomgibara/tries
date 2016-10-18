@@ -108,7 +108,12 @@ public interface TrieSerialization<E> {
 
 	int length();
 
-	// reduces length, never grows
+	/**
+	 * Reduces the length of the buffer. This method never grows the length.
+	 * 
+	 * @param newLength the new shorter length of the buffer
+	 */
+
 	default void trim(int newLength) {
 		for (int i = length(); i > newLength; i --) pop();
 
@@ -160,7 +165,7 @@ public interface TrieSerialization<E> {
 	 * 
 	 * @param prefix
 	 *            an array of byte values
-	 * @return true iff and only iff the buffer starts with with supplied prefix
+	 * @return true if and only if the buffer starts with with supplied prefix
 	 */
 	
 	default boolean startsWith(byte[] prefix) {
@@ -245,7 +250,7 @@ public interface TrieSerialization<E> {
 	 * A producer that can create more instanceof of this type of serialization.
 	 * The default implementation uses {@link #resetCopy()}.
 	 * 
-	 * @return a producer of these serializations.
+	 * @return a producer of these serializations
 	 */
 
 	default Producer<TrieSerialization<E>> producer() {
