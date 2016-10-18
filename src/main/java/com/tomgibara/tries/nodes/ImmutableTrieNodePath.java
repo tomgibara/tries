@@ -73,7 +73,7 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	public void prune() {
 		imm();
 	}
-	
+
 	@Override
 	public boolean walkValue(byte value) {
 		return path.walkValue(value);
@@ -118,7 +118,7 @@ public final class ImmutableTrieNodePath implements TrieNodePath {
 	public void deserializeWithPush() {
 		imm();
 	}
-	
+
 	@Override
 	public void first(int minimumLength) {
 		path.first(minimumLength);

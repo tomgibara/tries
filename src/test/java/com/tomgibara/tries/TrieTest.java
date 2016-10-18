@@ -59,14 +59,14 @@ public abstract class TrieTest {
 
 	private static final int ONE_MEG = 1024 * 1024;
 	private static final boolean DESCRIBE = false;
-	
+
 	private static void dump(String title, Trie<?> trie) {
 		if (DESCRIBE) {
 			System.out.println(title);
 			((Trie<?>) trie).dump();
 		}
 	}
-	
+
 	private static void describe(String str) {
 		if (DESCRIBE) System.out.println(str);
 	}
@@ -84,7 +84,7 @@ public abstract class TrieTest {
 			/* expected */
 		}
 	}
-	
+
 	private static void checkImm(Runnable r) {
 		try {
 			r.run();
@@ -93,7 +93,7 @@ public abstract class TrieTest {
 			/* expected */
 		}
 	}
-	
+
 	static long time(Runnable r) {
 		long start = System.currentTimeMillis();
 		r.run();
@@ -128,11 +128,11 @@ public abstract class TrieTest {
 		}
 		return words;
 	}
-	
+
 	static byte[] bytes(String str) {
 		return str.getBytes(TrieTest.UTF8);
 	}
-	
+
 	static <E> void checkSerialization(Tries<E> tries, Trie<E> trie, boolean indexed) {
 		StreamBytes bytes = Streams.bytes();
 		trie.writeTo(bytes.writeStream());
@@ -161,7 +161,7 @@ public abstract class TrieTest {
 			}
 			if (ti.hasNext() || ci.hasNext()) fail("iterators have mismatched length");
 		}
-		
+
 		if (indexed) { // check indexing
 			Iterator<E> it = trie.iterator();
 			IndexedTrie<E> dupe = (IndexedTrie<E>) copy;
@@ -174,9 +174,9 @@ public abstract class TrieTest {
 			assertFalse(it.hasNext());
 		}
 	}
-	
+
 	abstract protected TrieNodeSource getNodeSource();
-	
+
 	@Test
 	public void testIndexes() {
 		IndexedTrie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
@@ -258,7 +258,7 @@ public abstract class TrieTest {
 		assertTrue(i.hasNext());
 		assertEquals("Moon", i.next());
 		assertFalse(i.hasNext());
-		
+
 		// iterator from middle element
 		i = trie.iterator("Moody");
 		assertTrue(i.hasNext());
@@ -266,27 +266,27 @@ public abstract class TrieTest {
 		assertTrue(i.hasNext());
 		assertEquals("Moon", i.next());
 		assertFalse(i.hasNext());
-		
+
 		// iterator from last element
 		i = trie.iterator("Moon");
 		assertTrue(i.hasNext());
 		assertEquals("Moon", i.next());
 		assertFalse(i.hasNext());
-		
+
 		// iterator from beyond last element
 		i = trie.iterator("Noooo");
 		assertFalse(i.hasNext());
-		
+
 		// iterator from previous to first element
 		i = trie.iterator("Ahhh");
 		assertTrue(i.hasNext());
 		assertEquals("Moo", i.next());
-		
+
 		// iterator from between elements
 		i = trie.iterator("Mooch");
 		assertTrue(i.hasNext());
 		assertEquals("Moody", i.next());
-		
+
 		describe("REMOVING MOODY");
 		assertTrue(trie.remove("Moody"));
 		describe("MOODY REMOVED");
@@ -309,9 +309,9 @@ public abstract class TrieTest {
 		dump("AFTER", trie);
 		assertFalse(trie.contains("Moon"));
 		assertEquals(0, trie.size());
-		
+
 		describe("EXPECTED EMPTY");
-		
+
 		Trie<String> asciiTrie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).newTrie();
 		try {
 			asciiTrie.add("\u00a9");
@@ -319,7 +319,7 @@ public abstract class TrieTest {
 		} catch (IllegalArgumentException e) {
 			/* expected */
 		}
-		
+
 		trie.addAll(Arrays.asList("Once", "upon", "a", "time"));
 		assertEquals(4, trie.size());
 		trie.clear();
@@ -355,7 +355,7 @@ public abstract class TrieTest {
 			trie = tries.newTrie();
 		}
 
-		
+
 		// handy debug version
 //		Stores.longs(values).asList().forEach(value -> {
 //			describe("ADDING " + Long.toHexString(value) + " " + value);
@@ -421,7 +421,7 @@ public abstract class TrieTest {
 			}
 			assertEquals(set.size(), count);
 		}
-		
+
 		Collections.shuffle(longs(values), r);
 		Set<Long> watch = new HashSet<Long>();
 		for (int i = 0; i < 10000; i++) {
@@ -483,7 +483,7 @@ public abstract class TrieTest {
 		long postSize = trie.storageSizeInBytes();
 		assertTrue(postSize <= preSize);
 	}
-	
+
 	@Test
 	public void testByteOrder() {
 		Trie<String> trie = Tries.serialStrings(ASCII).byteOrder((a,b) -> Integer.compare(-(a&0xff), -(b&0xff))).nodeSource(getNodeSource()).newTrie();
@@ -531,7 +531,7 @@ public abstract class TrieTest {
 
 		checkTrieOrder(trie);
 	}
-	
+
 	@Test
 	public void testCombinations() {
 		Random r = new Random(0L);
@@ -549,7 +549,7 @@ public abstract class TrieTest {
 			}
 		}
 	}
-	
+
 	private static String randStr(Random r, int maxLen) {
 		int len = r.nextInt(maxLen);
 		StringBuilder sb = new StringBuilder(len);
@@ -672,7 +672,7 @@ public abstract class TrieTest {
 		assertFalse(it.hasNext());
 		assertFalse(it.hasPrevious());
 	}
-	
+
 	@Test
 	public void testAsSet() {
 		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
@@ -702,7 +702,7 @@ public abstract class TrieTest {
 		assertFalse(it.hasNext());
 		assertTrue(subset.isEmpty());
 	}
-	
+
 	@Test
 	public void testCaseInsensitive() {
 		IndexedTrie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).byteOrder((a, b) -> {
@@ -731,7 +731,7 @@ public abstract class TrieTest {
 		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).indexed().newTrie();
 		trie.subTrie("Some very long prefix which is almost certain to exceed the default capacity").iterator();
 	}
-	
+
 	@Test
 	public void testMutability() {
 		Trie<String> trie = Tries.serialStrings(UTF8).nodeSource(getNodeSource()).newTrie();
@@ -754,13 +754,13 @@ public abstract class TrieTest {
 		assertFalse(mc.contains("Moo"));
 		mc.add("Quack");
 		assertFalse(trie.contains("Quack"));
-		
+
 		Trie<String> ic = trie.immutableCopy();
 		assertTrue(ic.contains("Moo"));
 		assertFalse(ic.contains("Quack"));
 		checkImm(() -> ic.add("Quack"));
 	}
-	
+
 	@Test
 	@Ignore
 	public void commonWords() throws IOException {
@@ -853,7 +853,7 @@ public abstract class TrieTest {
 			List<String> remaining = arrange.apply(words);
 			assertEquals(remaining, trie.asList());
 			IndexedTrie<String> sub = trie.subTrie("a");
-	
+
 			assertEquals(3, sub.size());
 			assertEquals("and", sub.remove(1));
 			assertEquals("a", sub.remove(0));
@@ -875,10 +875,10 @@ public abstract class TrieTest {
 		assertTrue(bytes.contains(bytes("dog")));
 
 		checkImm(()-> bytes.remove(bytes("dog")));
-		
+
 		IndexedTrie<String> indexed = tries.indexed().newTrie();
 		IndexedTrie<byte[]> indexedBytes = indexed.asBytesTrie();
-		
+
 		indexed.add("cat");
 		assertTrue(indexed.contains("cat"));
 		assertTrue(indexedBytes.contains(bytes("cat")));
@@ -906,7 +906,7 @@ public abstract class TrieTest {
 		assertTrue(r.contains("Apple"));
 		assertFalse(r.contains("Apricot"));
 	}
-	
+
 	@Test
 	public void testSerialization() {
 		testSerialization(false);
@@ -939,7 +939,7 @@ public abstract class TrieTest {
 			for (int i = 0; i < size; i++) {
 				strs.add(Integer.toString(r.nextInt(size)));
 			}
-	
+
 			Trie<String> large = tries.newTrie();
 			large.addAll(strs);
 			Set<String> set = new HashSet<>(strs);
@@ -951,7 +951,7 @@ public abstract class TrieTest {
 			assertEquals(set, large.asSet());
 			checkSerialization(tries, large, indexed);
 		}
-		
+
 		// test long
 		Trie<String> lengthy = tries.newTrie();
 		lengthy.add("This is a long trie element for testing serialization, which is itself a long word.");
@@ -1099,7 +1099,7 @@ public abstract class TrieTest {
 		assertFalse(sub.contains("Hut"));
 		assertFalse(sub.removeLast().isPresent());
 	}
-	
+
 	@Test
 	public void testClear() {
 		Trie<String> trie = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).newTrie();
@@ -1158,13 +1158,13 @@ public abstract class TrieTest {
 		assertEquals(0, sub.size());
 
 	}
-	
+
 	@Test
 	public void testCapacity() {
 		Tries<byte[]> tries = Tries.serialBytes().nodeSource(getNodeSource());
 		// applicability
 		if (tries.newTrie().availableCapacity() > ONE_MEG) return;
-		
+
 		{ // adding
 			Trie<byte[]> trie = tries.newTrie();
 			int c = trie.availableCapacity();
@@ -1172,7 +1172,7 @@ public abstract class TrieTest {
 			assertTrue(trie.add(bs));
 			assertTrue(trie.contains(bs));
 		}
-		
+
 		{ // removing
 			Trie<byte[]> trie = tries.newTrie();
 			int tests = 2000;
@@ -1217,7 +1217,7 @@ public abstract class TrieTest {
 				assertFalse(tstMsg, trie.iterator().hasNext());
 			}
 		}
-		
+
 		{ // clearing
 			Trie<byte[]> trie = tries.newTrie();
 			int tests = 2000;
@@ -1290,7 +1290,7 @@ public abstract class TrieTest {
 		assertItEquals(strings(), trie.subTrie("Flacks").ancestors("Flacks"));
 		assertItEquals(strings(), trie.subTrie("Snort").ancestors("Snort"));
 	}
-	
+
 	private <E> void assertItEquals(List<E> expected, Iterator<E> it) {
 		if (expected.isEmpty()) assertFalse(it.hasNext());
 		ArrayList<E> list = new ArrayList<E>();

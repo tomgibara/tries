@@ -29,7 +29,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	final AbstractTrieNode[] stack;
 	AbstractTrieNode head;
 	int length = 1;
-	
+
 	AbstractTrieNodePath(AbstractTrieNodes nodes, TrieSerialization<?> serialization) {
 		this.nodes = nodes;
 		this.serialization = serialization;
@@ -46,7 +46,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	public boolean isEmpty() {
 		return length == 0;
 	}
-	
+
 	@Override
 	public int length() {
 		return length;
@@ -67,7 +67,7 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	public void push(byte value) {
 		stack[length ++] = head = head.findOrInsertChild(value);
 	}
-	
+
 	@Override
 	public boolean terminate(boolean terminal) {
 		if (head.isTerminal() == terminal) return false;
@@ -275,18 +275,18 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	// object methods
-	
+
 	@Override
 	public String toString() {
 		return Arrays.asList(Arrays.copyOf(stack, length)).toString();
 	}
-	
+
 	// package scoped methods
-	
+
 	void push(AbstractTrieNode node) {
 		stack[length ++] = head = node;
 	}
-	
+
 	/*
 	 * Decrements the child count of all of the nodes in this path. Non-counting
 	 * trees may ignore this method call.
@@ -307,55 +307,55 @@ abstract class AbstractTrieNodePath implements TrieNodePath {
 	}
 
 	// inner classes
-	
+
 	//TODO move to streams package?
 	private static class CountingStream implements WriteStream {
 
 		private int count = 0;
-		
+
 		public int count() {
 			return count;
 		}
-		
+
 		@Override
 		public void writeByte(byte v) { count ++; }
-		
+
 		@Override
 		public void writeBytes(byte[] bs) { count += bs.length; }
-		
+
 		@Override
 		public void writeBytes(byte[] bs, int off, int len) { count += len; }
-		
+
 		@Override
 		public void writeInt(int v) { count += 4; }
-		
+
 		@Override
 		public void writeBoolean(boolean v) { count += 1; }
-		
+
 		@Override
 		public void writeShort(short v) { count += 2; }
-		
+
 		@Override
 		public void writeLong(long v) { count += 8; }
-		
+
 		@Override
 		public void writeFloat(float v) { count += 4; }
-		
+
 		@Override
 		public void writeDouble(double v) { count += 8; }
-		
+
 		@Override
 		public void writeChar(char v) { count += 2; }
-		
+
 		@Override
 		public void writeChars(char[] cs) { count += 4; }
-		
+
 		@Override
 		public void writeChars(char[] cs, int off, int len) { count += len; }
-		
+
 		@Override
 		public void writeChars(CharSequence cs) { count += 4 + cs.length(); }
-		
+
 	}
 
 }

@@ -24,7 +24,7 @@ import com.tomgibara.fundament.Producer;
 /**
  * Implementations of this interface are responsible for converting objects
  * to-and-from bytes.
- * 
+ *
  * @author Tom Gibara
  *
  * @param <E>
@@ -35,19 +35,19 @@ public interface TrieSerialization<E> {
 
 	/**
 	 * Whether the specified object can be serialized by this object.
-	 * 
+	 *
 	 * @param obj an object
 	 * @return true if and only if the supplied object can be serialized
 	 */
-	
+
 	boolean isSerializable(Object obj);
-	
+
 	/**
 	 * The byte array containing the serialized bytes. For efficiency purposes,
 	 * implementations are not required to make defensive copies of the buffer;
 	 * the buffer is treated strictly read-only by the trie implementations. The
 	 * length of the buffer may exceed the value reported by {@link #length()}.
-	 * 
+	 *
 	 * @return the underlying bytes
 	 */
 
@@ -57,7 +57,7 @@ public interface TrieSerialization<E> {
 	 * Pushes a byte onto the end of the buffer. The buffer's length, as
 	 * reported by {@link #length()} will increase by one. The buffer's capacity
 	 * will grow as necessary.
-	 * 
+	 *
 	 * @param b
 	 *            the byte value to append to the buffer
 	 */
@@ -67,7 +67,7 @@ public interface TrieSerialization<E> {
 	/**
 	 * Pops a byte off the end of the buffer. The buffer's length as reported by
 	 * {@link #length()} will decrease by one.
-	 * 
+	 *
 	 * @throws IllegalArgumentException
 	 *             if called when the length is zero
 	 */
@@ -77,7 +77,7 @@ public interface TrieSerialization<E> {
 	/**
 	 * Replaces the last byte value in the buffer. The length of the buffer
 	 * remains unchanged.
-	 * 
+	 *
 	 * @param b
 	 *            the byte value to be set
 	 * @throws IllegalArgumentException
@@ -91,18 +91,18 @@ public interface TrieSerialization<E> {
 
 	/**
 	 * The length of the array returned by {@link #buffer()}.
-	 * 
+	 *
 	 * @return the capacity in bytes
 	 */
-	
+
 	default int capacity() {
 		return buffer().length;
 	}
-	
+
 	/**
 	 * The number of byte values stored by this serialization. The reported
 	 * length will never exceed the capacity.
-	 * 
+	 *
 	 * @return the length in bytes
 	 */
 
@@ -110,7 +110,7 @@ public interface TrieSerialization<E> {
 
 	/**
 	 * Reduces the length of the buffer. This method never grows the length.
-	 * 
+	 *
 	 * @param newLength the new shorter length of the buffer
 	 */
 
@@ -118,7 +118,7 @@ public interface TrieSerialization<E> {
 		for (int i = length(); i > newLength; i --) pop();
 
 	}
-	
+
 	/**
 	 * Sets the length to zero, leaving the buffer capacity unchanged.
 	 */
@@ -132,16 +132,16 @@ public interface TrieSerialization<E> {
 	 * the same length containing the same bytes. The returned object is a
 	 * detached copy: future modifications to either serialization are made
 	 * independently.
-	 * 
+	 *
 	 * @return a detached copy of this serialization
 	 */
-	
+
 	TrieSerialization<E> copy();
-	
+
 	/**
 	 * Creates a new instance of the serialization with the same capacity but
 	 * zero length.
-	 * 
+	 *
 	 * @return a new serialization instance.
 	 */
 
@@ -152,7 +152,7 @@ public interface TrieSerialization<E> {
 	/**
 	 * Creates a new instance of the serialization with the specified capacity
 	 * and zero length.
-	 * 
+	 *
 	 * @param capacity
 	 *            the required capacity
 	 * @return a new serialization instance.
@@ -162,12 +162,12 @@ public interface TrieSerialization<E> {
 
 	/**
 	 * Whether the buffer starts with the supplied prefix.
-	 * 
+	 *
 	 * @param prefix
 	 *            an array of byte values
 	 * @return true if and only if the buffer starts with with supplied prefix
 	 */
-	
+
 	default boolean startsWith(byte[] prefix) {
 		if (prefix.length > length()) return false;
 		byte[] buffer = buffer();
@@ -176,14 +176,14 @@ public interface TrieSerialization<E> {
 		}
 		return true;
 	}
-	
+
 	//TODO currently impossible to be called with a prefix longer than the buffer
 	// but this may change if we allow byte-based prefixing
 	/**
 	 * Sets the initial bytes of the buffer. The length of of the buffer is set
 	 * to the length of the prefix. Implementations may assume that the length
 	 * of the prefix will not exceed the capacity of the buffer.
-	 * 
+	 *
 	 * @param prefix
 	 *            an array of byte values
 	 */
@@ -192,11 +192,11 @@ public interface TrieSerialization<E> {
 		reset();
 		for (byte value : prefix) push(value);
 	}
-	
+
 	/**
 	 * Serializes an object into the buffer, growing the buffer as necessary and
 	 * recording the number of bytes written as the length.
-	 * 
+	 *
 	 * @param e
 	 *            the object to serialize
 	 * @throws IllegalArgumentException
@@ -208,24 +208,24 @@ public interface TrieSerialization<E> {
 	/**
 	 * Deserializes the buffered bytes into an object. Any bytes beyond the
 	 * first {@link #length()} bytes are ignored.
-	 * 
+	 *
 	 * @return the deserialized object
 	 */
 
 	E get();
-	
+
 	/**
 	 * Returns a comparator consistent with the byte ordering indicated. Some
 	 * implementations may be able to return more efficient comparators for
 	 * certain byte orders. The comparator is assumed to use the buffer
 	 * underlying this serialization, and as such concurrency must be managed
 	 * appropriately.
-	 * 
+	 *
 	 * @param byteOrder
 	 *            a byte order
 	 * @return a comparator consistent with the supplied byte order
 	 */
-	
+
 	default Comparator<E> comparator(ByteOrder byteOrder) {
 		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
 		TrieSerialization<E> as = resetCopy();
@@ -249,7 +249,7 @@ public interface TrieSerialization<E> {
 	/**
 	 * A producer that can create more instanceof of this type of serialization.
 	 * The default implementation uses {@link #resetCopy()}.
-	 * 
+	 *
 	 * @return a producer of these serializations
 	 */
 
@@ -259,7 +259,7 @@ public interface TrieSerialization<E> {
 
 	/**
 	 * Creates new {@link #tries()} based on this serialization.
-	 * 
+	 *
 	 * @return a new {@link #tries()} instance
 	 */
 
@@ -273,7 +273,7 @@ public interface TrieSerialization<E> {
 	 * length and capacity) as this buffer but applies the specified adapter to
 	 * its values post serialization, and disapplies the adapter
 	 * pre-serialization.
-	 * 
+	 *
 	 * @param adapter
 	 *            an adapting bijection
 	 * @param <F>

@@ -25,24 +25,24 @@ import com.tomgibara.tries.nodes.TrieNode;
 abstract class AbstractTrieNode implements TrieNode {
 
 	// statics
-	
+
 	static final int FLAG_TERMINAL = 1;
 	static final int FLAG_CHILD    = 2;
 	static final int FLAG_SIBLING  = 4;
-	
+
 	// node methods
 
 	@Override
 	public abstract AbstractTrieNode getChild();
-	
+
 	@Override
 	public abstract AbstractTrieNode getSibling();
-	
+
 	@Override
 	public boolean isDangling() {
 		return !isTerminal() && !hasChild();
 	}
-	
+
 	@Override
 	public AbstractTrieNode getLastChild() {
 		AbstractTrieNode child = getChild();
@@ -75,7 +75,7 @@ abstract class AbstractTrieNode implements TrieNode {
 		}
 		return count;
 	}
-	
+
 	// package scoped methods
 
 	AbstractTrieNode findOrInsertChild(byte value) {
@@ -92,12 +92,12 @@ abstract class AbstractTrieNode implements TrieNode {
 			child = child.getSibling();
 		}
 	}
-	
+
 	/*
 	 * Finds a child node of this node with the specified value, or returns the
 	 * child node with the next highest node value, or null if no such node
 	 * exists.
-	 * 
+	 *
 	 * @param value
 	 *            a node value
 	 * @return the child node with the specified value, or the child node with
@@ -114,7 +114,7 @@ abstract class AbstractTrieNode implements TrieNode {
 		}
 		return child;
 	}
-	
+
 	/*
 	 * This method is called on a node to signal that any associated storage may
 	 * be released by the managing {@link TrieNodes}. This method will only be
@@ -126,7 +126,7 @@ abstract class AbstractTrieNode implements TrieNode {
 
 	/*
 	 * The tree of nodes to which this node belongs.
-	 * 
+	 *
 	 * @return the tree containing this node.
 	 */
 
@@ -134,7 +134,7 @@ abstract class AbstractTrieNode implements TrieNode {
 
 	/*
 	 * Removes the supplied node from the list of child nodes of this node.
-	 * 
+	 *
 	 * @param child a child node of this node
 	 * @return true iff the node was a child and was removed
 	 */
@@ -155,7 +155,7 @@ abstract class AbstractTrieNode implements TrieNode {
 		stream.writeByte(getValue());
 		stream.writeByte((byte) (flags() & mask));
 	}
-	
+
 	void writeNodes(WriteStream stream) {
 		stream.writeByte(getValue());
 		stream.writeByte((byte) flags());

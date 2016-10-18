@@ -34,11 +34,11 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * positive and less than the size of the trie; the first element of the trie
  * has an index of zero. Instances are initially obtained from
  * {@link IndexedTries}.
- * 
+ *
  * <p>
  * The trie, any sub-tries, and other views are all backed by the same nodes;
  * any concurrent access to these must be externally synchronized.
- * 
+ *
  * @author Tom Gibara
  *
  * @param <E>
@@ -49,15 +49,15 @@ import com.tomgibara.tries.nodes.TrieNodes;
 public class IndexedTrie<E> extends Trie<E> {
 
 	// constructors
-	
+
 	IndexedTrie(Tries<E> tries, TrieNodes nodes) {
 		super(tries, nodes);
 	}
-	
+
 	IndexedTrie(TrieSerialization<E> serialization, TrieNodes nodes) {
 		super(serialization, nodes);
 	}
-	
+
 	IndexedTrie(IndexedTrie<E> trie, TrieNodes nodes) {
 		super(trie, nodes);
 	}
@@ -73,10 +73,10 @@ public class IndexedTrie<E> extends Trie<E> {
 	}
 
 	// trie methods
-	
+
 	/**
-	 * The element at the specified index. 
-	 * 
+	 * The element at the specified index.
+	 *
 	 * @param index a valid index for the trie
 	 * @return the element at the index
 	 */
@@ -101,10 +101,10 @@ public class IndexedTrie<E> extends Trie<E> {
 		}
 		return serialization.get();
 	}
-	
+
 	/**
 	 * Removes the element at the specified index.
-	 * 
+	 *
 	 * @param index a valid index for the trie
 	 * @return the removed element
 	 */
@@ -126,7 +126,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	 * The index of the given element. If the element does not exist in the trie
 	 * then the value <code>-1-n</code> is returned where <code>n</code> is the
 	 * index that the element would occupy if it was added to to the trie.
-	 * 
+	 *
 	 * @param e
 	 *            an valid element for the trie
 	 * @return the index of the element, or a negative value indicating the
@@ -144,7 +144,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	 * The trie as a list. The list does not support adding elements, but does
 	 * supports removal if the trie is mutable. The returned object is a live
 	 * view of this trie. mutations to either will be reflected in the other.
-	 * 
+	 *
 	 * @return the trie as a list
 	 */
 
@@ -166,7 +166,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	}
 
 	// package scoped methods
-	
+
 	@Override
 	TrieNode findRoot(byte[] bytes, int length) {
 		TrieNode node = nodes.root();
@@ -185,17 +185,17 @@ public class IndexedTrie<E> extends Trie<E> {
 	}
 
 	// mutability methods
-	
+
 	@Override
 	public IndexedTrie<E> immutableView() {
 		return new IndexedTrie<E>(this, nodes.immutableView());
 	}
-	
+
 	@Override
 	public IndexedTrie<E> immutableCopy() {
 		return new IndexedTrie<E>(this, nodes.immutableCopy());
 	}
-	
+
 	@Override
 	public IndexedTrie<E> mutableCopy() {
 		return new IndexedTrie<E>(this, nodes.mutableCopy());
@@ -205,14 +205,14 @@ public class IndexedTrie<E> extends Trie<E> {
 	public IndexedTrie<E> mutable() {
 		return isMutable() ? this : mutableCopy();
 	}
-	
+
 	@Override
 	public IndexedTrie<E> immutable() {
 		return isMutable() ? immutableCopy() : this;
 	}
-	
+
 	// private utility methods
-	
+
 	private int indexOf(byte[] bytes, int length) {
 		//TODO can we start from logical root?
 		TrieNode node = root();
@@ -227,7 +227,7 @@ public class IndexedTrie<E> extends Trie<E> {
 	}
 
 	// inner classes
-	
+
 	private class TrieList extends AbstractList<E> {
 
 		@Override
@@ -244,13 +244,13 @@ public class IndexedTrie<E> extends Trie<E> {
 		public boolean isEmpty() {
 			return IndexedTrie.this.isEmpty();
 		}
-		
+
 		@Override
 		@SuppressWarnings("unchecked")
 		public boolean contains(Object o) {
 			return serialization.isSerializable(o) && IndexedTrie.this.contains((E) o);
 		}
-		
+
 		@Override
 		@SuppressWarnings("unchecked")
 		public int indexOf(Object o) {
@@ -260,7 +260,7 @@ public class IndexedTrie<E> extends Trie<E> {
 			int index = IndexedTrie.this.indexOf(serialization.buffer(), serialization.length());
 			return index < 0 ? -1 : index;
 		}
-		
+
 		@Override
 		public int lastIndexOf(Object o) {
 			return indexOf(o);
@@ -277,7 +277,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		public E remove(int index) {
 			return IndexedTrie.this.remove(index);
 		}
-		
+
 		@Override
 		public Iterator<E> iterator() {
 			return IndexedTrie.this.iterator();
@@ -299,16 +299,16 @@ public class IndexedTrie<E> extends Trie<E> {
 		}
 
 	}
-	
+
 	private class TrieIterator extends NodeIterator implements ListIterator<E> {
 
 		private int index;
-		
+
 		TrieIterator(int index) {
 			this.index = index;
 			sync(true);
 		}
-		
+
 		@Override
 		public E next() {
 			E e = super.next();
@@ -359,7 +359,7 @@ public class IndexedTrie<E> extends Trie<E> {
 		void refresh() {
 			sync(false);
 		}
-		
+
 		private void sync(boolean strict) {
 			if (index < 0) throw new IllegalArgumentException("negative index");
 			path.reset();

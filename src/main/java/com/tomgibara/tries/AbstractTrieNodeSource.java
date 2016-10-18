@@ -32,16 +32,16 @@ abstract class AbstractTrieNodeSource implements TrieNodeSource {
 
 	@Override
 	public boolean isCountingSupported() { return true; }
-	
+
 	public abstract AbstractTrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint);
-	
+
 	@Override
 	public TrieNodes copyNodes(TrieNodes nodes, boolean counting, int capacityHint) {
 		AbstractTrieNodes newNodes = newNodes(nodes.byteOrder(), counting, capacityHint);
 		newNodes.adopt(newNodes.root(), nodes.root());
 		return newNodes;
 	}
-	
+
 	@Override
 	public StreamDeserializer<TrieNodes> deserializer(ByteOrder byteOrder, boolean counting, int capacityHint) {
 		AbstractTrieNodes nodes = newNodes(byteOrder, counting, capacityHint);

@@ -19,17 +19,17 @@ package com.tomgibara.tries;
 import com.tomgibara.fundament.Bijection;
 
 final class AdaptedSerialization<E,F> implements TrieSerialization<F> {
-	
+
 	private final TrieSerialization<E> serial;
 	private final Bijection<E, F> mapping;
-	
+
 	AdaptedSerialization(TrieSerialization<E> serial, Bijection<E, F> mapping) {
 		this.serial = serial;
 		this.mapping = mapping;
 	}
-	
+
 	// byte related methods
-	
+
 	@Override
 	public byte[] buffer() {
 		return serial.buffer();
@@ -39,17 +39,17 @@ final class AdaptedSerialization<E,F> implements TrieSerialization<F> {
 	public int capacity() {
 		return serial.capacity();
 	}
-	
+
 	@Override
 	public int length() {
 		return serial.length();
 	}
-	
+
 	@Override
 	public void pop() {
 		serial.pop();
 	}
-	
+
 	@Override
 	public void push(byte b) {
 		serial.push(b);
@@ -61,12 +61,12 @@ final class AdaptedSerialization<E,F> implements TrieSerialization<F> {
 	}
 
 	// value related methods
-	
+
 	@Override
 	public F get() {
 		return mapping.apply(serial.get());
 	}
-	
+
 	@Override
 	public boolean isSerializable(Object obj) {
 		return mapping.isInRange(obj);
@@ -83,7 +83,7 @@ final class AdaptedSerialization<E,F> implements TrieSerialization<F> {
 	public TrieSerialization<F> copy() {
 		return new AdaptedSerialization<>(serial.copy(), mapping);
 	}
-	
+
 	@Override
 	public TrieSerialization<F> resetCopy(int capacity) {
 		return new AdaptedSerialization<>(serial.resetCopy(), mapping);

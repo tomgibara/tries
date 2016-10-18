@@ -45,23 +45,23 @@ import com.tomgibara.tries.nodes.TrieNodes;
  *  * bit  15      flag indicating the presence of a sibling node
  *  * bits [16-18] the number of value bytes stored
  *  * bits [24-31] the second byte value (if present)
- *  
+ *
  * At present, the number of value bytes is never less than 1. A value of zero
  * is reserved for future use to indicate a 'binary tree node type' for
  * accelerating iteration over siblings.
- *  
+ *
  * The second int contains either a pointer to the sibling node OR 4 additional
  * byte values.
- *  
+ *
  * The third int always points to a child node. Absence of a child node is
  * indicated by a pointer to the root node (which always resides at index 0).
- * 
+ *
  * The value of the fourth int (if present) is simply the number of terminal
  * nodes contained in all ancestors *not including those packed in the node
  * itself*.
- * 
+ *
  * Diagramatically structure of the first two ints is something like:
- * 
+ *
  *  _HEAD_
  *  |76543210|76543210|76543210|76543210|
  *  |<-VAL1->|_____CNT|S_<-TR->|<-VAL0->|
@@ -80,16 +80,16 @@ import com.tomgibara.tries.nodes.TrieNodes;
 class PackedTrieNodes extends AbstractTrieNodes {
 
 	// statics
-	
+
 	static TrieNodeSource SOURCE = new AbstractTrieNodeSource() {
-		
+
 		@Override
 		public PackedTrieNodes newNodes(ByteOrder byteOrder, boolean counting, int capacityHint) {
 			return new PackedTrieNodes(byteOrder, capacityHint, counting);
 		}
 
 	};
-	
+
 	// fields
 
 	private final ByteOrder byteOrder;
@@ -103,9 +103,9 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	private int nodeCount;
 	private int nodeLimit;
 	private long invalidations = 0;
-	
+
 	// constructor
-	
+
 	PackedTrieNodes(ByteOrder byteOrder, int capacity, boolean counting) {
 		this.byteOrder = byteOrder;
 		this.counting = counting;
@@ -117,29 +117,29 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		nodeLimit = 0;
 		root = newNode();
 	}
-	
+
 	// trie nodes methods
 
 	@Override
 	public boolean isCounting() {
 		return counting;
 	}
-	
+
 	@Override
 	public ByteOrder byteOrder() {
 		return byteOrder;
 	}
-	
+
 	@Override
 	public int nodeCount() {
 		return nodeCount;
 	}
-	
+
 	@Override
 	public long storageSize() {
 		return data.length * 4L;
 	}
-	
+
 	@Override
 	public PackedNode root() {
 		return root;
@@ -152,36 +152,36 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		n.setValueCount(1);
 		return n;
 	}
-	
+
 	@Override
 	public TrieNodePath newPath(TrieSerialization<?> serialization) {
 		return new PackedPath(this, serialization);
 	}
-	
+
 	@Override
 	public void compact() {
 		compact(nodeCount, counting);
 	}
-	
+
 	@Override
 	public long invalidations() {
 		return invalidations;
 	}
 
 	// mutability
-	
+
 	@Override
 	public boolean isMutable() {
 		return true;
 	}
-	
+
 	@Override
 	public TrieNodes mutableCopy() {
 		PackedTrieNodes copy = new PackedTrieNodes(byteOrder, nodeCount, counting);
 		copy.adopt(copy.root, root);
 		return copy;
 	}
-	
+
 	// package scoped methods
 
 	@Override
@@ -191,40 +191,40 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		extraCapacity = max(capacity, max(extraCapacity, 256));
 		compact(capacity + extraCapacity, counting);
 	}
-	
+
 	@Override
 	AbstractTrieNode[] newStack(int length) {
 		return new PackedNode[length];
 	}
-	
+
 	@Override
 	void adopt(AbstractTrieNode ours, TrieNode theirs) {
 		adopt((PackedNode)ours, theirs, theirs.isCounting());
 	}
-	
+
 	@Override
 	void readComplete() {
 		compact(nodeCount, false);
 	}
-	
+
 	void check(int count) {
 		check(root, count);
 	}
-	
+
 	// testing methods
-	
+
 	@Override
 	void dump() {
 		dump(System.out, 0, root);
 	}
-	
+
 	@Override
 	int availableCapacity() {
 		return capacity - nodeLimit + freeCount;
 	}
-	
+
 	// private helper methods
-	
+
 	private void dump(PrintStream out, int indent, PackedNode node) {
 		if (node == null) return;
 		out.print(String.format("% 6d:", node.index));
@@ -235,25 +235,25 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		if (node.isTerminal()) out.print("*");
 		if (counting) out.print(" (" + node.getExternalCount() + "|" + node.internalCount() + ")");
 		out.println();
-		
+
 		dump(out, indent + 1, node.getChild());
 		dump(out, indent, node.getSibling());
 	}
-	
+
 	private void check(PackedNode node, int count) {
 		//TODO if counted, check count is zero?
 		if (node == null) return;
-		
+
 		// check structure
 		if (node.isDangling() && node.index != 0) throw new IllegalStateException("dangling node: " + node);
 		if (node.getValueCount() <= node.ordinal) throw new IllegalStateException("too many children in node: " + node);
-		
+
 		// check ordering
-		
+
 		// check count
 		if (counting) {
 			if (count < 0) throw new IllegalStateException("Expected negative count of " + count + " on node " + node);
-			
+
 			if (!node.hasSibling()) {
 				if (count != node.getCount()) throw new IllegalStateException("Expected count of " + count + " on node " + node + " but count was " + node.getCount());
 			}
@@ -309,20 +309,20 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 		return ours;
 	}
-	
+
 	private int count(PackedNode node, int count) {
 		if (node.isTerminal()) count ++;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		if (node.hasSibling()) count += count(node.getSibling(), 0);
 		return count;
 	}
-	
+
 	private int count(PackedNode node) {
 		int count = node.isTerminal() ? 1 : 0;
 		if (node.hasChild()) count += count(node.getChild(), 0);
 		return count;
 	}
-	
+
 	private void compact(int newCapacity, boolean trustCount) {
 		PackedTrieNodes those = new PackedTrieNodes(byteOrder, newCapacity, counting);
 		those.adopt(those.root, root, trustCount);
@@ -336,7 +336,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 	}
 
 	// debug methods
-	
+
 	@SuppressWarnings("unused")
 	private void checkCounts(PackedNode ours, PackedNode theirs) {
 		if (ours == null && theirs == null) return;
@@ -345,7 +345,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		checkCounts(ours.getChild(), theirs.getChild());
 		checkCounts(ours.getSibling(), theirs.getSibling());
 	}
-	
+
 	@SuppressWarnings("unused")
 	private boolean isFree(int index) {
 		for (int i = freeCount; i > 0; i--) {
@@ -355,34 +355,34 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		}
 		return false;
 	}
-	
+
 
 
 
 	// inner classes
-	
+
 	class PackedNode extends AbstractTrieNode {
 
 		// statics
-		
+
 		private static final int MAX_VALUES = 6;
-		
+
 		private static final int VALUE_MASK      = 0x000000ff;
 		private static final int TERMINAL_MASK   = 0x00003f00;
 		private static final int TERMINAL_SHIFT  = 8;
 		private static final int SIBLING_MASK    = 0x00008000;
 		private static final int COUNT_MASK      = 0x00070000;
 		private static final int COUNT_SHIFT     = 16;
-		
+
 		// fields
-		
+
 		private int index;
 		private int offset;
 		// points to packed child - 0 is start node, always < valueCount
 		private int ordinal;
 
 		// constructors
-		
+
 		private PackedNode(int index) {
 			this(index, 0);
 		}
@@ -399,12 +399,12 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public byte getValue() {
 			return getChildValue(ordinal);
 		}
-		
+
 		@Override
 		public boolean isTerminal() {
 			return (getTerminals() & (1 << ordinal)) != 0;
 		}
-		
+
 		@Override
 		public void setTerminal(boolean terminal) {
 			if (terminal == isTerminal()) return;
@@ -424,15 +424,15 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public boolean hasSibling() {
 			return getSiblingFlag();
 		}
-		
+
 		@Override
 		public PackedNode getSibling() {
 			int siblingIndex = getSiblingIndex();
 			return siblingIndex == 0 ? null : new PackedNode(siblingIndex);
 		}
-		
+
 		// child
-		
+
 		public PackedNode getChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd < getValueCount()) return new PackedNode(index, childOrd);
@@ -443,7 +443,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		public boolean hasChild() {
 			return ordinal + 1 < getValueCount() || getChildIndex() != 0;
 		}
-		
+
 		@Override
 		public boolean removeChild(TrieNode child) {
 			if (child == null) return false;
@@ -477,11 +477,11 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				c = s;
 			}
 		}
-		
+
 		public int getCount() {
 			return counting ? getExternalCount() + internalCount() : count(this);
 		}
-		
+
 		public void delete() {
 			if (ordinal > 0) {
 				int childCount = getValueCount() - 1;
@@ -497,14 +497,14 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				nodeCount --;
 			}
 		}
-		
+
 		private String valueAsString() {
 			int value = getValue() & 0xff;
 			if (value >= 32 && value < 127) return String.valueOf((char) value);
 			String str = Integer.toHexString(value);
 			return str.length() == 1 ? "0" + str : str;
 		}
-		
+
 		@Override
 		public String toString() {
 			int followers = getValueCount() - ordinal - 1;
@@ -517,7 +517,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		PackedTrieNodes nodes() {
 			return PackedTrieNodes.this;
 		}
-		
+
 		@Override
 		PackedNode insertChild(byte value) {
 			PackedNode existingChild = separateChild();
@@ -581,7 +581,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			int childIndex = getChildIndex();
 			return childIndex == 0 ? null : new PackedNode(childIndex);
 		}
-		
+
 		private void separate() {
 			if (ordinal == 0 && getValueCount() == 1) return;
 			if (ordinal == 0) {
@@ -595,7 +595,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				offset = index * nodeSize;
 			}
 		}
-		
+
 		private void setSibling(TrieNode sibling) {
 			if (sibling == null) {
 				setSiblingFlag(false);
@@ -621,7 +621,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				setChildIndex(((PackedNode) child).index);
 			}
 		}
-		
+
 		private PackedNode separateChild() {
 			int childOrd = ordinal + 1;
 			if (childOrd >= getValueCount()) return getChild(); // no child to separate
@@ -654,7 +654,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			default: return (byte) (data[offset + 1] >> ((i - 2) * 8));
 			}
 		}
-		
+
 		private void setChildValue(int i, byte value) {
 			switch (i) {
 			case 0 : data[offset] = data[offset] & ~VALUE_MASK         | value & 0xff; break;
@@ -665,19 +665,19 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			}
 			invalidations ++;
 		}
-		
+
 		private int getValueCount() {
 			return (data[offset] & COUNT_MASK) >> COUNT_SHIFT;
 		}
-		
+
 		private void setValueCount(int valueCount) {
 			data[offset] = data[offset] & ~COUNT_MASK | (valueCount << COUNT_SHIFT);
 		}
-		
+
 		private int getTerminals() {
 			return (data[offset] & TERMINAL_MASK) >> TERMINAL_SHIFT;
 		}
-		
+
 		private void setTerminals(int terminals) {
 			data[offset] = data[offset] & ~TERMINAL_MASK | (terminals << TERMINAL_SHIFT);
 		}
@@ -685,7 +685,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 		private boolean getSiblingFlag() {
 			return (data[offset] & SIBLING_MASK) != 0;
 		}
-		
+
 		private void setSiblingFlag(boolean siblingFlag) {
 			if (siblingFlag) {
 				data[offset] |= SIBLING_MASK;
@@ -693,12 +693,12 @@ class PackedTrieNodes extends AbstractTrieNodes {
 				data[offset] &= ~SIBLING_MASK;
 			}
 		}
-		
+
 		private int getSiblingIndex() {
 			//TODO eliminate check
 			return !getSiblingFlag() ? 0 : data[offset + 1];
 		}
-		
+
 		private void setSiblingIndex(int siblingIndex) {
 			data[offset + 1] = siblingIndex;
 			invalidations ++;
@@ -807,7 +807,7 @@ class PackedTrieNodes extends AbstractTrieNodes {
 			}
 			if (last != 0) root.adjustCount(adj);
 		}
-		
+
 		@Override
 		PackedNode[] stack() {
 			return (PackedNode[]) stack;

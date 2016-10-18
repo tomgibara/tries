@@ -29,7 +29,7 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * are obtained via the {@link Tries#indexed()} and
  * {@link Tries#indexed(boolean)} methods. It has the same characteristics
  * as the {@link Tries} class.
- * 
+ *
  * @author Tom Gibara
  *
  * @param <E>
@@ -51,7 +51,7 @@ public class IndexedTries<E> extends Tries<E> {
 	/**
 	 * An instance of this class, with the same configuration, that creates
 	 * unindexed tries.
-	 * 
+	 *
 	 * @return tries with non-indexed elements
 	 */
 
@@ -63,12 +63,12 @@ public class IndexedTries<E> extends Tries<E> {
 	public IndexedTries<E> indexed() {
 		return this;
 	}
-	
+
 	@Override
 	public Tries<E> indexed(boolean indexed) {
 		return indexed ? this : unindexed();
 	}
-	
+
 	// mutation methods
 
 	@Override
@@ -81,14 +81,14 @@ public class IndexedTries<E> extends Tries<E> {
 		if (byteOrder == null) throw new IllegalArgumentException("null byteOrder");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
-	
+
 	@Override
 	public IndexedTries<E> nodeSource(TrieNodeSource nodeSource) {
 		if (nodeSource == null) throw new IllegalArgumentException("null nodeSource");
 		if (!nodeSource.isCountingSupported()) throw new IllegalStateException("counting not supported");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
-	
+
 	@Override
 	public <F> IndexedTries<F> adaptedWith(Bijection<E, F> adapter) {
 		if (adapter == null) throw new IllegalArgumentException("null adapter");
@@ -105,7 +105,7 @@ public class IndexedTries<E> extends Tries<E> {
 	*/
 
 	// creation methods
-	
+
 	@Override
 	public IndexedTrie<E> newTrie() {
 		return new IndexedTrie<>(this, newNodes());
@@ -124,17 +124,17 @@ public class IndexedTries<E> extends Tries<E> {
 			return newTrie;
 		}
 	}
-	
+
 	@Override
 	public IndexedTrie<E> readTrie(ReadStream stream) {
 		return new IndexedTrie<>(this, nodeSource.deserializer(byteOrder, true, capacityHint).deserialize(stream));
 	}
 
 	// private utility methods
-	
+
 	private TrieNodes newNodes() {
 		return nodeSource.newNodes(byteOrder, true, capacityHint);
 	}
-	
+
 
 }

@@ -40,7 +40,7 @@ public class ByteOrderTest {
 		int cb = Character.toUpperCase(b & 0xff);
 		return ca - cb;
 	};
-	
+
 	List<ByteOrder> orders = Arrays.asList(
 			ByteOrder.UNSIGNED,
 			ByteOrder.SIGNED,
@@ -48,7 +48,7 @@ public class ByteOrderTest {
 			ByteOrder.REVERSE_SIGNED,
 			ByteOrder.from(caseIns)
 			);
-	
+
 	@Test
 	public void testUnsigned() {
 		ByteOrder bo = ByteOrder.UNSIGNED;
@@ -60,25 +60,25 @@ public class ByteOrderTest {
 			assertTrue(bo.compare((byte) (i+1), (byte) i) > 0);
 		}
 	}
-	
+
 	public void testCanonical() {
 		assertSame(ByteOrder.SIGNED, ByteOrder.from(Byte::compare));
 	}
-	
+
 	@Test
 	public void testAll() {
 		for (ByteOrder order : orders) {
 			testByteOrder(order);
 		}
 	}
-	
+
 	private void testByteOrder(ByteOrder bo) {
 		testComparator(bo);
 		testEquality(bo);
 		testHashCode(bo);
 		testSerialization(bo);
 	}
-	
+
 	private void testComparator(ByteOrder bo) {
 		Comparator<Byte> comparator = bo.asComparator();
 		Random r = new Random(0L);
@@ -92,7 +92,7 @@ public class ByteOrderTest {
 			assertEquals(Integer.signum(c), Integer.signum(cc));
 		}
 	}
-	
+
 	private void testEquality(ByteOrder bo) {
 		assertTrue(bo.equals(bo));
 		ByteOrder bo2 = ByteOrder.from(bo.asComparator());
@@ -105,13 +105,13 @@ public class ByteOrderTest {
 		assertTrue(rrbo.equals(bo));
 		assertTrue(bo.equals(rrbo));
 	}
-	
+
 	private void testHashCode(ByteOrder bo) {
 		for (ByteOrder order : orders) {
 			if (order.equals(bo)) assertEquals(order.hashCode(), bo.hashCode());
 		}
 	}
-	
+
 	private void testSerialization(ByteOrder bo) {
 		ByteOrder copy;
 		try {

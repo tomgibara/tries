@@ -27,22 +27,22 @@ import com.tomgibara.tries.TrieSerialization;
  * A tree of {@link TrieNode} instances. The specific implementation of this
  * interface has a significant impact on the performance characteristics of any
  * {@link Trie} that uses it.
- * 
+ *
  * <p>
  * All trees operate with a fixed byte ordering which is reported by the
  * {@link #byteOrder()} method and imposes an ordering on sibling nodes. Trees
  * also support mutability controls as per the <code>Mutability</code>
  * interface.
- * 
+ *
  * <p>
  * Some tree implementations may support recording the number of terminating
  * children at each node. This is required to support the functionality exposed
  * by {@link IndexedTrie}.
- * 
+ *
  * <p>
  * Some tree implementations may invalidate nodes in response to structural
  * changes. This is managed via the {@link #invalidations()} method.
- * 
+ *
  * @author Tom Gibara
  * @see TrieNodeSource
  */
@@ -51,44 +51,44 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 
 	/**
 	 * The byte order that specifies the ordering of child nodes.
-	 * 
+	 *
 	 * @return the byte order for this tree of nodes.
 	 */
 
 	ByteOrder byteOrder();
-	
+
 	/**
 	 * Whether the nodes of this tree maintain a count their children.
-	 * 
+	 *
 	 * @return true if the tree maintains a counts of child nodes
 	 */
 
 	boolean isCounting();
-	
+
 	/**
 	 * The number of nodes in the tree. Note that this may be a slow operation
 	 * since implementations are not required to maintain an active count of
 	 * the number of nodes in the tree.
-	 * 
+	 *
 	 * @return the total number of nodes in the tree
 	 */
-	
+
 	int nodeCount();
-	
+
 	/**
 	 * An estimate of the memory used to store the tree, measured in bytes. Note
 	 * that if the tree is not counting node children, this may be a very slow
 	 * operation.
-	 * 
+	 *
 	 * @return an estimate of the number of bytes of memory used to store the
 	 *         tree
 	 */
-	
+
 	long storageSize();
 
 	/**
 	 * The root node of the tree.
-	 * 
+	 *
 	 * @return the root of the tree, never null
 	 */
 
@@ -99,10 +99,10 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	 * Creates a new path that can traverse the trie. If the trie is mutable,
 	 * the path may be used to modify the trie. Every trie is associated with a
 	 * serialization that can be used to generate or record a path.
-	 * 
+	 *
 	 * <p>
 	 * The new path will consist of a single node: the root of this trie.
-	 * 
+	 *
 	 * @param serialization
 	 *            the serialization to be associated with the path
 	 * @return a new path
@@ -125,14 +125,14 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	 * invalidation occurs when a structural change is made that invalidates one
 	 * or more node instances belonging to this tree. Note that many possible
 	 * tree implementations will never invalidate nodes.
-	 * 
+	 *
 	 * @return the number of invalidations that have occurred
 	 */
-	
+
 	long invalidations();
-	
+
 	// mutability
-	
+
 	default TrieNodes immutableView() {
 		return ImmutableNodes.nodes(this);
 	}
@@ -142,5 +142,5 @@ public interface TrieNodes extends Mutability<TrieNodes> {
 	default TrieNodes immutableCopy() {
 		return mutableCopy().immutableView();
 	}
-	
+
 }

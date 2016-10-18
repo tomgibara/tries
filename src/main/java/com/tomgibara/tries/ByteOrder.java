@@ -29,20 +29,20 @@ import com.tomgibara.bits.Bits;
 /**
  * <p>
  * Efficiently compares byte values using a fixed ordering.
- * 
+ *
  * <p>
  * Note that this class is serializable so that applications seeking to persist
  * tries may do so together with the byte ordering applied. Serialization works
  * even if the byte order was constructed using a comparator that is not
  * serializable.
- * 
+ *
  * @author Tom Gibara
  */
 
 public final class ByteOrder implements Serializable {
 
 	// constants
-	
+
 	private static final long serialVersionUID = 7031876057420610423L;
 
 	private static final int CMP = 0;
@@ -55,9 +55,9 @@ public final class ByteOrder implements Serializable {
 	private static final int HASH_SGN = 0x3c831f7f;
 	private static final int HASH_RUN = 0x7a53307f;
 	private static final int HASH_RSN = 0x3a53307f;
-	
+
 	// private statics
-	
+
 	private static int unsCmp(byte a, byte b) {
 		return Integer.compare(a & 0xff, b & 0xff);
 	}
@@ -111,11 +111,11 @@ public final class ByteOrder implements Serializable {
 	 */
 
 	public static final ByteOrder REVERSE_SIGNED = new ByteOrder(RSN);
-	
+
 	/**
 	 * Derives a byte order from the ordering imposed by a comparator.
 	 * The supplied comparator must provide a consistent ordering.
-	 * 
+	 *
 	 * @param comparator a consistent byte comparator
 	 * @return a byte order equivalent to the supplied comparator
 	 * @throws IllegalArgumentException if the comparator ordering is
@@ -128,7 +128,7 @@ public final class ByteOrder implements Serializable {
 		ByteOrder fixed = fixedOrder(order.hashCode);
 		return fixed != null && isSameOrder(order, fixed) ? fixed : order;
 	}
-	
+
 	private static int fixedHashCode(int fixedType) {
 		// note hashes precomputed
 		switch (fixedType) {
@@ -139,7 +139,7 @@ public final class ByteOrder implements Serializable {
 		default: throw new IllegalArgumentException();
 		}
 	}
-	
+
 	private static Comparator<Byte> fixedComparator(int fixedType) {
 		switch (fixedType) {
 		case UNS: return ByteOrder::unsCmp;
@@ -149,7 +149,7 @@ public final class ByteOrder implements Serializable {
 		default: throw new IllegalArgumentException();
 		}
 	}
-	
+
 	private static ByteOrder fixedOrder(int hashCode) {
 		switch (hashCode) {
 		case HASH_UNS: return UNSIGNED;
@@ -159,16 +159,16 @@ public final class ByteOrder implements Serializable {
 		default: return null;
 		}
 	}
-	
+
 	// fields
-	
+
 	private final int fixedType;
 	private final Comparator<Byte> comparator;
 	private final int hashCode;
 	private int[] lookup = null;
 
 	// constructors
-	
+
 	private ByteOrder(int fixedType) {
 		this.fixedType = fixedType;
 		hashCode = fixedHashCode(fixedType);
@@ -192,7 +192,7 @@ public final class ByteOrder implements Serializable {
 		hashCode = Math.abs( Arrays.hashCode(lookup) );
 	}
 	// methods
-	
+
 	public Comparator<Byte> asComparator() {
 		return comparator;
 	}
@@ -201,7 +201,7 @@ public final class ByteOrder implements Serializable {
 	 * Compares two bytes. As per Java conventions, the method returns a
 	 * negative integer if <code>a &lt; b</code>, zero if <code>a == b</code>
 	 * and a positive integer if <code>a &gt; b</code>
-	 * 
+	 *
 	 * @param a
 	 *            any byte
 	 * @param b
@@ -218,9 +218,9 @@ public final class ByteOrder implements Serializable {
 		default: return comparator.compare(a, b);
 		}
 	}
-	
+
 	// private methods
-	
+
 	private int[] lookup() {
 		// lookup is lazy for fixed types
 		// use of custom comparators is rare
@@ -272,9 +272,9 @@ public final class ByteOrder implements Serializable {
 		}
 		return lookup;
 	}
-	
+
 	// object methods
-	
+
 	@Override
 	public String toString() {
 		switch (fixedType) {
@@ -285,7 +285,7 @@ public final class ByteOrder implements Serializable {
 		default : return comparator.toString();
 		}
 	}
-	
+
 	/**
 	 * A hash code consistent with equality on this class.
 	 */
@@ -314,21 +314,21 @@ public final class ByteOrder implements Serializable {
 	}
 
 	// serialization
-	
+
 	private Object writeReplace() {
 		return fixedType == CMP ? new LookupSerial(lookup) : new FixedSerial(fixedType);
 	}
-	
+
 	private static class FixedSerial implements Serializable {
 
 		private static final long serialVersionUID = -4929447042921599241L;
 
 		private final int fixedType;
-		
+
 		FixedSerial(int fixedType) {
 			this.fixedType = fixedType;
 		}
-		
+
 		private Object readResolve() throws StreamCorruptedException {
 			switch (fixedType) {
 			case UNS: return UNSIGNED;
@@ -340,27 +340,27 @@ public final class ByteOrder implements Serializable {
 		}
 
 	}
-	
+
 	private static class LookupSerial implements Serializable {
 
 		private static final long serialVersionUID = 652788669095291423L;
 
 		private final int[] lookup;
-		
+
 		LookupSerial(int[] lookup) {
 			this.lookup = lookup;
 		}
-		
+
 		private Object readResolve() {
 			return new ByteOrder(lookup);
 		}
 
 	}
-	
+
 	private static class LookupComparator implements Comparator<Byte> {
 
 		private final int[] lookup;
-		
+
 		LookupComparator(int[] lookup) {
 			if (lookup.length != 256) throw new IllegalArgumentException();
 			BitStore bits = Bits.store(256);
@@ -370,7 +370,7 @@ public final class ByteOrder implements Serializable {
 
 			this.lookup = lookup;
 		}
-		
+
 		@Override
 		public int compare(Byte a, Byte b) {
 			return lookup[a & 0xff] - lookup[b & 0xff];

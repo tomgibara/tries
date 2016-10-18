@@ -42,16 +42,16 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	// NOTE these are just estimates
 	private final int OBJ_HEADER_SIZE = 12;
 	private final int PTR_SIZE_IN_BYTES = 4;
-	
+
 	private final ByteOrder byteOrder;
 	private final BasicNode root;
 	private long invalidations = 0L;
-	
+
 	BasicTrieNodes(ByteOrder byteOrder) {
 		this.byteOrder = byteOrder;
 		root = new BasicNode();
 	}
-	
+
 	@Override
 	public boolean isMutable() {
 		return true;
@@ -113,18 +113,18 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	void readComplete() {
 		root.computeCounts();
 	}
-	
+
 	void ensureExtraCapacity(int extraCapacity) {
 		// no op
 	}
-	
+
 	@Override
 	AbstractTrieNode[] newStack(int length) {
 		return new BasicNode[length];
 	}
-	
+
 	// testing methods
-	
+
 	@Override
 	void dump() {
 		// TODO Auto-generated method stub
@@ -134,9 +134,9 @@ class BasicTrieNodes extends AbstractTrieNodes {
 	int availableCapacity() {
 		return Integer.MAX_VALUE;
 	}
-	
+
 	// private helper methods
-	
+
 	private BasicNode adopt(BasicNode ours, TrieNode theirs) {
 		ours.setTerminal(theirs.isTerminal());
 		TrieNode sibling = theirs.getSibling();
@@ -158,7 +158,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		ours.count = count;
 		return ours;
 	}
-	
+
 	private BasicNode readNode(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
 		byte value = stream.readByte();
 		BasicNode node = new BasicNode(value);
@@ -176,11 +176,11 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		private BasicNode sibling;
 		private BasicNode child;
 		private int count;
-		
+
 		BasicNode() {
 			value = 0;
 		}
-		
+
 		BasicNode(byte value) {
 			this.value = value;
 		}
@@ -268,17 +268,17 @@ class BasicTrieNodes extends AbstractTrieNodes {
 		public boolean isCounting() {
 			return true;
 		}
-		
+
 		BasicTrieNodes nodes() {
 			return BasicTrieNodes.this;
 		}
-		
+
 		void setSibling(BasicNode sibling) {
 			if (sibling == this.sibling) return;
 			this.sibling = sibling;
 			invalidations ++;
 		}
-		
+
 		void setChild(BasicNode child) {
 			if (child == this.child) return;
 			this.child = child;
@@ -291,12 +291,12 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			if (sibling != null) count += sibling.countNodes();
 			return count;
 		}
-		
+
 		@Override
 		void readChild(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
 			child = readNode(stream, awaitingSiblings);
 		}
-		
+
 		@Override
 		void readSibling(ReadStream stream, List<AbstractTrieNode> awaitingSiblings) {
 			sibling = readNode(stream, awaitingSiblings);
@@ -309,7 +309,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 			if (sibling != null) c += sibling.computeCounts();
 			return c;
 		}
-		
+
 	}
 
 	private class BasicPath extends AbstractTrieNodePath {
@@ -350,7 +350,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 				stack[i].count ++;
 			}
 		}
-		
+
 		@Override
 		void decrementCounts(int adj) {
 			BasicNode[] stack = stack();
@@ -358,7 +358,7 @@ class BasicTrieNodes extends AbstractTrieNodes {
 				stack[i].count += adj;
 			}
 		}
-		
+
 		@Override
 		BasicNode[] stack() {
 			return (BasicNode[]) stack;

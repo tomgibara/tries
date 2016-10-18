@@ -27,7 +27,7 @@ import java.util.List;
 import com.tomgibara.tries.nodes.TrieNodeSource;
 
 public class WordsTest {
-	
+
 	private static int reps = 50;
 	private static int trials = 151;
 	private static List<String> allWords;
@@ -37,7 +37,7 @@ public class WordsTest {
 		allWords = TrieTest.readWords();
 
 		TrieNodeSource[] sources = {CompactTrieNodes.SOURCE, PackedTrieNodes.SOURCE, BasicTrieNodes.SOURCE};
-		
+
 		for (int s = 0; s < 2; s++) {
 			boolean shuffle = s == 1;
 			for (int r = 0; r < 2; r++) {

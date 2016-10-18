@@ -45,18 +45,18 @@ import com.tomgibara.tries.nodes.TrieNodes;
  * this library. Instances of this class may be created from any
  * {@link TrieSerialization}. Tries that use common serializations may be
  * created directly from this class.
- * 
+ *
  * <p>
  * Instances of this class are immutable, and are safe for multithreaded use.
  * Methods to configure and customize the creation of tries are available. These
  * return new immutable instances of this class via chainable methods.
- * 
+ *
  * <p>
  * The class also defines a number of 'standard' {@link TrieNodeSource}
  * implementations that are optimized for different scenarios. Other than their
  * convenient availability as part of this package, they are not distinguished
  * from alternatively defined sources that may better suite some applications.
- * 
+ *
  * @author Tom Gibara
  *
  * @param <E>
@@ -68,20 +68,20 @@ import com.tomgibara.tries.nodes.TrieNodes;
 public class Tries<E> {
 
 	// statics
-	
+
 	private static final int DEFAULT_CAPACITY = 16;
 
 	// used for byte tries
 	static TrieSerialization<byte[]> newByteSerialization(int capacity) {
 		return new ByteSerialization(capacity);
 	}
-	
+
 	// serializers
-	
+
 	/**
 	 * Uses a serializer/deserializer pair to define a {@link TrieSerialization}
 	 * from which tries are defined.
-	 * 
+	 *
 	 * @param type
 	 *            the type of object marshalled by the serializers.
 	 * @param serializer
@@ -104,7 +104,7 @@ public class Tries<E> {
 	 * Creates tries to contain strings under a specified encoding. Since the
 	 * tries are byte based, a specific encoding is needed to provide an
 	 * unambiguous encoding.
-	 * 
+	 *
 	 * @param charset
 	 *            the character encoding used to convert the string to/from
 	 *            bytes
@@ -118,7 +118,7 @@ public class Tries<E> {
 
 	/**
 	 * Creates tries that can store byte arrays.
-	 * 
+	 *
 	 * @return tries containing byte arrays
 	 */
 
@@ -128,33 +128,33 @@ public class Tries<E> {
 
 	/**
 	 * Creates tries that can store longs.
-	 * 
+	 *
 	 * @return tries containing longs
 	 */
 
 	public static Tries<Long> serialLongs() {
 		return new Tries<>(() -> new LongSerialization());
 	}
-	
+
 	// node sources
-	
+
 	/**
 	 * Models trie nodes using a Java object for each node; this is fast, at
 	 * the expense of a larger memory overhead than other implementations.
-	 * 
+	 *
 	 * @return a source that provides generally good performance.
 	 */
 
 	public static TrieNodeSource sourceForSpeed() {
 		return BasicTrieNodes.SOURCE;
 	}
-	
+
 	/**
 	 * Models trie nodes using integers to reduce the memory overhead associated
 	 * with Java objects. To further reduce memory overhead there is additional
 	 * logic to byte-pack non-branching child sequences. This implementation
 	 * typically operates approximately half as fast as {@link #sourceForSpeed()}
-	 * 
+	 *
 	 * @return a source that stores reduces memory overhead
 	 */
 
@@ -168,7 +168,7 @@ public class Tries<E> {
 	 * searches over successor nodes. This typically doubles the speed of
 	 * lookups over the {@link #sourceForCompactness()} implementation at the expense
 	 * of doubling the time for removals.
-	 * 
+	 *
 	 * @return a source that facilitates faster lookups over a compact memory
 	 *         representation
 	 */
@@ -178,7 +178,7 @@ public class Tries<E> {
 	}
 
 	// inner classes
-	
+
 	private static abstract class BaseSerialization<E> implements TrieSerialization<E> {
 
 		byte[] buffer;
@@ -188,30 +188,30 @@ public class Tries<E> {
 			this.buffer = buffer;
 			this.length = length;
 		}
-		
+
 		BaseSerialization() {
 			this(new byte[16], 0);
 		}
-		
+
 		BaseSerialization(int capacity) {
 			this(new byte[capacity], 0);
 		}
-		
+
 		BaseSerialization(BaseSerialization<E> that) {
 			this(that.buffer.clone(), that.length);
 		}
-		
+
 		@Override
 		public byte[] buffer() {
 			return buffer;
 		}
-		
+
 		@Override
 		public void push(byte b) {
 			checkBuffer();
 			buffer[length++] = b;
 		}
-		
+
 		@Override
 		public void replace(byte b) {
 			checkLength();
@@ -223,7 +223,7 @@ public class Tries<E> {
 			checkLength();
 			length--;
 		}
-		
+
 		@Override
 		public int length() {
 			return length;
@@ -233,12 +233,12 @@ public class Tries<E> {
 		public void trim(int newLength) {
 			this.length = newLength;
 		}
-		
+
 		@Override
 		public void reset() {
 			length = 0;
 		}
-		
+
 		@Override
 		public boolean startsWith(byte[] prefix) {
 			if (prefix.length > length) return false;
@@ -247,13 +247,13 @@ public class Tries<E> {
 			}
 			return true;
 		}
-		
+
 		@Override
 		public void set(byte[] prefix) {
 			length = prefix.length;
 			System.arraycopy(prefix, 0, buffer, 0, length);
 		}
-		
+
 		private void checkLength() {
 			if (length == 0) throw new IllegalStateException();
 		}
@@ -273,13 +273,13 @@ public class Tries<E> {
 			return joiner.toString();
 		}
 	}
-		
+
 	private static class StreamSerialization<E> extends BaseSerialization<E> {
 
 		private final Class<E> type;
 		private final StreamSerializer<E> serializer;
 		private final StreamDeserializer<E> deserializer;
-		
+
 		private StreamSerialization(Class<E> type, StreamSerializer<E> serializer, StreamDeserializer<E> deserializer) {
 			this.type = type;
 			this.serializer = serializer;
@@ -299,7 +299,7 @@ public class Tries<E> {
 			this.serializer = that.serializer;
 			this.deserializer = that.deserializer;
 		}
-		
+
 		@Override
 		public boolean isSerializable(Object obj) {
 			return type.isInstance(obj);
@@ -309,7 +309,7 @@ public class Tries<E> {
 		public E get() {
 			return Streams.bytes(buffer, length).readStream().readWith(deserializer).produce();
 		}
-		
+
 		@Override
 		public void set(E e) {
 			StreamBytes bytes = Streams.bytes(buffer);
@@ -324,13 +324,13 @@ public class Tries<E> {
 		public TrieSerialization<E> copy() {
 			return new StreamSerialization<>(this);
 		}
-		
+
 		@Override
 		public StreamSerialization<E> resetCopy(int capacity) {
 			return new StreamSerialization<>(this, capacity);
 		}
 	}
-	
+
 	private static class StringSerialization extends BaseSerialization<String> {
 
 		private final CharsetEncoder encoder;
@@ -338,7 +338,7 @@ public class Tries<E> {
 		StringSerialization(Charset charset) {
 			encoder = charset.newEncoder();
 		}
-		
+
 		private StringSerialization(StringSerialization that, int capacity) {
 			super(capacity);
 			this.encoder = that.encoder;
@@ -390,23 +390,23 @@ public class Tries<E> {
 		public String get() {
 			return new String(buffer, 0, length, encoder.charset());
 		}
-		
+
 		@Override
 		public TrieSerialization<String> copy() {
 			return new StringSerialization(this);
 		}
-		
+
 		@Override
 		public TrieSerialization<String> resetCopy(int capacity) {
 			return new StringSerialization(this, capacity);
 		}
-		
+
 	}
 
 	private static class ByteSerialization extends BaseSerialization<byte[]> {
-		
+
 		ByteSerialization() { }
-		
+
 		ByteSerialization(int capacity) {
 			super(capacity);
 		}
@@ -414,12 +414,12 @@ public class Tries<E> {
 		private ByteSerialization(ByteSerialization that) {
 			super(that);
 		}
-		
+
 		@Override
 		public boolean isSerializable(Object obj) {
 			return obj instanceof byte[];
 		}
-		
+
 		@Override
 		public void set(byte[] prefix) {
 			if (prefix.length > buffer.length) {
@@ -434,20 +434,20 @@ public class Tries<E> {
 		public byte[] get() {
 			return Arrays.copyOf(buffer, length);
 		}
-		
+
 		@Override
 		public TrieSerialization<byte[]> copy() {
 			return new ByteSerialization(this);
 		}
-		
+
 		@Override
 		public TrieSerialization<byte[]> resetCopy(int capacity) {
 			return new ByteSerialization(capacity);
 		}
 	}
-	
+
 	private static class LongSerialization extends BaseSerialization<Long> {
-		
+
 		LongSerialization() {
 			super(8);
 		}
@@ -455,11 +455,11 @@ public class Tries<E> {
 		private LongSerialization(int capacity) {
 			super(capacity);
 		}
-		
+
 		private LongSerialization(LongSerialization that) {
 			super(that);
 		}
-		
+
 		@Override
 		public boolean isSerializable(Object obj) {
 			return obj instanceof Long;
@@ -511,7 +511,7 @@ public class Tries<E> {
 		}
 
 	}
-	
+
 	// fields
 
 	final Producer<TrieSerialization<E>> serialProducer;
@@ -524,7 +524,7 @@ public class Tries<E> {
 	Tries(Producer<TrieSerialization<E>> serialProducer) {
 		this(serialProducer, ByteOrder.UNSIGNED, CompactTrieNodes.SOURCE, DEFAULT_CAPACITY);
 	}
-	
+
 	Tries(
 			Producer<TrieSerialization<E>> serialProducer,
 			ByteOrder byteOrder,
@@ -536,11 +536,11 @@ public class Tries<E> {
 		this.nodeSource = nodeSource;
 		this.capacityHint = capacityHint;
 	}
-	
+
 	/**
 	 * An instance of this class, with the same configuration, that creates
 	 * indexed tries.
-	 * 
+	 *
 	 * @return tries with indexed elements
 	 * @throws IllegalStateException
 	 *             if the configured node source does not support counting
@@ -551,11 +551,11 @@ public class Tries<E> {
 		if (!nodeSource.isCountingSupported()) throw new IllegalStateException("counting not supported");
 		return new IndexedTries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
-	
+
 	/**
 	 * An instance of this class, with the same configuration, that returns
 	 * indexed tries or non-indexed tries as-per the parameter.
-	 * 
+	 *
 	 * @param indexed
 	 *            whether the tries generated the returned object should index
 	 *            their elements
@@ -567,19 +567,19 @@ public class Tries<E> {
 	public Tries<E> indexed(boolean indexed) {
 		return indexed ? indexed() : this;
 	}
-	
+
 	// mutation methods
-	
+
 	/**
 	 * Converts a byte comparator into a byte-order for the tries. The byte
 	 * order is applied consistently at all positions in the trie.
-	 * 
+	 *
 	 * @param comparator
 	 *            a comparator of byte values
 	 * @return tries under the specified ordering
 	 * @see ByteOrder#from(Comparator)
 	 */
-	
+
 	public Tries<E> byteOrder(Comparator<Byte> comparator) {
 		return new Tries<>(serialProducer, ByteOrder.from(comparator), nodeSource, capacityHint);
 	}
@@ -587,7 +587,7 @@ public class Tries<E> {
 	/**
 	 * Specifies a byte-order for the tries. The byte order is applied
 	 * consistently at all positions in the trie.
-	 * 
+	 *
 	 * @param byteOrder
 	 *            an ordering of byte values
 	 * @return tries under the specified ordering
@@ -601,7 +601,7 @@ public class Tries<E> {
 
 	/**
 	 * Controls the nodes that will be used to store the elements in tries.
-	 * 
+	 *
 	 * @param nodeSource
 	 *            a source of trie nodes
 	 * @return tries using the specified nodes
@@ -615,12 +615,12 @@ public class Tries<E> {
 	/**
 	 * Applies an adapter to the serialization used for the tries to create a
 	 * tries over the range of the adapter.
-	 * 
+	 *
 	 * @param adapter
 	 *            a bijective mapping over the trie elements
 	 * @param <F>
 	 *            the type of the adapted elements
-	 * 
+	 *
 	 * @return tries adapted to store values in the range of the adapter
 	 * @see Trie#asAdaptedWith(Bijection)
 	 */
@@ -637,13 +637,13 @@ public class Tries<E> {
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 	*/
-	
+
 	// creation methods
-	
+
 	/**
 	 * Creates a new trie. The trie will be empty and will be mutable if the
 	 * configured node source supports the creation of mutable nodes.
-	 * 
+	 *
 	 * @return a new trie
 	 */
 
@@ -658,7 +658,7 @@ public class Tries<E> {
 	 * but <em>must</em> use a compatible serialization (this constraint is not
 	 * enforced). Copying can be expected to be significantly faster if the trie
 	 * shares the same byte order.
-	 * 
+	 *
 	 * @param trie
 	 *            the trie to be copied
 	 * @return the copied trie
@@ -682,7 +682,7 @@ public class Tries<E> {
 	 * {@link Trie#writeTo(WriteStream)} method. The stream must have been
 	 * generated by a compatible {@link Tries} instance, unless otherwise
 	 * documented this means an instance with identical configuration.
-	 * 
+	 *
 	 * @param stream
 	 *            the stream to read from
 	 * @return a trie read from the stream
@@ -691,11 +691,11 @@ public class Tries<E> {
 	public Trie<E> readTrie(ReadStream stream) {
 		return new Trie<>(this, nodeSource.deserializer(byteOrder, false, capacityHint).deserialize(stream));
 	}
-	
+
 	// private utility methods
-	
+
 	private TrieNodes newNodes() {
 		return nodeSource.newNodes(byteOrder, false, capacityHint);
 	}
-	
+
 }

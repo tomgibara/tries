@@ -24,11 +24,11 @@ abstract class AbstractTrieNodes implements TrieNodes {
 
 	private static final int MASK_CHILD_ONLY = AbstractTrieNode.FLAG_CHILD;
 	private static final int MASK_CHILD_OR_TERMINAL = AbstractTrieNode.FLAG_CHILD | AbstractTrieNode.FLAG_TERMINAL;
-	
+
 	public abstract AbstractTrieNode root();
 
 	abstract AbstractTrieNode newNode(byte value);
-	
+
 	abstract AbstractTrieNode[] newStack(int length);
 
 	// called when reading has been finished
@@ -37,7 +37,7 @@ abstract class AbstractTrieNodes implements TrieNodes {
 	abstract void ensureExtraCapacity(int extraCapacity);
 
 	abstract void adopt(AbstractTrieNode ours, TrieNode theirs);
-	
+
 	void writeNodes(WriteStream stream, TrieNode[] stack, int length) {
 		if (length == 0) return;
 		int last = length - 1;

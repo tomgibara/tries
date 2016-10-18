@@ -37,12 +37,12 @@ public class TriesTest {
 		trie.add(bytes("boo"));
 		trie.add(bytes("book"));
 		trie.add(bytes("bookie"));
-		
+
 		assertTrue(trie.contains(bytes("boo")));
 		assertTrue(trie.contains(bytes("book")));
 		assertTrue(trie.contains(bytes("bookie")));
 	}
-	
+
 	@Test
 	public void testNonCounting() {
 		Tries<byte[]> tries = Tries.serialBytes().nodeSource(new NonCountedNodeSource());
@@ -65,11 +65,11 @@ public class TriesTest {
 			/* expected */
 		}
 	}
-	
+
 	class NonCountedNodeSource implements TrieNodeSource {
 
 		private TrieNodeSource source = Tries.sourceForSpeed();
-		
+
 		@Override
 		public boolean isCountingSupported() { return false; }
 

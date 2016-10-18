@@ -24,6 +24,6 @@ public class CompactTrieTest extends TrieTest {
 	protected TrieNodeSource getNodeSource() {
 		return CompactTrieNodes.SOURCE;
 	}
-	
-	
+
+
 }

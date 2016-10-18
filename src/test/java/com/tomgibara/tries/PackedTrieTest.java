@@ -24,6 +24,6 @@ public class PackedTrieTest extends TrieTest {
 	protected TrieNodeSource getNodeSource() {
 		return PackedTrieNodes.SOURCE;
 	}
-	
-	
+
+
 }

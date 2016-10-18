@@ -23,29 +23,29 @@ import com.tomgibara.tries.TrieSerialization;
 class ImmutableNodes implements TrieNodes {
 
 	// statics
-	
+
 	static ImmutableNodes nodes(TrieNodes nodes) {
 		return new ImmutableNodes(nodes);
 	}
-	
+
 	// fields
-	
+
 	private final TrieNodes nodes;
-	
+
 	// constructors
-	
+
 	private ImmutableNodes(TrieNodes nodes) {
 		this.nodes = nodes;
 	}
-	
+
 	// accessors
-	
+
 	TrieNodes nodes() {
 		return nodes;
 	}
-	
+
 	// mutability
-	
+
 	@Override
 	public boolean isMutable() {
 		return false;
@@ -72,7 +72,7 @@ class ImmutableNodes implements TrieNodes {
 	}
 
 	// nodes methods
-	
+
 	@Override
 	public boolean isCounting() {
 		return nodes.isCounting();
@@ -102,7 +102,7 @@ class ImmutableNodes implements TrieNodes {
 	public TrieNodePath newPath(TrieSerialization<?> serialization) {
 		return new ImmutableTrieNodePath(nodes.newPath(serialization));
 	}
-	
+
 	@Override
 	public long invalidations() {
 		return nodes.invalidations();

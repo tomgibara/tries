@@ -19,7 +19,7 @@ import com.tomgibara.tries.nodes.TrieNodeSource;
 public class TriePerformance {
 
 	static int dummy;
-	
+
 	public static final Charset UTF8 = Charset.forName("UTF8");
 	private static final int DEFAULT_WARMUPS = 50;
 	private static final int DEFAULT_TRIALS = 100;
@@ -39,7 +39,7 @@ public class TriePerformance {
 		}
 		return words;
 	}
-	
+
 	static long timing(Runnable r) {
 		long start = System.currentTimeMillis();
 		r.run();
@@ -59,7 +59,7 @@ public class TriePerformance {
 		trial("persist", "words", source);
 		trial("restore", "words", source);
 	}
-	
+
 	public static void trial(String... args) {
 		String tsk = args[0];
 		String typ = args[1];
@@ -74,13 +74,13 @@ public class TriePerformance {
 		case "lookup" : source = Tries.sourceForCompactness(); break;
 		default: throw new IllegalArgumentException("invalid source: " + src);
 		}
-		
+
 		final Setup setup;
 		switch (typ) {
 		case "words" : setup = new WordsSetup(); break;
 		default: throw new IllegalArgumentException("invalid type: " + typ);
 		}
-		
+
 		Task task;
 		switch (tsk) {
 		case "build" : task = new BuildTask(); break;
@@ -91,12 +91,12 @@ public class TriePerformance {
 		case "restore" : task = new RestoreTask(); break;
 		default: throw new IllegalArgumentException("invalid task: " + tsk);
 		}
-		
+
 		setup.setSource(source);
 		task.setup(setup);
 
 		System.gc();
-		
+
 		// warmup
 		long warmupTime = 0L;
 		long warmupMemory = 0L;
@@ -107,7 +107,7 @@ public class TriePerformance {
 			task.reset();
 		}
 		System.out.println(String.format(fmt, "warmup", tsk, typ, src, warmupTime/(double)warmups, warmupMemory/1024.0/warmups));
-		
+
 		// trial
 		long trialTime = 0L;
 		long trialMemory = 0L;
@@ -117,48 +117,48 @@ public class TriePerformance {
 			trialMemory += task.memory();
 		}
 		System.out.println(String.format(fmt, "hot", tsk, typ, src, trialTime/(double)trials, trialMemory/1024.0/trials));
-		
+
 		task.close();
 		setup.dispose();
 	}
-	
+
 	public static void testAddAllStrings(String[] strings) {
 		Tries.serialStrings(UTF8);
 	}
-	
+
 	interface Setup {
-		
+
 		void setSource(TrieNodeSource source);
-		
+
 		void loadData();
-		
+
 		void createTrie();
-		
+
 		void addData();
-		
+
 		void compact();
 
 		void contains();
 
 		void iterate();
-		
+
 		void persist();
 
 		void restore();
-		
+
 		void clearTrie();
 
 		long memory();
-		
+
 		long storage();
-		
+
 		void clearStorage();
-		
+
 		void dispose();
 	}
-	
+
 	static class WordsSetup implements Setup {
-		
+
 		private Tries<String> tries;
 		private Trie<String> trie;
 		private List<String> words;
@@ -168,18 +168,18 @@ public class TriePerformance {
 		public void setSource(TrieNodeSource source) {
 			tries = Tries.serialStrings(UTF8).nodeSource(source);
 		}
-		
+
 		@Override
 		public void loadData() {
 			words = readWords();
 			Collections.shuffle(words, new Random(0L));
 		}
-		
+
 		@Override
 		public void createTrie() {
 			trie = tries.newTrie();
 		}
-		
+
 		@Override
 		public void addData() {
 			trie.addAll(words);
@@ -198,44 +198,44 @@ public class TriePerformance {
 			}
 			dummy = count;
 		}
-		
+
 		@Override
 		public void iterate() {
 			int count = 0;
 			for (String str : trie) count++;
 			dummy = count;
 		}
-		
+
 		@Override
 		public void persist() {
 			trie.writeTo(bytes.writeStream());
 		}
-		
+
 		@Override
 		public void restore() {
 			tries.readTrie(bytes.readStream());
 		}
-		
+
 		@Override
 		public void clearStorage() {
 			bytes = Streams.bytes(bytes.length());
 		}
-		
+
 		@Override
 		public void clearTrie() {
 			trie.clear();
 		}
-		
+
 		@Override
 		public long memory() {
-			return trie.storageSizeInBytes(); 
+			return trie.storageSizeInBytes();
 		}
-		
+
 		@Override
 		public long storage() {
 			return bytes.length();
 		}
-		
+
 		@Override
 		public void dispose() {
 			tries = null;
@@ -243,19 +243,19 @@ public class TriePerformance {
 			words = null;
 		}
 	}
-	
+
 	interface Task extends AutoCloseable {
-		
+
 		void setup(Setup setup);
-		
+
 		void perform();
-		
+
 		long time();
-		
+
 		long memory();
-		
+
 		void reset();
-		
+
 		@Override
 		default void close() {}
 	}
@@ -270,7 +270,7 @@ public class TriePerformance {
 		public long time() {
 			return time;
 		}
-		
+
 		@Override
 		public long memory() {
 			return memory;
@@ -279,13 +279,13 @@ public class TriePerformance {
 		@Override
 		public void reset() {
 		}
-		
+
 		@Override
 		public void close() {
 		}
 
 	}
-	
+
 	static class BuildTask extends BaseTask {
 
 		@Override
@@ -300,14 +300,14 @@ public class TriePerformance {
 			time = timing(() -> setup.addData());
 			memory = setup.memory();
 		}
-		
+
 		@Override
 		public void reset() {
 			setup.clearTrie();
 		}
 
 	}
-	
+
 	static class CompactTask extends BaseTask {
 
 		@Override
@@ -323,14 +323,14 @@ public class TriePerformance {
 			time = timing(() -> setup.compact());
 			memory = setup.memory();
 		}
-		
+
 		@Override
 		public void reset() {
 			setup.clearTrie();
 		}
 
 	}
-	
+
 	static class IterateTask extends BaseTask {
 
 		@Override
@@ -349,7 +349,7 @@ public class TriePerformance {
 		}
 
 	}
-	
+
 	static class ContainsTask extends BaseTask {
 
 		@Override
