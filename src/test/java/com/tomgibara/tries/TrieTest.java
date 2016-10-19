@@ -253,7 +253,7 @@ public abstract class TrieTest {
 		assertFalse(i.hasNext());
 
 		// iterator from first element
-		i = trie.iterator("Moo");
+		i = trie.iteratorFrom("Moo");
 		assertTrue(i.hasNext());
 		assertEquals("Moo", i.next());
 		assertTrue(i.hasNext());
@@ -263,7 +263,7 @@ public abstract class TrieTest {
 		assertFalse(i.hasNext());
 
 		// iterator from middle element
-		i = trie.iterator("Moody");
+		i = trie.iteratorFrom("Moody");
 		assertTrue(i.hasNext());
 		assertEquals("Moody", i.next());
 		assertTrue(i.hasNext());
@@ -271,22 +271,22 @@ public abstract class TrieTest {
 		assertFalse(i.hasNext());
 
 		// iterator from last element
-		i = trie.iterator("Moon");
+		i = trie.iteratorFrom("Moon");
 		assertTrue(i.hasNext());
 		assertEquals("Moon", i.next());
 		assertFalse(i.hasNext());
 
 		// iterator from beyond last element
-		i = trie.iterator("Noooo");
+		i = trie.iteratorFrom("Noooo");
 		assertFalse(i.hasNext());
 
 		// iterator from previous to first element
-		i = trie.iterator("Ahhh");
+		i = trie.iteratorFrom("Ahhh");
 		assertTrue(i.hasNext());
 		assertEquals("Moo", i.next());
 
 		// iterator from between elements
-		i = trie.iterator("Mooch");
+		i = trie.iteratorFrom("Mooch");
 		assertTrue(i.hasNext());
 		assertEquals("Moody", i.next());
 

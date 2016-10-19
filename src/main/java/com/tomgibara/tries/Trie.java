@@ -663,7 +663,7 @@ public class Trie<E> implements Iterable<E>, Mutability<Trie<E>> {
 	 * @see #comparator()
 	 */
 
-	public Iterator<E> iterator(E from) {
+	public Iterator<E> iteratorFrom(E from) {
 		if (from == null) throw new IllegalArgumentException("null from");
 		return new NodeIterator(from);
 	}
