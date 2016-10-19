@@ -17,11 +17,13 @@
 package com.tomgibara.tries;
 
 import static com.tomgibara.tries.TrieTest.bytes;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.tomgibara.fundament.Bijection;
@@ -30,6 +32,16 @@ import com.tomgibara.tries.nodes.TrieNodeSource;
 import com.tomgibara.tries.nodes.TrieNodes;
 
 public class TriesTest {
+
+	@Test
+	public void testIndexing() {
+		Tries<Long> tries = Tries.serialLongs();
+		assertFalse(tries.indexing());
+		assertFalse(tries.unindexed().indexing());
+		assertTrue(tries.indexed().indexing());
+		assertTrue(tries.indexed().indexed().indexing());
+		assertFalse(tries.indexed().unindexed().indexing());
+	}
 
 	@Test
 	public void testBytes() {
@@ -50,11 +62,6 @@ public class TriesTest {
 		try {
 			tries.indexed();
 			fail();
-		} catch (IllegalStateException e) {
-			/* expected */
-		}
-		try {
-			tries.indexed(true);
 		} catch (IllegalStateException e) {
 			/* expected */
 		}

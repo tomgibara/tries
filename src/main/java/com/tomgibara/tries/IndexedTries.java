@@ -26,16 +26,14 @@ import com.tomgibara.tries.nodes.TrieNodes;
 
 /**
  * A class for creating {@link IndexedTrie} instances. Instances of this class
- * are obtained via the {@link Tries#indexed()} and
- * {@link Tries#indexed(boolean)} methods. It has the same characteristics
- * as the {@link Tries} class.
+ * are obtained via the {@link Tries#indexed()} method. It has the same
+ * characteristics as the {@link Tries} class.
  *
  * @author Tom Gibara
  *
  * @param <E>
  *            the type of elements to be stored
  * @see Tries#indexed()
- * @see Tries#indexed(boolean)
  */
 
 public class IndexedTries<E> extends Tries<E> {
@@ -48,13 +46,7 @@ public class IndexedTries<E> extends Tries<E> {
 		super(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
 
-	/**
-	 * An instance of this class, with the same configuration, that creates
-	 * unindexed tries.
-	 *
-	 * @return tries with non-indexed elements
-	 */
-
+	@Override
 	public Tries<E> unindexed() {
 		return new Tries<>(serialProducer, byteOrder, nodeSource, capacityHint);
 	}
@@ -65,8 +57,8 @@ public class IndexedTries<E> extends Tries<E> {
 	}
 
 	@Override
-	public Tries<E> indexed(boolean indexed) {
-		return indexed ? this : unindexed();
+	public boolean indexing() {
+		return true;
 	}
 
 	// mutation methods

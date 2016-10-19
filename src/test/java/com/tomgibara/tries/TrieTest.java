@@ -94,6 +94,9 @@ public abstract class TrieTest {
 		}
 	}
 
+	private static <E> Tries<E> indexed(Tries<E> tries, boolean indexed) {
+		return indexed ? tries.indexed() : tries.unindexed();
+	}
 	static long time(Runnable r) {
 		long start = System.currentTimeMillis();
 		r.run();
@@ -137,7 +140,7 @@ public abstract class TrieTest {
 		StreamBytes bytes = Streams.bytes();
 		trie.writeTo(bytes.writeStream());
 		ReadStream stream = bytes.readStream();
-		Trie<E> copy = tries.indexed(indexed).readTrie(stream);
+		Trie<E> copy = indexed(tries, indexed).readTrie(stream);
 
 		try { // check exhaustion
 			stream.readByte();
@@ -914,7 +917,7 @@ public abstract class TrieTest {
 	}
 
 	private void testSerialization(boolean indexed) {
-		Tries<String> tries = Tries.serialStrings(ASCII).nodeSource(getNodeSource()).indexed(indexed);
+		Tries<String> tries = indexed(Tries.serialStrings(ASCII).nodeSource(getNodeSource()), indexed);
 
 		// test empty
 		Trie<String> empty = tries.newTrie();

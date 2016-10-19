@@ -538,8 +538,17 @@ public class Tries<E> {
 	}
 
 	/**
-	 * An instance of this class, with the same configuration, that creates
-	 * indexed tries.
+	 * An instance with the same configuration, that creates unindexed tries.
+	 *
+	 * @return tries with non-indexed elements
+	 */
+
+	public Tries<E> unindexed() {
+		return this;
+	}
+
+	/**
+	 * An instance with the same configuration, that creates indexed tries.
 	 *
 	 * @return tries with indexed elements
 	 * @throws IllegalStateException
@@ -553,19 +562,15 @@ public class Tries<E> {
 	}
 
 	/**
-	 * An instance of this class, with the same configuration, that returns
-	 * indexed tries or non-indexed tries as-per the parameter.
+	 * Whether the tries are indexed.
 	 *
-	 * @param indexed
-	 *            whether the tries generated the returned object should index
-	 *            their elements
-	 * @return tries with the indidcated indexation
+	 * @return true if the tries created are indexed, false if not
 	 * @see #indexed()
 	 * @see IndexedTries#unindexed()
 	 */
 
-	public Tries<E> indexed(boolean indexed) {
-		return indexed ? indexed() : this;
+	public boolean indexing() {
+		return false;
 	}
 
 	// mutation methods
