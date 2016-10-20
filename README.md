@@ -37,14 +37,18 @@ implementing the `TrieSerialization` interface, and calling its
 `tries()` method.
 
 Applications may also provide their own implementation of the nodes that
-maintain the trie, in addition to the three already provided by this package.
-To do so the `TrieNodeSource` interface must be implemented which also entails
-implementation of the `TrieNodes`, `TrieNode` and `TrieNodePath`
-interfaces.
+store the trie data, instead of using one already provided by this package. To
+do so the `TrieNodeSource` interface must be implemented which also entails
+implementation of the `TrieNodes`, `TrieNode` and `TrieNodePath` interfaces.
+Very few applications will require this level of control, and most will be well
+served by at least one of the implementations provided by this library, and
+available via the `Trie.sourceFor...()` methods.
 
 All classes are found in the `com.tomgibara.tries` package and in its
 `com.tomgibara.tries.nodes` sub-package, with full documentation available
-via the javadocs packaged with the release.
+via the javadocs packaged with the release. These are viewable online at:
+
+<http://javadoc.io/doc/com.tomgibara.tries/tries>
 
 Examples
 --------
@@ -55,47 +59,47 @@ Creating and using a `Trie` of `String`:
 	// creating a trie of strings
 	Trie<String> strs
 		= Tries.serialStrings(UTF8).newTrie();
-	
+
 	//populate a trie
 	strs.add("vodka");
 	strs.add("Kahlúa");
 	strs.add("cream");
-	
+
 	// interrogate trie
 	strs.contains("vodka");    // true
 	strs.first();              // "Kahlúa"
 	strs.last();               // "vodka"
 	strs.iterator();           // (supports removal)
-	
+
 	// other properties
 	strs.isEmpty();            // false
 	strs.isMutable();          // true
 	strs.size();               // 3
 	strs.comparator();         // (iteration order)
 	strs.storageSizeInBytes(); // (approximate)
-	
+
 	// global operations
 	strs.compactStorage();     // optimize trie
 	strs.clear();              // remove all elements
 	strs.writeTo(stream);      // persist the trie
-	
+
 	// views
 	strs.subTrie("vod");       // live sub-trie
 	strs.immutableView();      // live read-only view
 	strs.asSet();              // live view as a set
 	strs.asBytesTrie();        // read-only view of bytes
-	
+
 	//reset
 	{
 		strs.add("vodka");
 		strs.add("Kahlúa");
 		strs.add("cream");
 	}
-	
+
 	// an indexed trie copy
 	IndexedTrie<String> indx
 		= Tries.serialStrings(UTF8).indexed().copyTrie(strs);
-	
+
 	// additional index based methods
 	indx.get(0);               // "Kahlúa"
 	indx.indexOf("cream");     // 1
@@ -110,7 +114,7 @@ store:
 	// create an adapter to avoid writing a dedicated serializer
 	Bijection<String, URI> adapter = Bijection.fromFunctions(
 			String.class,        URI.class,
-			s -> URI.create(s),  u -> u.toString()
+			URI::create,  URI::toString
 			);
 
 	// choose a node source which is compact and fast for lookups
@@ -196,7 +200,7 @@ The tries library will be available from the Maven central repository:
 > Artifact ID: `tries`
 > Version:     `1.0.0`
 
-The Maven dependency to be:
+The Maven dependency being:
 
     <dependency>
       <groupId>com.tomgibara.tries</groupId>
@@ -207,7 +211,9 @@ The Maven dependency to be:
 Release History
 ---------------
 
-*not yet released*
+**2016.10.20** Version 1.0.0
+
+Initial release
 
 
 [0]: https://en.wikipedia.org/wiki/Trie
