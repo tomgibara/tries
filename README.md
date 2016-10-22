@@ -211,7 +211,7 @@ The Maven dependency being:
 Release History
 ---------------
 
-**2016.10.20** Version 1.0.0
+**2016.10.22** Version 1.0.0
 
 Initial release
 
