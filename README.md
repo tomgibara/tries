@@ -198,22 +198,26 @@ The tries library will be available from the Maven central repository:
 
 > Group ID:    `com.tomgibara.tries`
 > Artifact ID: `tries`
-> Version:     `1.0.0`
+> Version:     `1.0.1`
 
 The Maven dependency being:
 
     <dependency>
       <groupId>com.tomgibara.tries</groupId>
       <artifactId>tries</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1</version>
     </dependency>
 
 Release History
 ---------------
 
+**2016.11.19** Version 1.0.1
+
+ * Built against newest dependency versions.
+
 **2016.10.22** Version 1.0.0
 
-Initial release
+ *Initial release*
 
 
 [0]: https://en.wikipedia.org/wiki/Trie
